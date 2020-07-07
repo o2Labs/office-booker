@@ -1,0 +1,25 @@
+{
+  "name": "office_booker_alerts",
+  "version": "1.0.0",
+  "description": "alert handling",
+  "main": "index.ts",
+  "private": true,
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.51",
+    "@types/jest": "^26.0.0",
+    "@types/node": "^13.13.5",
+    "@types/node-fetch": "^2.5.7",
+    "jest": "^26.0.1",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.0.0",
+    "typescript": "^3.8.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "silent": true
+  }
+}

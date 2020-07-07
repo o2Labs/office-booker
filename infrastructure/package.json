@@ -1,0 +1,15 @@
+{
+  "name": "office-booker-infrastructure",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "@pulumi/aws": "^2.0.0",
+    "@pulumi/pulumi": "^2.0.0",
+    "@types/aws-lambda": "^8.10.51",
+    "@types/node": "^13.13.4",
+    "aws-lambda": "^1.0.6",
+    "crypto-secure-random-digit": "^1.0.9",
+    "prettier": "^2.0.0",
+    "typescript": "^3.8.3"
+  }
+}
