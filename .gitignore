@@ -131,3 +131,4 @@ public/
 dist
 build
 client/.env.local
+!/client/public
