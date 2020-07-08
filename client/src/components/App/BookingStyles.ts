@@ -23,6 +23,8 @@ export default styled.div`
 
   .select-container {
     margin-bottom: 3rem;
+    display: flex;
+    justify-content: space-between;
 
     .MuiSelect-select {
       min-width: 12rem;
@@ -34,7 +36,7 @@ export default styled.div`
 
     .btn-container {
       display: flex;
-      justify-content: space-between;
+      flex-direction: row-reverse;
     }
   }
 `;

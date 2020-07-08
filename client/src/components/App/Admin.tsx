@@ -193,6 +193,14 @@ const Admin: React.FC<RouteComponentProps> = () => {
                       ))}
                     </Select>
                   </FormControl>
+                  <OurButton
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate('/admin/createBooking')}
+                  >
+                    Create New Booking
+                  </OurButton>
                 </section>
 
                 <h3>Booked Users</h3>
@@ -200,14 +208,6 @@ const Admin: React.FC<RouteComponentProps> = () => {
                   {selectedOffice && filteredBookings ? (
                     <>
                       <div className="btn-container">
-                        <OurButton
-                          type="submit"
-                          variant="contained"
-                          color="primary"
-                          onClick={() => navigate('/admin/createBooking')}
-                        >
-                          Create New Booking
-                        </OurButton>
                         <SubButton
                           type="submit"
                           variant="outlined"
