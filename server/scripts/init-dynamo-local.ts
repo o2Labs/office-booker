@@ -25,6 +25,14 @@ async function createTable() {
   await mapper.ensureTableExists(BookingsModel, {
     readCapacityUnits: 1,
     writeCapacityUnits: 1,
+    indexOptions: {
+      'office-date-bookings': {
+        type: 'global',
+        projection: 'all',
+        readCapacityUnits: 1,
+        writeCapacityUnits: 1,
+      },
+    },
   });
   await mapper.ensureTableExists(UserModel, {
     readCapacityUnits: 1,
