@@ -30,7 +30,7 @@ import {
   DialogContentText,
   DialogActions,
 } from '@material-ui/core';
-import { isToday, isPast } from 'date-fns';
+import { isToday, isPast, endOfDay } from 'date-fns';
 import { OurButton, SubButton } from '../../styles/MaterialComponents';
 import { Booking } from '../../types/api';
 import AdminHeader from './AdminHeader';
@@ -65,7 +65,7 @@ const Admin: React.FC<RouteComponentProps> = () => {
       getBookings({ office: selectedOffice })
         .then((data) => {
           // Store in global state
-          setAllBookings(data.filter((booking) => !isPast(new Date(booking.date))));
+          setAllBookings(data.filter((booking) => !isPast(endOfDay(new Date(booking.date)))));
           setLoading(false);
         })
         .catch((err) => {
