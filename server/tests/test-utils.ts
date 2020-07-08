@@ -1,13 +1,7 @@
-import { DynamoDB } from 'aws-sdk/clients/all';
-import { DataMapper } from '@aws/dynamodb-data-mapper';
-import { BookingsModel } from '../db/bookings';
-import { UserBookingsModel } from '../db/userBookings';
-import { OfficeBookingModel } from '../db/officeBookings';
 import request, { Response } from 'supertest';
 import { configureApp } from '../app';
 import { Config, OfficeQuota } from '../app-config';
-import { UserModel } from '../db/users';
-import { createLocalTables } from '../scripts/init-dynamo-local';
+import { createLocalTables } from '../scripts/create-dynamo-tables';
 
 export const normalUserEmail = 'normal.user@office-booker.test';
 export const adminUserEmail = 'office-booker-admin-test@office-booker.test';
@@ -52,7 +46,13 @@ export const server = () => {
 };
 
 export const resetDb = async () => {
-  await createLocalTables();
+  await createLocalTables(
+    { deleteTablesFirst: true },
+    {
+      region: 'eu-west-1',
+      endpoint: 'http://localhost:8000',
+    }
+  );
 };
 
 export const expectUnauthorised = (response: Response) => {
