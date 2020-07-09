@@ -130,13 +130,17 @@ export const getOffices = async (): Promise<Office[]> => {
 export const getBookings = async ({
   user,
   office,
-}: { user?: string; office?: string } = {}): Promise<Booking[]> => {
+  date,
+}: { user?: string; office?: string; date?: string } = {}): Promise<Booking[]> => {
   const params = new URLSearchParams();
   if (user !== undefined) {
     params.set('user', user);
   }
   if (office !== undefined) {
     params.set('office', office);
+  }
+  if (date !== undefined) {
+    params.set('date', date);
   }
   const url = new URL(`bookings?${params.toString()}`, BASE_URL);
 
