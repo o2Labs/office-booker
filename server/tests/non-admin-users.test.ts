@@ -46,6 +46,7 @@ describe.each(Object.keys(userTypes))('Non-admin user actions', (userType) => {
           user: otherUser,
           office: officeQuotas[0].name,
           date: format(new Date(), 'yyyy-MM-dd'),
+          includesParking: false,
         })
         .set('bearer', email);
       expectForbidden(response);
