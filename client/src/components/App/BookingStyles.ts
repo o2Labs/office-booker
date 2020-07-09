@@ -34,15 +34,20 @@ export default styled.div`
   .listing-container {
     overflow: scroll;
 
-    .btn-container {
-      text-align: right;
-    }
-
     .MuiToolbar-root {
       display: flex;
       justify-content: space-between;
 
       .filters {
+        display: flex;
+        > :first-child {
+          margin-right: 2rem;
+        }
+
+        .create-btn {
+          margin-left: 2rem;
+          text-transform: inherit;
+        }
       }
     }
   }
