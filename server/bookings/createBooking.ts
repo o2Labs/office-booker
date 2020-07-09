@@ -49,13 +49,6 @@ export const createBooking = async (
     });
   }
 
-  // Id date as a direct string
-  const id = request.date.replace(/-/gi, '');
-  const newBooking = {
-    ...request,
-    id,
-  };
-
   const requestedOffice = config.officeQuotas.find((office) => office.name === request.office);
   if (!requestedOffice) {
     throw new HttpError({
@@ -64,6 +57,13 @@ export const createBooking = async (
       httpMessage: 'Office not found',
     });
   }
+
+  // Id date as a direct string
+  const id = requestedOffice.id + '_' + request.date.replace(/-/gi, '');
+  const newBooking = {
+    ...request,
+    id,
+  };
 
   const userEmail = request.user.toLocaleLowerCase();
   const startOfWeek = dateStartOfWeek(request.date);
