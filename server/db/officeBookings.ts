@@ -81,20 +81,20 @@ export const incrementOfficeBookingCount = async (
     new MathematicalExpression(new AttributePath('bookingCount'), '+', 1)
   );
 
+  let parkingQuotaValue;
+
   if (bookParking) {
     updateExpression.set(
       'parkingBookingCount',
       new MathematicalExpression(new AttributePath('parkingBookingCount'), '+', 1)
     );
+    parkingQuotaValue = attributes.addValue(office.parkingQuota);
   }
 
   const quotaValue = attributes.addValue(office.quota);
-  const parkingQuotaValue = attributes.addValue(office.parkingQuota);
   const client = new DynamoDB(config.dynamoDB);
   try {
-    const checkParkingQuota = includesParking
-      ? `AND parkingBookingCount < ${parkingQuotaValue}`
-      : '';
+    const checkParkingQuota = bookParking ? `AND parkingBookingCount < ${parkingQuotaValue}` : '';
     await client
       .updateItem({
         Key: { name: { S: office.name }, date: { S: date } },
