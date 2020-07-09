@@ -11,11 +11,13 @@ export const officeQuotas: OfficeQuota[] = [
     id: 'office-a',
     name: 'Office A',
     quota: 100,
+    parkingQuota: 50,
   },
   {
     id: 'office-b',
     name: 'Office B',
     quota: 200,
+    parkingQuota: 0,
   },
 ];
 
