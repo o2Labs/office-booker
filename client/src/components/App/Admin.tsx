@@ -29,6 +29,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Toolbar,
+  Typography,
+  Tooltip,
+  IconButton,
 } from '@material-ui/core';
 import { isToday, isPast, endOfDay } from 'date-fns';
 import { OurButton, SubButton } from '../../styles/MaterialComponents';
@@ -53,13 +57,21 @@ const Admin: React.FC<RouteComponentProps> = () => {
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Effects
+
   useEffect(() => {
     if (user && !user.permissions.canViewAdminPanel) {
       setTimeout(() => {
         // Bounce to home page
         navigate('/');
       }, 3000);
-    } else if (user && selectedOffice) {
+    } else if (user) {
+      const firstOffice = user.permissions.officesCanManageBookingsFor[0];
+      setSelectedOffice(firstOffice);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (selectedOffice) {
       setLoading(true);
       // Retrieve bookings
       getBookings({ office: selectedOffice })
@@ -76,7 +88,7 @@ const Admin: React.FC<RouteComponentProps> = () => {
           });
         });
     }
-  }, [dispatch, selectedOffice, user]);
+  }, [dispatch, selectedOffice]);
 
   useEffect(() => {
     setFilteredBookings(
@@ -172,27 +184,7 @@ const Admin: React.FC<RouteComponentProps> = () => {
             <AdminHeader currentRoute={'home'} />
             <BookingStyles>
               <Paper>
-                <h3>Office</h3>
                 <section className="select-container">
-                  <FormControl variant="outlined">
-                    <InputLabel id="demo-simple-select-outlined-label">Select Office</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
-                      value={selectedOffice}
-                      onChange={handleOfficeChange}
-                      label="Office"
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {user.permissions.officesCanManageBookingsFor.map((office, index) => (
-                        <MenuItem value={office} key={index}>
-                          {office}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
                   <OurButton
                     type="submit"
                     variant="contained"
@@ -203,7 +195,6 @@ const Admin: React.FC<RouteComponentProps> = () => {
                   </OurButton>
                 </section>
 
-                <h3>Booked Users</h3>
                 <section className="listing-container">
                   {selectedOffice && filteredBookings ? (
                     <>
@@ -217,7 +208,31 @@ const Admin: React.FC<RouteComponentProps> = () => {
                           {showToday ? 'Show All' : 'Show Only Today'}
                         </SubButton>
                       </div>
-
+                      <Toolbar>
+                        <Typography variant="h6" id="tableTitle" component="div">
+                          Bookings
+                        </Typography>
+                        <div className="filters">
+                          <FormControl>
+                            <InputLabel id="demo-simple-select-outlined-label">
+                              Select Office
+                            </InputLabel>
+                            <Select
+                              labelId="demo-simple-select-outlined-label"
+                              id="demo-simple-select-outlined"
+                              value={selectedOffice}
+                              onChange={handleOfficeChange}
+                              label="Office"
+                            >
+                              {user.permissions.officesCanManageBookingsFor.map((office, index) => (
+                                <MenuItem value={office} key={index}>
+                                  {office}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        </div>
+                      </Toolbar>
                       <TableContainer component={Paper}>
                         <Table>
                           <TableHead>

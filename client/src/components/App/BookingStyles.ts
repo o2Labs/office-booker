@@ -37,5 +37,13 @@ export default styled.div`
     .btn-container {
       text-align: right;
     }
+
+    .MuiToolbar-root {
+      display: flex;
+      justify-content: space-between;
+
+      .filters {
+      }
+    }
   }
 `;
