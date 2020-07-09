@@ -18,9 +18,9 @@ export class BookingsModel {
   id!: string;
   @hashKey()
   user!: string;
-  @attribute()
+  @attribute({ indexKeyConfigurations: { 'office-date-bookings': 'RANGE' } })
   date!: string;
-  @attribute()
+  @attribute({ indexKeyConfigurations: { 'office-date-bookings': 'HASH' } })
   office!: string;
   @attribute({
     defaultProvider: () => addDays(new Date(), 30).getTime(),
@@ -45,6 +45,24 @@ export const getUserBookings = async (
   const mapper = buildMapper(config);
   const rows: BookingsModel[] = [];
   for await (const item of mapper.query(BookingsModel, { user: userEmail }, { limit: 50 })) {
+    rows.push(item);
+  }
+  return rows;
+};
+
+export const queryBookings = async (
+  config: Config,
+  query: { office: string; date?: string }
+): Promise<BookingsModel[]> => {
+  const mapper = buildMapper(config);
+  const rows: BookingsModel[] = [];
+  const mapperQuery: Partial<BookingsModel> = { office: query.office };
+  if (query.date !== undefined) {
+    mapperQuery.date = query.date;
+  }
+  for await (const item of mapper.query(BookingsModel, mapperQuery, {
+    indexName: 'office-date-bookings',
+  })) {
     rows.push(item);
   }
   return rows;

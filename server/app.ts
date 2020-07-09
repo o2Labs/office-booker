@@ -13,6 +13,7 @@ import { getOffices } from './getOffices';
 import { deleteBooking } from './bookings/deleteBooking';
 import { errorResponse, HttpError, Forbidden, NotFound } from './errors';
 import { queryBookings } from './bookings/queryBookings';
+import { parse } from 'date-fns';
 
 export const configureApp = (config: Config) => {
   const getAuthUser = (res: Response) => getUser(config, getAuthUserEmail(res));
@@ -165,7 +166,22 @@ export const configureApp = (config: Config) => {
         return { office: officeQuery };
       };
 
-      const parsedQuery = { ...parseEmail(), ...parseOffice() };
+      const parseDate = (): { date?: string } => {
+        const date = req.query.date as unknown;
+        if (typeof date === 'undefined') {
+          return {};
+        }
+        if (typeof date !== 'string') {
+          throw new HttpError({ httpMessage: 'Invalid date type', status: 400 });
+        }
+        const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+        if (Number.isNaN(parsedDate.getTime())) {
+          throw new HttpError({ httpMessage: 'Invalid date', status: 400 });
+        }
+        return { date };
+      };
+
+      const parsedQuery = { ...parseEmail(), ...parseOffice(), ...parseDate() };
 
       const authUser = await getAuthUser(res);
 

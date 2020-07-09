@@ -1,11 +1,7 @@
-import { DynamoDB } from 'aws-sdk/clients/all';
-import { DataMapper } from '@aws/dynamodb-data-mapper';
-import { BookingsModel } from '../db/bookings';
-import { UserBookingsModel } from '../db/userBookings';
-import { OfficeBookingModel } from '../db/officeBookings';
 import request, { Response } from 'supertest';
 import { configureApp } from '../app';
 import { Config, OfficeQuota } from '../app-config';
+import { createLocalTables } from '../scripts/create-dynamo-tables';
 
 export const normalUserEmail = 'normal.user@office-booker.test';
 export const adminUserEmail = 'office-booker-admin-test@office-booker.test';
@@ -50,29 +46,13 @@ export const server = () => {
 };
 
 export const resetDb = async () => {
-  const dynamo = new DynamoDB({
-    region: 'eu-west-1',
-    endpoint: 'http://localhost:8000',
-  });
-
-  const mapper = new DataMapper({
-    client: dynamo,
-  });
-  await mapper.ensureTableNotExists(OfficeBookingModel);
-  await mapper.ensureTableNotExists(UserBookingsModel);
-  await mapper.ensureTableNotExists(BookingsModel);
-  await mapper.ensureTableExists(OfficeBookingModel, {
-    readCapacityUnits: 1,
-    writeCapacityUnits: 1,
-  });
-  await mapper.ensureTableExists(UserBookingsModel, {
-    readCapacityUnits: 1,
-    writeCapacityUnits: 1,
-  });
-  await mapper.ensureTableExists(BookingsModel, {
-    readCapacityUnits: 1,
-    writeCapacityUnits: 1,
-  });
+  await createLocalTables(
+    { deleteTablesFirst: true },
+    {
+      region: 'eu-west-1',
+      endpoint: 'http://localhost:8000',
+    }
+  );
 };
 
 export const expectUnauthorised = (response: Response) => {

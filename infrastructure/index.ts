@@ -234,10 +234,26 @@ const bookingsTable = new aws.dynamodb.Table('bookings-table', {
       name: 'user',
       type: 'S',
     },
+    {
+      name: 'office',
+      type: 'S',
+    },
+    {
+      name: 'date',
+      type: 'S',
+    },
   ],
   hashKey: 'user',
   rangeKey: 'id',
   billingMode: 'PAY_PER_REQUEST',
+  globalSecondaryIndexes: [
+    {
+      name: 'office-date-bookings',
+      hashKey: 'office',
+      rangeKey: 'date',
+      projectionType: 'ALL',
+    },
+  ],
   pointInTimeRecovery: {
     enabled: false,
   },
