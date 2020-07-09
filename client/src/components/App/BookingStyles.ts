@@ -35,8 +35,7 @@ export default styled.div`
     overflow: scroll;
 
     .btn-container {
-      display: flex;
-      flex-direction: row-reverse;
+      text-align: right;
     }
   }
 `;
