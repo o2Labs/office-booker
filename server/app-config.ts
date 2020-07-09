@@ -16,7 +16,7 @@ type CognitoAuthConfig = {
   region: string;
 };
 
-type OfficeQuotaConfig = { id?: string; name: string; quota: number };
+type OfficeQuotaConfig = { id?: string; name: string; quota: number; parkingQuota: number };
 export type OfficeQuota = Required<OfficeQuotaConfig>;
 
 const isOfficeQuotaConfigs = (input: any): input is OfficeQuotaConfig[] =>
@@ -27,7 +27,8 @@ const isOfficeQuotaConfigs = (input: any): input is OfficeQuotaConfig[] =>
       o !== null &&
       typeof o.name === 'string' &&
       typeof o.quota === 'number' &&
-      (typeof o.id === 'undefined' || typeof o.id === 'string')
+      (typeof o.id === 'undefined' || typeof o.id === 'string') &&
+      typeof o.parkingQuota === 'number'
   );
 
 export type AppAuthConfig = CognitoAuthConfig | TestAuthConfig;

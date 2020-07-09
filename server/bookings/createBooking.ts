@@ -72,7 +72,8 @@ export const createBooking = async (
   const officeBookedSuccessfully = await incrementOfficeBookingCount(
     config,
     requestedOffice,
-    request.date
+    request.date,
+    request.bookParking
   );
 
   if (!officeBookedSuccessfully) {
