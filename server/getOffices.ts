@@ -26,6 +26,7 @@ export const getOffices = async (config: Config) => {
   const combined = config.officeQuotas.map((office) => ({
     name: office.name,
     quota: office.quota,
+    parkingQuota: office.parkingQuota,
     slots: availableDates.map((date) => ({
       date,
       booked: indexedBookings.get(office.name + date) || 0,
