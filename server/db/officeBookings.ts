@@ -92,6 +92,9 @@ export const incrementOfficeBookingCount = async (
   const parkingQuotaValue = attributes.addValue(office.parkingQuota);
   const client = new DynamoDB(config.dynamoDB);
   try {
+    const checkParkingQuota = includesParking
+      ? `AND parkingBookingCount < ${parkingQuotaValue}`
+      : '';
     await client
       .updateItem({
         Key: { name: { S: office.name }, date: { S: date } },
@@ -99,7 +102,7 @@ export const incrementOfficeBookingCount = async (
         UpdateExpression: updateExpression.serialize(attributes),
         ExpressionAttributeNames: attributes.names,
         ExpressionAttributeValues: attributes.values,
-        ConditionExpression: `bookingCount < ${quotaValue} AND parkingBookingCount < ${parkingQuotaValue}`,
+        ConditionExpression: `bookingCount < ${quotaValue} ${checkParkingQuota}`,
       })
       .promise();
   } catch (err) {
