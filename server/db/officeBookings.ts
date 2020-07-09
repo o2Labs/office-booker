@@ -17,7 +17,7 @@ export interface OfficeBooking {
   name: string;
   date: string;
   bookingCount: number;
-  parkingBookingCount: number;
+  parkingCount: number;
 }
 
 @table('office-bookings')
@@ -29,7 +29,7 @@ export class OfficeBookingModel {
   @attribute()
   bookingCount!: number;
   @attribute()
-  parkingBookingCount!: number;
+  parkingCount!: number;
   @attribute({
     defaultProvider: () => addDays(new Date(), 365).getTime(),
   })
@@ -46,7 +46,7 @@ export const incrementOfficeBookingCount = async (
   config: Config,
   office: OfficeQuota,
   date: string,
-  bookParking: boolean
+  includeParking: boolean
 ) => {
   const mapper = buildMapper(config);
 
@@ -56,7 +56,7 @@ export const incrementOfficeBookingCount = async (
         name: office.name,
         date,
         bookingCount: 0,
-        parkingBookingCount: 0,
+        parkingCount: 0,
       }),
       {
         condition: {
@@ -83,10 +83,10 @@ export const incrementOfficeBookingCount = async (
 
   let parkingQuotaValue;
 
-  if (bookParking) {
+  if (includeParking) {
     updateExpression.set(
-      'parkingBookingCount',
-      new MathematicalExpression(new AttributePath('parkingBookingCount'), '+', 1)
+      'parkingCount',
+      new MathematicalExpression(new AttributePath('parkingCount'), '+', 1)
     );
     parkingQuotaValue = attributes.addValue(office.parkingQuota);
   }
@@ -94,7 +94,7 @@ export const incrementOfficeBookingCount = async (
   const quotaValue = attributes.addValue(office.quota);
   const client = new DynamoDB(config.dynamoDB);
   try {
-    const checkParkingQuota = bookParking ? `AND parkingBookingCount < ${parkingQuotaValue}` : '';
+    const checkParkingQuota = includeParking ? `AND parkingCount < ${parkingQuotaValue}` : '';
     await client
       .updateItem({
         Key: { name: { S: office.name }, date: { S: date } },
@@ -120,7 +120,7 @@ export const decrementOfficeBookingCount = async (
   config: Config,
   officeName: string,
   date: string,
-  includesParking: boolean
+  includeParking: boolean
 ) => {
   const attributes = new ExpressionAttributes();
   const updateExpression = new UpdateExpression();
@@ -128,10 +128,10 @@ export const decrementOfficeBookingCount = async (
     'bookingCount',
     new MathematicalExpression(new AttributePath('bookingCount'), '-', 1)
   );
-  if (includesParking) {
+  if (includeParking) {
     updateExpression.set(
-      'parkingBookingCount',
-      new MathematicalExpression(new AttributePath('parkingBookingCount'), '-', 1)
+      'parkingCount',
+      new MathematicalExpression(new AttributePath('parkingCount'), '-', 1)
     );
   }
 

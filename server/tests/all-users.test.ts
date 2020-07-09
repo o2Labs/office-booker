@@ -43,7 +43,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
         user: email,
         office: officeQuotas[0].name,
         date: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
-        includesParking: true,
+        parking: true,
       };
       const createResponse = await app
         .post('/api/bookings')
@@ -57,7 +57,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
         'date',
         'office',
         'lastCancellation',
-        'includesParking',
+        'parking',
       ]);
       expect(typeof createResponse.body?.id).toBe('string');
       expect(createResponse.body).toMatchObject(createBookingBody);

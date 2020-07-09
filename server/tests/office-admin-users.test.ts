@@ -76,7 +76,7 @@ test('can create and delete bookings for other people for their office', async (
     user: otherUser,
     office: officeName,
     date: format(new Date(), 'yyyy-MM-dd'),
-    includesParking: false,
+    parking: false,
   };
   const createResponse = await app
     .post('/api/bookings')
@@ -90,7 +90,7 @@ test('can create and delete bookings for other people for their office', async (
     'date',
     'office',
     'lastCancellation',
-    'includesParking',
+    'parking',
   ]);
   expect(typeof createResponse.body?.id).toBe('string');
   expect(createResponse.body).toMatchObject(createBookingBody);
@@ -116,7 +116,7 @@ test(`can't create and delete bookings for other people for other offices`, asyn
     user: otherUser,
     office: officeQuotas[1].name,
     date: format(new Date(), 'yyyy-MM-dd'),
-    includesParking: false,
+    parking: false,
   };
   const createResponse = await app
     .post('/api/bookings')
