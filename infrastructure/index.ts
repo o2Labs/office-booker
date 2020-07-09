@@ -327,6 +327,7 @@ new aws.iam.RolePolicy('lambda-iam-policy', {
           officeBookingsTable.arn,
           bookingsTable.arn,
           userTable.arn,
+          bookingsTable.arn.apply((tableArn) => `${tableArn}/index/office-date-bookings`),
         ],
       },
     ],
