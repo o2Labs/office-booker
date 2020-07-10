@@ -95,7 +95,12 @@ export const createBooking = async (
 
   if (!userBookedSuccessfully) {
     audit('2.1:DecrementingOfficeBookingCount');
-    await decrementOfficeBookingCount(config, requestedOffice.name, request.date);
+    await decrementOfficeBookingCount(
+      config,
+      requestedOffice.name,
+      request.date,
+      request.includesParking
+    );
     throw new HttpError({
       internalMessage: `User quota of ${dbUser.quota} has exceeded for ${userEmail} on date: ${request.date}`,
       status: 409,
@@ -111,7 +116,12 @@ export const createBooking = async (
       audit('3.1:DecremetingUserBookingCount');
       await decrementUserBookingCount(config, newBooking.user, startOfWeek);
       audit('3.1:DecremetingOfficeBookingCount');
-      await decrementOfficeBookingCount(config, requestedOffice.name, request.date);
+      await decrementOfficeBookingCount(
+        config,
+        requestedOffice.name,
+        request.date,
+        request.includesParking
+      );
       throw new HttpError({
         internalMessage: `Duplicate booking found for ${userEmail} on date: ${request.date}`,
         status: 409,

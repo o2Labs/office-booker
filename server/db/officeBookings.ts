@@ -119,7 +119,8 @@ export const incrementOfficeBookingCount = async (
 export const decrementOfficeBookingCount = async (
   config: Config,
   officeName: string,
-  date: string
+  date: string,
+  includesParking: boolean
 ) => {
   const attributes = new ExpressionAttributes();
   const updateExpression = new UpdateExpression();
@@ -127,10 +128,12 @@ export const decrementOfficeBookingCount = async (
     'bookingCount',
     new MathematicalExpression(new AttributePath('bookingCount'), '-', 1)
   );
-  updateExpression.set(
-    'parkingBookingCount',
-    new MathematicalExpression(new AttributePath('parkingBookingCount'), '-', 1)
-  );
+  if (includesParking) {
+    updateExpression.set(
+      'parkingBookingCount',
+      new MathematicalExpression(new AttributePath('parkingBookingCount'), '-', 1)
+    );
+  }
 
   const client = new DynamoDB(config.dynamoDB);
   await client

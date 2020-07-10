@@ -61,7 +61,12 @@ export const deleteBooking = async (
 
   try {
     audit('2:DecrementingOfficeBookingCount');
-    await decrementOfficeBookingCount(config, booking.office, booking.date);
+    await decrementOfficeBookingCount(
+      config,
+      booking.office,
+      booking.date,
+      booking.includesParking
+    );
     audit('3:DecrementingUserBookingCount');
     await decrementUserBookingCount(config, booking.user, startOfWeek);
   } catch (err) {
