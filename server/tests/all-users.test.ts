@@ -31,6 +31,8 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
       const response = await app.get(`/api/offices`).set('bearer', email);
       expect(response.ok).toBe(true);
       expect(response.body).toHaveLength(officeQuotas.length);
+      expect(Object.keys(response.body[0])).toEqual(['name', 'quota', 'parkingQuota', 'slots']);
+      expect(Object.keys(response.body[0].slots[0])).toEqual(['date', 'booked', 'bookedParking']);
     });
 
     test('can get own bookings', async () => {
@@ -43,6 +45,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
         user: email,
         office: officeQuotas[0].name,
         date: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
+        parking: true,
       };
       const createResponse = await app
         .post('/api/bookings')
@@ -56,6 +59,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
         'date',
         'office',
         'lastCancellation',
+        'parking',
       ]);
       expect(typeof createResponse.body?.id).toBe('string');
       expect(createResponse.body).toMatchObject(createBookingBody);

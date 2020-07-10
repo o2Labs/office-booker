@@ -48,6 +48,7 @@ test('can create and delete bookings for other people', async () => {
     user: otherUser,
     office: officeQuotas[0].name,
     date: format(new Date(), 'yyyy-MM-dd'),
+    parking: false,
   };
   const createResponse = await app
     .post('/api/bookings')
@@ -61,6 +62,7 @@ test('can create and delete bookings for other people', async () => {
     'date',
     'office',
     'lastCancellation',
+    'parking',
   ]);
   expect(typeof createResponse.body?.id).toBe('string');
   expect(createResponse.body).toMatchObject(createBookingBody);

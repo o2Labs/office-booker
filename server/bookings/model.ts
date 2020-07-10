@@ -5,10 +5,14 @@ export type CreateBooking = {
   user: string;
   date: string;
   office: string;
+  parking?: boolean;
 };
 
 export const isCreateBooking = (arg: any): arg is CreateBooking =>
-  typeof arg.user === 'string' && typeof arg.date === 'string' && typeof arg.office === 'string';
+  typeof arg.user === 'string' &&
+  typeof arg.date === 'string' &&
+  typeof arg.office === 'string' &&
+  (typeof arg.parking === 'undefined' || typeof arg.parking === 'boolean');
 
 export type Booking = {
   id: string;
@@ -17,6 +21,7 @@ export type Booking = {
   date: string;
   office: string;
   lastCancellation: string;
+  parking: boolean;
 };
 
 const lastCancelTime = '00:00:00';
@@ -31,6 +36,7 @@ export const mapBooking = (booking: DbBooking): Booking => ({
   date: booking.date,
   office: booking.office,
   lastCancellation: getBookingLastCancelTime(booking.date),
+  parking: booking.parking,
 });
 
 export const mapBookings = (bookings: DbBooking[]): Booking[] => bookings.map(mapBooking);

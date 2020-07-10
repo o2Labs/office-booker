@@ -10,6 +10,7 @@ export interface CreateBookingModel {
   user: string;
   date: string;
   office: string;
+  parking: boolean;
 }
 
 @table('bookings')
@@ -22,6 +23,8 @@ export class BookingsModel {
   date!: string;
   @attribute({ indexKeyConfigurations: { 'office-date-bookings': 'HASH' } })
   office!: string;
+  @attribute()
+  parking!: boolean;
   @attribute({
     defaultProvider: () => addDays(new Date(), 30).getTime(),
   })

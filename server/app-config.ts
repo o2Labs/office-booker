@@ -16,7 +16,7 @@ type CognitoAuthConfig = {
   region: string;
 };
 
-type OfficeQuotaConfig = { id?: string; name: string; quota: number };
+type OfficeQuotaConfig = { id?: string; name: string; quota: number; parkingQuota?: number };
 export type OfficeQuota = Required<OfficeQuotaConfig>;
 
 const isOfficeQuotaConfigs = (input: any): input is OfficeQuotaConfig[] =>
@@ -27,7 +27,8 @@ const isOfficeQuotaConfigs = (input: any): input is OfficeQuotaConfig[] =>
       o !== null &&
       typeof o.name === 'string' &&
       typeof o.quota === 'number' &&
-      (typeof o.id === 'undefined' || typeof o.id === 'string')
+      (typeof o.id === 'undefined' || typeof o.id === 'string') &&
+      (typeof o.parkingQuota === 'undefined' || typeof o.parkingQuota === 'number')
   );
 
 export type AppAuthConfig = CognitoAuthConfig | TestAuthConfig;
@@ -52,7 +53,11 @@ const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
   if (!isOfficeQuotaConfigs(officeQuotaConfigs)) {
     throw new Error('Invalid office quotas in OFFICE_QUOTAS');
   }
-  const officeQuotas = officeQuotaConfigs.map((o) => ({ ...o, id: o.id ?? getOfficeId(o.name) }));
+  const officeQuotas = officeQuotaConfigs.map((o) => ({
+    ...o,
+    id: o.id ?? getOfficeId(o.name),
+    parkingQuota: o.parkingQuota ?? 0,
+  }));
   const invalidIds = officeQuotas.map((o) => o.id).filter((id) => !isValidOfficeId(id));
   if (invalidIds.length > 0) {
     throw new Error(`Invalid office ids: ${invalidIds.join(' ')}`);

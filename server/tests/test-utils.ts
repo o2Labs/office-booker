@@ -11,16 +11,19 @@ export const officeQuotas: OfficeQuota[] = [
     id: 'office-a',
     name: 'Office A',
     quota: 100,
+    parkingQuota: 50,
   },
   {
     id: 'office-b',
     name: 'Office B',
     quota: 200,
+    parkingQuota: 0,
   },
 ];
 
 export const getConfig = (): Config => {
   return {
+    dynamoDBTablePrefix: 'test.',
     authConfig: {
       type: 'test',
       validate: (req) => {
@@ -48,12 +51,10 @@ export const server = () => {
 };
 
 export const resetDb = async () => {
+  const config = getConfig();
   await createLocalTables(
-    { deleteTablesFirst: true },
-    {
-      region: 'eu-west-1',
-      endpoint: 'http://localhost:8000',
-    }
+    { deleteTablesFirst: true, tableNamePrefix: config.dynamoDBTablePrefix },
+    config.dynamoDB
   );
 };
 

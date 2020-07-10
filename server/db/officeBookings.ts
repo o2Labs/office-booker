@@ -17,6 +17,7 @@ export interface OfficeBooking {
   name: string;
   date: string;
   bookingCount: number;
+  parkingCount: number;
 }
 
 @table('office-bookings')
@@ -27,6 +28,8 @@ export class OfficeBookingModel {
   date!: string;
   @attribute()
   bookingCount!: number;
+  @attribute()
+  parkingCount!: number;
   @attribute({
     defaultProvider: () => addDays(new Date(), 365).getTime(),
   })
@@ -42,7 +45,8 @@ const buildMapper = (config: Config) =>
 export const incrementOfficeBookingCount = async (
   config: Config,
   office: OfficeQuota,
-  date: string
+  date: string,
+  includeParking: boolean
 ) => {
   const mapper = buildMapper(config);
 
@@ -52,6 +56,7 @@ export const incrementOfficeBookingCount = async (
         name: office.name,
         date,
         bookingCount: 0,
+        parkingCount: 0,
       }),
       {
         condition: {
@@ -76,9 +81,20 @@ export const incrementOfficeBookingCount = async (
     new MathematicalExpression(new AttributePath('bookingCount'), '+', 1)
   );
 
+  let parkingQuotaValue;
+
+  if (includeParking) {
+    updateExpression.set(
+      'parkingCount',
+      new MathematicalExpression(new AttributePath('parkingCount'), '+', 1)
+    );
+    parkingQuotaValue = attributes.addValue(office.parkingQuota);
+  }
+
   const quotaValue = attributes.addValue(office.quota);
   const client = new DynamoDB(config.dynamoDB);
   try {
+    const checkParkingQuota = includeParking ? `AND parkingCount < ${parkingQuotaValue}` : '';
     await client
       .updateItem({
         Key: { name: { S: office.name }, date: { S: date } },
@@ -86,7 +102,7 @@ export const incrementOfficeBookingCount = async (
         UpdateExpression: updateExpression.serialize(attributes),
         ExpressionAttributeNames: attributes.names,
         ExpressionAttributeValues: attributes.values,
-        ConditionExpression: `bookingCount < ${quotaValue}`,
+        ConditionExpression: `bookingCount < ${quotaValue} ${checkParkingQuota}`,
       })
       .promise();
   } catch (err) {
@@ -103,7 +119,8 @@ export const incrementOfficeBookingCount = async (
 export const decrementOfficeBookingCount = async (
   config: Config,
   officeName: string,
-  date: string
+  date: string,
+  includeParking: boolean
 ) => {
   const attributes = new ExpressionAttributes();
   const updateExpression = new UpdateExpression();
@@ -111,6 +128,12 @@ export const decrementOfficeBookingCount = async (
     'bookingCount',
     new MathematicalExpression(new AttributePath('bookingCount'), '-', 1)
   );
+  if (includeParking) {
+    updateExpression.set(
+      'parkingCount',
+      new MathematicalExpression(new AttributePath('parkingCount'), '-', 1)
+    );
+  }
 
   const client = new DynamoDB(config.dynamoDB);
   await client

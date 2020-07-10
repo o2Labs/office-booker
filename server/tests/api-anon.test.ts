@@ -1,7 +1,9 @@
 import { format } from 'date-fns';
-import { server, expectUnauthorised, normalUserEmail, officeQuotas } from './test-utils';
+import { server, expectUnauthorised, normalUserEmail, officeQuotas, resetDb } from './test-utils';
 
 const app = server();
+
+beforeAll(resetDb);
 
 test('get user', async () => {
   const response = await app.get(`/api/users/${normalUserEmail}`);

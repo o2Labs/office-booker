@@ -1,8 +1,17 @@
 import { format } from 'date-fns';
 import { encode } from 'querystring';
-import { server, normalUserEmail, otherUser, expectForbidden, officeQuotas } from './test-utils';
+import {
+  server,
+  normalUserEmail,
+  otherUser,
+  expectForbidden,
+  officeQuotas,
+  resetDb,
+} from './test-utils';
 
 const app = server();
+
+beforeAll(resetDb);
 
 const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,
@@ -46,6 +55,7 @@ describe.each(Object.keys(userTypes))('Non-admin user actions', (userType) => {
           user: otherUser,
           office: officeQuotas[0].name,
           date: format(new Date(), 'yyyy-MM-dd'),
+          parking: false,
         })
         .set('bearer', email);
       expectForbidden(response);

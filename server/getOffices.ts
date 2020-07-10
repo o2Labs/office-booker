@@ -18,18 +18,20 @@ export const getOffices = async (config: Config) => {
     config.officeQuotas.map((office) => office.name)
   );
   const indexedBookings = new Map(
-    officeBookings.map((officeBooking) => [
-      officeBooking.name + officeBooking.date,
-      officeBooking.bookingCount,
-    ])
+    officeBookings.map((officeBooking) => [officeBooking.name + officeBooking.date, officeBooking])
   );
   const combined = config.officeQuotas.map((office) => ({
     name: office.name,
     quota: office.quota,
-    slots: availableDates.map((date) => ({
-      date,
-      booked: indexedBookings.get(office.name + date) || 0,
-    })),
+    parkingQuota: office.parkingQuota,
+    slots: availableDates.map((date) => {
+      const booking = indexedBookings.get(office.name + date);
+      return {
+        date,
+        booked: booking?.bookingCount ?? 0,
+        bookedParking: booking?.parkingCount ?? 0,
+      };
+    }),
   }));
   return combined;
 };
