@@ -23,6 +23,7 @@ export const officeQuotas: OfficeQuota[] = [
 
 export const getConfig = (): Config => {
   return {
+    dynamoDBTablePrefix: 'test.',
     authConfig: {
       type: 'test',
       validate: (req) => {
@@ -50,12 +51,10 @@ export const server = () => {
 };
 
 export const resetDb = async () => {
+  const config = getConfig();
   await createLocalTables(
-    { deleteTablesFirst: true },
-    {
-      region: 'eu-west-1',
-      endpoint: 'http://localhost:8000',
-    }
+    { deleteTablesFirst: true, tableNamePrefix: config.dynamoDBTablePrefix },
+    config.dynamoDB
   );
 };
 

@@ -6,11 +6,11 @@ import { BookingsModel } from '../db/bookings';
 import { UserModel } from '../db/users';
 
 export const createLocalTables = async (
-  options: { deleteTablesFirst?: boolean },
+  options: { tableNamePrefix?: string; deleteTablesFirst?: boolean },
   config?: DynamoDB.ClientConfiguration
 ) => {
   const dynamo = new DynamoDB(config);
-  const mapper = new DataMapper({ client: dynamo });
+  const mapper = new DataMapper({ client: dynamo, tableNamePrefix: options.tableNamePrefix });
   if (options.deleteTablesFirst) {
     await mapper.ensureTableNotExists(OfficeBookingModel);
     await mapper.ensureTableNotExists(UserBookingsModel);

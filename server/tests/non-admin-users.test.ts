@@ -1,8 +1,17 @@
 import { format } from 'date-fns';
 import { encode } from 'querystring';
-import { server, normalUserEmail, otherUser, expectForbidden, officeQuotas } from './test-utils';
+import {
+  server,
+  normalUserEmail,
+  otherUser,
+  expectForbidden,
+  officeQuotas,
+  resetDb,
+} from './test-utils';
 
 const app = server();
+
+beforeAll(resetDb);
 
 const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,
