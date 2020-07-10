@@ -31,6 +31,8 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
       const response = await app.get(`/api/offices`).set('bearer', email);
       expect(response.ok).toBe(true);
       expect(response.body).toHaveLength(officeQuotas.length);
+      expect(Object.keys(response.body[0])).toEqual(['name', 'quota', 'parkingQuota', 'slots']);
+      expect(Object.keys(response.body[0].slots[0])).toEqual(['date', 'booked', 'bookedParking']);
     });
 
     test('can get own bookings', async () => {
