@@ -27,9 +27,7 @@ export class UserBookingsModel {
   weekCommencing!: string;
   @attribute()
   bookingCount!: number;
-  @attribute({
-    defaultProvider: () => addDays(new Date(), 30).getTime(),
-  })
+  @attribute()
   ttl!: number;
 }
 
@@ -71,6 +69,7 @@ export const incrementUserBookingCount = async (
         email: userEmail,
         weekCommencing,
         bookingCount: 0,
+        ttl: addDays(new Date(weekCommencing), config.dataRetentionDays + 7).getTime(),
       }),
       {
         condition: {

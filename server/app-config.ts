@@ -46,6 +46,7 @@ export type Config = {
   caseSensitiveEmail?: boolean;
   defaultWeeklyQuota: number;
   advanceBookingDays: number;
+  dataRetentionDays: number;
 };
 
 const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
@@ -82,6 +83,7 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     OFFICE_QUOTAS,
     DEFAULT_WEEKLY_QUOTA,
     ADVANCE_BOOKING_DAYS,
+    DATA_RETENTION_DAYS,
   } = env;
 
   if (
@@ -90,10 +92,11 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     typeof SYSTEM_ADMIN_EMAILS !== 'string' ||
     typeof OFFICE_QUOTAS !== 'string' ||
     typeof DEFAULT_WEEKLY_QUOTA !== 'string' ||
-    typeof ADVANCE_BOOKING_DAYS !== 'string'
+    typeof ADVANCE_BOOKING_DAYS !== 'string' ||
+    typeof DATA_RETENTION_DAYS !== 'string'
   ) {
     throw new Error(
-      'Missing required env parameters: REGION, COGNITO_USER_POOL_ID, SYSTEM_ADMIN_EMAILS, OFFICE_QUOTAS, DEFAULT_WEEKLY_QUOTA'
+      'Missing required env parameters: REGION, COGNITO_USER_POOL_ID, SYSTEM_ADMIN_EMAILS, OFFICE_QUOTAS, DEFAULT_WEEKLY_QUOTA, DATA_RETENTION_DAYS'
     );
   }
   const systemAdminEmails = SYSTEM_ADMIN_EMAILS.split(';');
@@ -105,6 +108,8 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
   assert(defaultWeeklyQuota >= 0, `DEFAULT_WEEKLY_QUOTA must be >= 0`);
   const advanceBookingDays = Number.parseInt(ADVANCE_BOOKING_DAYS);
   assert(advanceBookingDays >= 0, `ADVANCE_BOOKING_DAYS must be >= 0`);
+  const dataRetentionDays = Number.parseInt(DATA_RETENTION_DAYS);
+  assert(dataRetentionDays >= 0, `DATA_RETENTION_DAYS must be >= 0`);
   return {
     dynamoDBTablePrefix: env.DYNAMODB_PREFIX,
     authConfig: {
@@ -121,5 +126,6 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     caseSensitiveEmail: env.CASE_SENSITIVE_EMAIL?.toLowerCase() === 'true',
     defaultWeeklyQuota,
     advanceBookingDays,
+    dataRetentionDays,
   };
 };

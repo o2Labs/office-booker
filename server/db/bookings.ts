@@ -25,9 +25,7 @@ export class BookingsModel {
   office!: string;
   @attribute()
   parking!: boolean;
-  @attribute({
-    defaultProvider: () => addDays(new Date(), 30).getTime(),
-  })
+  @attribute()
   ttl!: number;
   @attribute({
     defaultProvider: () => new Date().toISOString(),
@@ -86,9 +84,14 @@ export const createBooking = async (
 ): Promise<BookingsModel | undefined> => {
   const mapper = buildMapper(config);
   try {
-    const created = await mapper.put(Object.assign(new BookingsModel(), booking), {
-      condition: new FunctionExpression('attribute_not_exists', new AttributePath('id')),
-    });
+    const created = await mapper.put(
+      Object.assign(new BookingsModel(), booking, {
+        ttl: addDays(new Date(booking.date), config.dataRetentionDays).getTime(),
+      }),
+      {
+        condition: new FunctionExpression('attribute_not_exists', new AttributePath('id')),
+      }
+    );
     return created;
   } catch (err) {
     if (err.code === 'ConditionalCheckFailedException') {
