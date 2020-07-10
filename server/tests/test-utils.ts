@@ -8,10 +8,12 @@ export const adminUserEmail = 'office-booker-admin-test@office-booker.test';
 export const otherUser = 'other.user@office-booker.test';
 export const officeQuotas: OfficeQuota[] = [
   {
+    id: 'office-a',
     name: 'Office A',
     quota: 100,
   },
   {
+    id: 'office-b',
     name: 'Office B',
     quota: 200,
   },

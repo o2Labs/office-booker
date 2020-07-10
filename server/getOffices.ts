@@ -2,6 +2,14 @@ import { getOfficeBookings } from './db/officeBookings';
 import { getAvailableDates } from './availableDates';
 import { Config } from './app-config';
 
+export const getOfficeId = (officeName: string): string => {
+  const lowered = officeName.toLowerCase();
+  return lowered.replace(/[^a-z0-9]/gi, '');
+};
+
+const officeIdPattern = new RegExp('^[a-z0-9-]+$').compile();
+export const isValidOfficeId = (officeId: string): boolean => officeIdPattern.test(officeId);
+
 export const getOffices = async (config: Config) => {
   const availableDates = getAvailableDates(config);
   const officeBookings = await getOfficeBookings(

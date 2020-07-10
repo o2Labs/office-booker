@@ -2,6 +2,8 @@ import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { Request } from 'express';
 import { isValidEmail } from './users/model';
 import { assert } from 'console';
+import { getOfficeId, isValidOfficeId } from './getOffices';
+import { Arrays } from 'collection-fns';
 
 type TestAuthConfig = {
   type: 'test';
@@ -14,16 +16,18 @@ type CognitoAuthConfig = {
   region: string;
 };
 
-export type OfficeQuota = { name: string; quota: number };
+type OfficeQuotaConfig = { id?: string; name: string; quota: number };
+export type OfficeQuota = Required<OfficeQuotaConfig>;
 
-const isOfficeQuotas = (input: any): input is OfficeQuota[] =>
+const isOfficeQuotaConfigs = (input: any): input is OfficeQuotaConfig[] =>
   Array.isArray(input) &&
   input.every(
     (o) =>
       typeof o === 'object' &&
       o !== null &&
       typeof o.name === 'string' &&
-      typeof o.quota === 'number'
+      typeof o.quota === 'number' &&
+      (typeof o.id === 'undefined' || typeof o.id === 'string')
   );
 
 export type AppAuthConfig = CognitoAuthConfig | TestAuthConfig;
@@ -41,6 +45,27 @@ export type Config = {
   caseSensitiveEmail?: boolean;
   defaultWeeklyQuota: number;
   advanceBookingDays: number;
+};
+
+const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
+  const officeQuotaConfigs = JSON.parse(OFFICE_QUOTAS);
+  if (!isOfficeQuotaConfigs(officeQuotaConfigs)) {
+    throw new Error('Invalid office quotas in OFFICE_QUOTAS');
+  }
+  const officeQuotas = officeQuotaConfigs.map((o) => ({ ...o, id: o.id ?? getOfficeId(o.name) }));
+  const invalidIds = officeQuotas.map((o) => o.id).filter((id) => !isValidOfficeId(id));
+  if (invalidIds.length > 0) {
+    throw new Error(`Invalid office ids: ${invalidIds.join(' ')}`);
+  }
+  const duplicateOfficeIdentifiers = Arrays.groupBy(officeQuotas, (o) => o.id).filter(
+    ([key, offices]) => offices.length > 1
+  );
+  if (duplicateOfficeIdentifiers.length > 0) {
+    throw new Error(
+      `Duplicate office identifiers: ${duplicateOfficeIdentifiers.map(([id]) => id)}`
+    );
+  }
+  return officeQuotas;
 };
 
 export const parseConfigFromEnv = (env: typeof process.env): Config => {
@@ -70,10 +95,7 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
   if (!systemAdminEmails.every(isValidEmail)) {
     throw new Error('Invalid email addresses in SYSTEM_ADMIN_EMAILS');
   }
-  const officeQuotas = JSON.parse(OFFICE_QUOTAS);
-  if (!isOfficeQuotas(officeQuotas)) {
-    throw new Error('Invalid office quotas in OFFICE_QUOTAS');
-  }
+  const officeQuotaConfigs = parseOfficeQuotas(OFFICE_QUOTAS);
   const defaultWeeklyQuota = Number.parseInt(DEFAULT_WEEKLY_QUOTA);
   assert(defaultWeeklyQuota >= 0, `DEFAULT_WEEKLY_QUOTA must be >= 0`);
   const advanceBookingDays = Number.parseInt(ADVANCE_BOOKING_DAYS);
@@ -88,7 +110,7 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     env: env.ENV,
     selfTestKey: env.SELFTESTKEY,
     selfTestUser: env.SELFTESTUSER,
-    officeQuotas,
+    officeQuotas: officeQuotaConfigs,
     systemAdminEmails: systemAdminEmails,
     validEmailMatch: EMAIL_REGEX ? new RegExp(EMAIL_REGEX) : undefined,
     caseSensitiveEmail: env.CASE_SENSITIVE_EMAIL?.toLowerCase() === 'true',
