@@ -4,7 +4,7 @@
   "main": "local.ts",
   "scripts": {
     "start": "nodemon local.ts",
-    "test": "jest --runInBand --verbose"
+    "test": "jest --verbose"
   },
   "dependencies": {
     "@aws/dynamodb-data-mapper": "^0.7.3",

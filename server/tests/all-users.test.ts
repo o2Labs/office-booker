@@ -1,7 +1,7 @@
 import { format, addDays } from 'date-fns';
-import { server, resetDb, normalUserEmail, adminUserEmail, officeQuotas } from './test-utils';
+import { configureServer, normalUserEmail, adminUserEmail, officeQuotas } from './test-utils';
 
-const app = server();
+const { app, resetDb } = configureServer('all-users');
 
 beforeAll(resetDb);
 

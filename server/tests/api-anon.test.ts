@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
-import { server, expectUnauthorised, normalUserEmail, officeQuotas, resetDb } from './test-utils';
+import { configureServer, expectUnauthorised, normalUserEmail, officeQuotas } from './test-utils';
 
-const app = server();
+const { app, resetDb } = configureServer('anon-users');
 
 beforeAll(resetDb);
 
