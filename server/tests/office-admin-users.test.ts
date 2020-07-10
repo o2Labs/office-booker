@@ -1,10 +1,10 @@
 import { format } from 'date-fns';
-import { server, resetDb, otherUser, getConfig, expectForbidden } from './test-utils';
+import { configureServer, otherUser, expectForbidden } from './test-utils';
 import { encode } from 'querystring';
 import { setUser } from '../db/users';
 import { officeQuotas } from './test-utils';
 
-const app = server();
+const { app, resetDb, config } = configureServer('office-admin-users');
 
 const officeAdminEmail = 'office-a.admin@office-booker.test';
 
@@ -12,7 +12,11 @@ const officeName = officeQuotas[0].name;
 const officeNameEncoded = encodeURIComponent(officeName);
 beforeAll(async () => {
   await resetDb();
-  await setUser(getConfig(), { email: officeAdminEmail, adminOffices: [officeName], quota: 1 });
+  await setUser(config, {
+    email: officeAdminEmail,
+    adminOffices: [officeName],
+    quota: 1,
+  });
 });
 
 test(`can get self`, async () => {

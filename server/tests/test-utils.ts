@@ -21,9 +21,9 @@ export const officeQuotas: OfficeQuota[] = [
   },
 ];
 
-export const getConfig = (): Config => {
+export const getConfig = (dynamoDBTablePrefix?: string): Config => {
   return {
-    dynamoDBTablePrefix: 'test.',
+    dynamoDBTablePrefix: (dynamoDBTablePrefix ?? 'test') + '.',
     authConfig: {
       type: 'test',
       validate: (req) => {
@@ -46,16 +46,17 @@ export const getConfig = (): Config => {
   };
 };
 
-export const server = () => {
-  return request(configureApp(getConfig()));
-};
-
-export const resetDb = async () => {
-  const config = getConfig();
-  await createLocalTables(
-    { deleteTablesFirst: true, tableNamePrefix: config.dynamoDBTablePrefix },
-    config.dynamoDB
-  );
+export const configureServer = (dynamoDBTablePrefix?: string) => {
+  const config = getConfig(dynamoDBTablePrefix);
+  return {
+    app: request(configureApp(config)),
+    resetDb: () =>
+      createLocalTables(
+        { deleteTablesFirst: true, tableNamePrefix: config.dynamoDBTablePrefix },
+        config.dynamoDB
+      ),
+    config,
+  };
 };
 
 export const expectUnauthorised = (response: Response) => {
