@@ -43,6 +43,7 @@ export const getConfig = (): Config => {
     systemAdminEmails: [adminUserEmail],
     defaultWeeklyQuota: 1,
     advanceBookingDays: 14,
+    dataRetentionDays: 30,
   };
 };
 

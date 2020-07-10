@@ -30,9 +30,7 @@ export class OfficeBookingModel {
   bookingCount!: number;
   @attribute()
   parkingCount!: number;
-  @attribute({
-    defaultProvider: () => addDays(new Date(), 365).getTime(),
-  })
+  @attribute()
   ttl!: number;
 }
 
@@ -57,6 +55,7 @@ export const incrementOfficeBookingCount = async (
         date,
         bookingCount: 0,
         parkingCount: 0,
+        ttl: addDays(new Date(date), config.dataRetentionDays).getTime(),
       }),
       {
         condition: {
