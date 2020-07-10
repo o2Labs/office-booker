@@ -11,6 +11,8 @@ run_client(){
     yarn start
 }
 run_server(){
+    export AWS_ACCESS_KEY_ID=xxxxxxxxxxxxx
+    export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxx
     cd server
     npx ts-node scripts/init-dynamo-local.ts
     npx nodemon local.ts

@@ -29,9 +29,15 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Toolbar,
+  Typography,
+  TextField,
+  InputAdornment,
+  IconButton,
 } from '@material-ui/core';
-import { isToday, isPast } from 'date-fns';
-import { OurButton, SubButton } from '../../styles/MaterialComponents';
+import { isPast, endOfDay, format, addDays } from 'date-fns';
+import { OurButton } from '../../styles/MaterialComponents';
+import { AddCircle, KeyboardArrowRight, KeyboardArrowLeft } from '@material-ui/icons';
 import { Booking } from '../../types/api';
 import AdminHeader from './AdminHeader';
 import BookingStyles from './BookingStyles';
@@ -43,29 +49,36 @@ const Admin: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [allBookings, setAllBookings] = useState<Booking[] | undefined>(undefined);
-  const [filteredBookings, setFilteredBookings] = useState<Booking[] | undefined>(undefined);
   const [loading, setLoading] = useState(false);
-  const [showToday, setShowToday] = useState(false);
   const [selectedOffice, setSelectedOffice] = React.useState('');
   const [deleteDialog, setDeleteDialog] = useState<undefined | Booking>(undefined);
+  const [selectedDate, setSelectedDate] = React.useState<string>(format(new Date(), 'yyyy-MM-dd'));
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Effects
+
   useEffect(() => {
     if (user && !user.permissions.canViewAdminPanel) {
       setTimeout(() => {
         // Bounce to home page
         navigate('/');
       }, 3000);
-    } else if (user && selectedOffice) {
+    } else if (user) {
+      const firstOffice = user.permissions.officesCanManageBookingsFor[0];
+      setSelectedOffice(firstOffice);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (selectedOffice) {
       setLoading(true);
       // Retrieve bookings
-      getBookings({ office: selectedOffice })
+      getBookings({ office: selectedOffice, date: selectedDate })
         .then((data) => {
           // Store in global state
-          setAllBookings(data.filter((booking) => !isPast(new Date(booking.date))));
+          setAllBookings(data.filter((booking) => !isPast(endOfDay(new Date(booking.date)))));
           setLoading(false);
         })
         .catch((err) => {
@@ -76,13 +89,7 @@ const Admin: React.FC<RouteComponentProps> = () => {
           });
         });
     }
-  }, [dispatch, selectedOffice, user]);
-
-  useEffect(() => {
-    setFilteredBookings(
-      showToday ? allBookings?.filter((booking) => isToday(new Date(booking.date))) : allBookings
-    );
-  }, [allBookings, showToday]);
+  }, [dispatch, selectedOffice, selectedDate]);
 
   // Handlers
   const handleOfficeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
@@ -105,8 +112,6 @@ const Admin: React.FC<RouteComponentProps> = () => {
         dispatch({ type: 'SET_ERROR', payload: err });
       });
   };
-
-  const handleToday = () => setShowToday(!showToday);
 
   if (!user) {
     return null;
@@ -172,120 +177,119 @@ const Admin: React.FC<RouteComponentProps> = () => {
             <AdminHeader currentRoute={'home'} />
             <BookingStyles>
               <Paper>
-                <h3>Office</h3>
-                <section className="select-container">
-                  <FormControl variant="outlined">
-                    <InputLabel id="demo-simple-select-outlined-label">Select Office</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
-                      value={selectedOffice}
-                      onChange={handleOfficeChange}
-                      label="Office"
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {user.permissions.officesCanManageBookingsFor.map((office, index) => (
-                        <MenuItem value={office} key={index}>
-                          {office}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </section>
-
-                <h3>Booked Users</h3>
                 <section className="listing-container">
-                  {selectedOffice && filteredBookings ? (
+                  {selectedOffice && allBookings ? (
                     <>
-                      <div className="btn-container">
-                        <OurButton
-                          type="submit"
-                          variant="contained"
-                          color="primary"
-                          onClick={() => navigate('/admin/createBooking')}
-                        >
-                          Create New Booking
-                        </OurButton>
-                        <SubButton
-                          type="submit"
-                          variant="outlined"
-                          onClick={handleToday}
-                          size="small"
-                        >
-                          {showToday ? 'Show All' : 'Show Only Today'}
-                        </SubButton>
-                      </div>
-
+                      <Toolbar>
+                        <Typography variant="h6" id="tableTitle" component="div" color="primary">
+                          Bookings
+                        </Typography>
+                        <div className="filters">
+                          <FormControl>
+                            <InputLabel id="demo-simple-select-outlined-label">Office</InputLabel>
+                            <Select
+                              labelId="demo-simple-select-outlined-label"
+                              id="demo-simple-select-outlined"
+                              value={selectedOffice}
+                              onChange={handleOfficeChange}
+                              label="Office"
+                            >
+                              {user.permissions.officesCanManageBookingsFor.map((office, index) => (
+                                <MenuItem value={office} key={index}>
+                                  {office}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                          <form noValidate>
+                            <TextField
+                              id="date"
+                              label="Date"
+                              type="date"
+                              defaultValue={selectedDate}
+                              InputLabelProps={{
+                                shrink: true,
+                              }}
+                              onChange={(e) => setSelectedDate(e.target.value)}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <IconButton
+                                      edge="start"
+                                      onClick={() =>
+                                        setSelectedDate(
+                                          format(addDays(new Date(selectedDate), -1), 'yyyy-MM-dd')
+                                        )
+                                      }
+                                    >
+                                      <KeyboardArrowLeft />
+                                    </IconButton>
+                                  </InputAdornment>
+                                ),
+                                endAdornment: (
+                                  <InputAdornment position="end">
+                                    <IconButton
+                                      edge="end"
+                                      onClick={() =>
+                                        setSelectedDate(
+                                          format(addDays(new Date(selectedDate), 1), 'yyyy-MM-dd')
+                                        )
+                                      }
+                                    >
+                                      <KeyboardArrowRight />
+                                    </IconButton>
+                                  </InputAdornment>
+                                ),
+                              }}
+                            />
+                          </form>
+                          <Button
+                            startIcon={<AddCircle />}
+                            type="submit"
+                            color="secondary"
+                            onClick={() => navigate('/admin/createBooking')}
+                            variant="outlined"
+                            className="create-btn"
+                          >
+                            New booking
+                          </Button>
+                        </div>
+                      </Toolbar>
                       <TableContainer component={Paper}>
                         <Table>
                           <TableHead>
                             <TableRow>
                               <TableCell>User</TableCell>
-                              <TableCell>Date</TableCell>
                               <TableCell></TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {filteredBookings.map((data, index) => {
-                              if (data.office === selectedOffice) {
-                                if (showToday) {
-                                  return (
-                                    isToday(new Date(data.date)) && (
-                                      <TableRow key={index}>
-                                        <TableCell>{data.user}</TableCell>
-                                        <TableCell>{data.date}</TableCell>
-                                        <TableCell>
-                                          {user.permissions.officesCanManageBookingsFor.includes(
-                                            data.office
-                                          ) ? (
-                                            <div className="btn-container">
-                                              <OurButton
-                                                type="submit"
-                                                variant="contained"
-                                                color="secondary"
-                                                size="small"
-                                                onClick={() => setDeleteDialog(data)}
-                                              >
-                                                Cancel Booking
-                                              </OurButton>
-                                            </div>
-                                          ) : null}
-                                        </TableCell>
-                                      </TableRow>
-                                    )
-                                  );
-                                }
-                                return (
-                                  <TableRow key={index}>
-                                    <TableCell>{data.user}</TableCell>
-                                    <TableCell>{data.date}</TableCell>
-                                    <TableCell>
-                                      <div className="btn-container">
-                                        <OurButton
-                                          type="submit"
-                                          variant="contained"
-                                          color="secondary"
-                                          size="small"
-                                          onClick={() => setDeleteDialog(data)}
-                                        >
-                                          Cancel Booking
-                                        </OurButton>
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              } else {
-                                return null;
-                              }
+                            {allBookings.map((data, index) => {
+                              return (
+                                <TableRow key={index}>
+                                  <TableCell>{data.user}</TableCell>
+                                  <TableCell align="right">
+                                    <div className="btn-container">
+                                      <OurButton
+                                        type="submit"
+                                        variant="contained"
+                                        color="secondary"
+                                        size="small"
+                                        onClick={() => setDeleteDialog(data)}
+                                      >
+                                        Cancel Booking
+                                      </OurButton>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              );
                             })}
                           </TableBody>
                         </Table>
                       </TableContainer>
                     </>
                   ) : (
-                    <p>No office selected</p>
+                    <Loading />
                   )}
                 </section>
               </Paper>
