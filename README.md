@@ -1,4 +1,4 @@
-# Office Booker
+# Office Booker (Open Preview)
 
 The Office Booker was created to solve the problem of coordinating the safe return to offices once COVID-19 restrictions are lifted.
 
@@ -69,6 +69,10 @@ _Note:_ You need to have deployed a stack as we depend on Cognito to log in.
 1. `./install.sh` - Restore packages
 2. `./make-env.sh [STACK]` - Create local environment using auth from the deployed stack
 3. `./start.sh` start API and client application
+
+## Releases
+
+Currently the application is "in preview" meaning **there may be breaking changes** on the master branch. Once we've released version 1.0 we will follow [semantic versioning](https://semver.org/) and maintain a changelog to indicate the impact of changes.
 
 ## Pulumi Config Example
 
