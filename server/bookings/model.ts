@@ -5,14 +5,14 @@ export type CreateBooking = {
   user: string;
   date: string;
   office: string;
-  parking: boolean;
+  parking?: boolean;
 };
 
 export const isCreateBooking = (arg: any): arg is CreateBooking =>
   typeof arg.user === 'string' &&
   typeof arg.date === 'string' &&
   typeof arg.office === 'string' &&
-  typeof arg.parking === 'boolean';
+  (typeof arg.parking === 'undefined' || typeof arg.parking === 'boolean');
 
 export type Booking = {
   id: string;

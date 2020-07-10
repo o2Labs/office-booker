@@ -63,22 +63,23 @@ export const createBooking = async (
   const newBooking = {
     ...request,
     id,
+    parking: request.parking ?? false,
   };
 
-  const userEmail = request.user.toLocaleLowerCase();
-  const startOfWeek = dateStartOfWeek(request.date);
+  const userEmail = newBooking.user.toLocaleLowerCase();
+  const startOfWeek = dateStartOfWeek(newBooking.date);
 
   audit('1:IncrementingOfficeBookingCount', { newBooking, startOfWeek, currentUser });
   const officeBookedSuccessfully = await incrementOfficeBookingCount(
     config,
     requestedOffice,
-    request.date,
-    request.parking
+    newBooking.date,
+    newBooking.parking
   );
 
   if (!officeBookedSuccessfully) {
     throw new HttpError({
-      internalMessage: `Office quota of ${requestedOffice.quota} has exceeded for ${requestedOffice.name} on date: ${request.date}`,
+      internalMessage: `Office quota of ${requestedOffice.quota} has exceeded for ${requestedOffice.name} on date: ${newBooking.date}`,
       status: 409,
       httpMessage: 'Office quota exceeded',
     });
@@ -95,9 +96,14 @@ export const createBooking = async (
 
   if (!userBookedSuccessfully) {
     audit('2.1:DecrementingOfficeBookingCount');
-    await decrementOfficeBookingCount(config, requestedOffice.name, request.date, request.parking);
+    await decrementOfficeBookingCount(
+      config,
+      requestedOffice.name,
+      newBooking.date,
+      newBooking.parking
+    );
     throw new HttpError({
-      internalMessage: `User quota of ${dbUser.quota} has exceeded for ${userEmail} on date: ${request.date}`,
+      internalMessage: `User quota of ${dbUser.quota} has exceeded for ${userEmail} on date: ${newBooking.date}`,
       status: 409,
 
       httpMessage: 'User quota exceeded',
@@ -114,17 +120,17 @@ export const createBooking = async (
       await decrementOfficeBookingCount(
         config,
         requestedOffice.name,
-        request.date,
-        request.parking
+        newBooking.date,
+        newBooking.parking
       );
       throw new HttpError({
-        internalMessage: `Duplicate booking found for ${userEmail} on date: ${request.date}`,
+        internalMessage: `Duplicate booking found for ${userEmail} on date: ${newBooking.date}`,
         status: 409,
         httpMessage: `Can't have multiple bookings per day`,
       });
     } catch (err) {
       throw new HttpError({
-        internalMessage: `Failed while rollowing back duplicate booking found for ${userEmail} on date: ${request.date}\n${err.message}`,
+        internalMessage: `Failed while rollowing back duplicate booking found for ${userEmail} on date: ${newBooking.date}\n${err.message}`,
         status: 409,
         httpMessage: `Can't book more than one office per day`,
       });
