@@ -23,7 +23,7 @@ The Lab team of 4 developers put together this real-time booking app in just 10 
 ### System Rules
 
 - Bookings are for the whole day
-- Users can only make 1 booking per day
+- Users can only make 1 booking per office, per day
 - Default limit of 1 booking per week per user, can be adjusted by System Administrators
 - Bookings for the today can only be cancelled by Administrators
 - Users pick a single office (can be changed in help)
