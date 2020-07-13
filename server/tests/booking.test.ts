@@ -107,7 +107,7 @@ describe('Testing DB logic', async () => {
     expect(deleteResponse.status).toBe(204);
   });
 
-  test('can delete booking with parking and successfully increase booking count and parking count', async () => {
+  test('can delete booking with parking and successfully decrease booking count and parking count', async () => {
     const normalUserEmail = getNormalUser();
     const office = officeQuotas[0].name;
     const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
