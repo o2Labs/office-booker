@@ -252,7 +252,7 @@ export const configureApp = (config: Config) => {
         body: { message: error.httpMessage },
         status: error.status,
         error,
-        level: 'INFO',
+        level: error.level,
       });
     }
     // todo: get env to check for prod deploy

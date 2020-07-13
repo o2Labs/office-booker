@@ -135,7 +135,8 @@ describe('Testing DB logic', async () => {
     expect(slot.bookedParking).toEqual(0);
   });
 
-  test('cannot exceed quota', async () => {
+  test('cannot have multiple bookings on the same day', async () => {
+    const normalUserEmail = getNormalUser();
     const office = officeQuotas[0].name;
     const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
     const createBookingBody = {
@@ -153,9 +154,9 @@ describe('Testing DB logic', async () => {
 
     const createSecondResponse = await app
       .post('/api/bookings')
-      .send({ ...createBookingBody, date: format(addDays(new Date(date), 1), 'yyyy-MM-dd') })
+      .send(createBookingBody)
       .set('bearer', normalUserEmail);
     expect(createSecondResponse.status).toEqual(409);
-    expect(createSecondResponse.body.message).toEqual('User quota exceeded');
+    expect(createSecondResponse.body.message).toEqual(`Can't have multiple bookings per day`);
   });
 });

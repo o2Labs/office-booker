@@ -5,10 +5,17 @@ import { getAuthUserEmail } from './auth';
 export class HttpError extends Error {
   readonly httpMessage: string;
   readonly status: number;
-  constructor(args: { httpMessage: string; internalMessage?: string; status: number }) {
+  readonly level: ErrorLevel;
+  constructor(args: {
+    httpMessage: string;
+    internalMessage?: string;
+    status: number;
+    level?: ErrorLevel;
+  }) {
     super(args.internalMessage || args.httpMessage);
     this.httpMessage = args.httpMessage;
     this.status = args.status;
+    this.level = args.level ?? 'INFO';
   }
 }
 
