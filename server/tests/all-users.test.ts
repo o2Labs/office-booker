@@ -1,9 +1,10 @@
 import { format, addDays } from 'date-fns';
-import { configureServer, normalUserEmail, adminUserEmail, officeQuotas } from './test-utils';
+import { configureServer, getNormalUser, adminUserEmail, officeQuotas } from './test-utils';
 
 const { app, resetDb } = configureServer('all-users');
+const normalUserEmail = getNormalUser();
 
-beforeAll(resetDb);
+beforeEach(resetDb);
 
 const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,

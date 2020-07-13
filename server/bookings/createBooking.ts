@@ -129,10 +129,14 @@ export const createBooking = async (
         httpMessage: `Can't have multiple bookings per day`,
       });
     } catch (err) {
+      if (err instanceof HttpError) {
+        throw err;
+      }
       throw new HttpError({
         internalMessage: `Failed while rollowing back duplicate booking found for ${userEmail} on date: ${newBooking.date}\n${err.message}`,
+        level: 'ERROR',
         status: 409,
-        httpMessage: `Can't book more than one office per day`,
+        httpMessage: `Can't have multiple bookings per day`,
       });
     }
   }
