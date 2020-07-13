@@ -1,9 +1,10 @@
 import { format } from 'date-fns';
-import { configureServer, otherUser, adminUserEmail } from './test-utils';
+import { configureServer, getNormalUser, adminUserEmail } from './test-utils';
 import { encode } from 'querystring';
 import { officeQuotas } from './test-utils';
 
 const { app, resetDb } = configureServer('admin-users');
+const otherUser = getNormalUser();
 
 beforeAll(resetDb);
 

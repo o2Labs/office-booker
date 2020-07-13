@@ -1,10 +1,11 @@
 import { format } from 'date-fns';
-import { configureServer, otherUser, expectForbidden } from './test-utils';
+import { configureServer, getNormalUser, expectForbidden } from './test-utils';
 import { encode } from 'querystring';
 import { setUser } from '../db/users';
 import { officeQuotas } from './test-utils';
 
 const { app, resetDb, config } = configureServer('office-admin-users');
+const otherUser = getNormalUser();
 
 const officeAdminEmail = 'office-a.admin@office-booker.test';
 

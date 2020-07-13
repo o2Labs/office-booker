@@ -1,13 +1,14 @@
-import { configureServer, normalUserEmail, officeQuotas } from './test-utils';
 import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
+import { configureServer, getNormalUser, officeQuotas } from './test-utils';
+const { app, resetDb, config } = configureServer('bookings', { defaultWeeklyQuota: 2 });
 
-const { app, resetDb } = configureServer('bookings');
 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
 
 beforeAll(resetDb);
 
 describe('Testing DB logic', async () => {
   test('can create booking and successfully increase booking count', async () => {
+    const normalUserEmail = getNormalUser();
     const office = officeQuotas[0].name;
     const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
@@ -40,6 +41,7 @@ describe('Testing DB logic', async () => {
   });
 
   test('can delete booking and successfully decrease booking count', async () => {
+    const normalUserEmail = getNormalUser();
     const office = officeQuotas[0].name;
     const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
@@ -70,6 +72,7 @@ describe('Testing DB logic', async () => {
   });
 
   test('can create booking with parking and successfully increase booking count and parking count', async () => {
+    const normalUserEmail = getNormalUser();
     const office = officeQuotas[0].name;
     const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
     const createBookingBody = {
@@ -103,6 +106,7 @@ describe('Testing DB logic', async () => {
   });
 
   test('can delete booking with parking and successfully increase booking count and parking count', async () => {
+    const normalUserEmail = getNormalUser();
     const office = officeQuotas[0].name;
     const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
     const createBookingBody = {

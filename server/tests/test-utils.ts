@@ -2,10 +2,12 @@ import request, { Response } from 'supertest';
 import { configureApp } from '../app';
 import { Config, OfficeQuota } from '../app-config';
 import { createLocalTables } from '../scripts/create-dynamo-tables';
+import { randomBytes } from 'crypto';
 
-export const normalUserEmail = 'normal.user@office-booker.test';
 export const adminUserEmail = 'office-booker-admin-test@office-booker.test';
-export const otherUser = 'other.user@office-booker.test';
+
+export const getNormalUser = () => `${randomBytes(10).toString('hex')}@office-booker.test`;
+
 export const officeQuotas: OfficeQuota[] = [
   {
     id: 'office-a',

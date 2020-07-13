@@ -1,14 +1,10 @@
 import { format } from 'date-fns';
 import { encode } from 'querystring';
-import {
-  configureServer,
-  normalUserEmail,
-  otherUser,
-  expectForbidden,
-  officeQuotas,
-} from './test-utils';
+import { configureServer, getNormalUser, expectForbidden, officeQuotas } from './test-utils';
 
 const { app, resetDb } = configureServer('non-admin-users');
+const normalUserEmail = getNormalUser();
+const otherUser = getNormalUser();
 
 beforeAll(resetDb);
 
