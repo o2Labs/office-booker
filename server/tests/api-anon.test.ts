@@ -4,7 +4,7 @@ import { configureServer, expectUnauthorised, getNormalUser, officeQuotas } from
 const { app, resetDb } = configureServer('anon-users');
 const normalUserEmail = getNormalUser();
 
-beforeAll(resetDb);
+beforeEach(resetDb);
 
 test('get user', async () => {
   const response = await app.get(`/api/users/${normalUserEmail}`);

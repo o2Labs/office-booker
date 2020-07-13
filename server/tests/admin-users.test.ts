@@ -6,7 +6,7 @@ import { officeQuotas } from './test-utils';
 const { app, resetDb } = configureServer('admin-users');
 const otherUser = getNormalUser();
 
-beforeAll(resetDb);
+beforeEach(resetDb);
 
 test(`can get others`, async () => {
   const response = await app.get(`/api/users/${otherUser}`).set('bearer', adminUserEmail);
@@ -85,64 +85,49 @@ test('can create and delete bookings for other people', async () => {
 });
 
 test('can set user quotas', async () => {
-  try {
-    const getInitialUserResponse = await app
-      .get(`/api/users/${otherUser}`)
-      .set('bearer', adminUserEmail);
-    expect(getInitialUserResponse.body).toMatchObject({ quota: 1 });
+  const getInitialUserResponse = await app
+    .get(`/api/users/${otherUser}`)
+    .set('bearer', adminUserEmail);
+  expect(getInitialUserResponse.body).toMatchObject({ quota: 1 });
 
-    const putUserBody = {
-      quota: 42,
-    };
-    const putResponse = await app
-      .put(`/api/users/${otherUser}`)
-      .send(putUserBody)
-      .set('bearer', adminUserEmail);
-    expect(putResponse.status).toBe(200);
+  const putUserBody = {
+    quota: 42,
+  };
+  const putResponse = await app
+    .put(`/api/users/${otherUser}`)
+    .send(putUserBody)
+    .set('bearer', adminUserEmail);
+  expect(putResponse.status).toBe(200);
 
-    const queryResponse = await app.get(`/api/users?quota=custom`).set('bearer', adminUserEmail);
-    expect(queryResponse.body).toContainEqual(putResponse.body);
+  const queryResponse = await app.get(`/api/users?quota=custom`).set('bearer', adminUserEmail);
+  expect(queryResponse.body).toContainEqual(putResponse.body);
 
-    const getUpdatedUserResponse = await app
-      .get(`/api/users/${otherUser}`)
-      .set('bearer', adminUserEmail);
-    expect(getUpdatedUserResponse.body).toEqual(putResponse.body);
-  } finally {
-    // Reset back to 1
-    await app.put(`/api/users/${otherUser}`).send({ quota: 1 }).set('bearer', adminUserEmail);
-  }
+  const getUpdatedUserResponse = await app
+    .get(`/api/users/${otherUser}`)
+    .set('bearer', adminUserEmail);
+  expect(getUpdatedUserResponse.body).toEqual(putResponse.body);
 });
 
 test('can set user role', async () => {
-  try {
-    const getInitialUserResponse = await app
-      .get(`/api/users/${otherUser}`)
-      .set('bearer', adminUserEmail);
-    expect(getInitialUserResponse.body).toMatchObject({ role: { name: 'Default' } });
+  const getInitialUserResponse = await app
+    .get(`/api/users/${otherUser}`)
+    .set('bearer', adminUserEmail);
+  expect(getInitialUserResponse.body).toMatchObject({ role: { name: 'Default' } });
 
-    const putUserBody = {
-      role: { name: 'Office Admin', offices: [officeQuotas[0].name] },
-    };
-    const putResponse = await app
-      .put(`/api/users/${otherUser}`)
-      .send(putUserBody)
-      .set('bearer', adminUserEmail);
-    expect(putResponse.status).toBe(200);
+  const putUserBody = {
+    role: { name: 'Office Admin', offices: [officeQuotas[0].name] },
+  };
+  const putResponse = await app
+    .put(`/api/users/${otherUser}`)
+    .send(putUserBody)
+    .set('bearer', adminUserEmail);
+  expect(putResponse.status).toBe(200);
 
-    const queryResponse = await app
-      .get(`/api/users?role=Office Admin`)
-      .set('bearer', adminUserEmail);
-    expect(queryResponse.body).toContainEqual(putResponse.body);
+  const queryResponse = await app.get(`/api/users?role=Office Admin`).set('bearer', adminUserEmail);
+  expect(queryResponse.body).toContainEqual(putResponse.body);
 
-    const getUpdatedUserResponse = await app
-      .get(`/api/users/${otherUser}`)
-      .set('bearer', adminUserEmail);
-    expect(getUpdatedUserResponse.body).toEqual(putResponse.body);
-  } finally {
-    // Reset back to default
-    await app
-      .put(`/api/users/${otherUser}`)
-      .send({ role: { name: 'Default' } })
-      .set('bearer', adminUserEmail);
-  }
+  const getUpdatedUserResponse = await app
+    .get(`/api/users/${otherUser}`)
+    .set('bearer', adminUserEmail);
+  expect(getUpdatedUserResponse.body).toEqual(putResponse.body);
 });

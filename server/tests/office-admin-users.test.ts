@@ -11,7 +11,7 @@ const officeAdminEmail = 'office-a.admin@office-booker.test';
 
 const officeName = officeQuotas[0].name;
 const officeNameEncoded = encodeURIComponent(officeName);
-beforeAll(async () => {
+beforeEach(async () => {
   await resetDb();
   await setUser(config, {
     email: officeAdminEmail,

@@ -6,7 +6,7 @@ const { app, resetDb } = configureServer('non-admin-users');
 const normalUserEmail = getNormalUser();
 const otherUser = getNormalUser();
 
-beforeAll(resetDb);
+beforeEach(resetDb);
 
 const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,

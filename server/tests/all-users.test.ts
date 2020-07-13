@@ -4,7 +4,7 @@ import { configureServer, getNormalUser, adminUserEmail, officeQuotas } from './
 const { app, resetDb } = configureServer('all-users');
 const normalUserEmail = getNormalUser();
 
-beforeAll(resetDb);
+beforeEach(resetDb);
 
 const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,

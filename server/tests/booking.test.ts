@@ -6,7 +6,7 @@ const { app, resetDb, config } = configureServer('bookings', { defaultWeeklyQuot
 
 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
 
-beforeAll(resetDb);
+beforeEach(resetDb);
 
 describe('Testing DB logic', async () => {
   test('can create booking and successfully increase booking count', async () => {
@@ -35,11 +35,6 @@ describe('Testing DB logic', async () => {
     const officeData = getOfficeBookingsResponse.body.find((item: any) => item.name === office);
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(1);
-
-    const deleteResponse = await app
-      .delete(`/api/bookings/${createResponse.body.id}`)
-      .set('bearer', normalUserEmail);
-    expect(deleteResponse.status).toBe(204);
   });
 
   test('can delete booking and successfully decrease booking count', async () => {
@@ -100,11 +95,6 @@ describe('Testing DB logic', async () => {
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(1);
     expect(slot.bookedParking).toEqual(1);
-
-    const deleteResponse = await app
-      .delete(`/api/bookings/${createResponse.body.id}`)
-      .set('bearer', normalUserEmail);
-    expect(deleteResponse.status).toBe(204);
   });
 
   test('can delete booking with parking and successfully decrease booking count and parking count', async () => {
