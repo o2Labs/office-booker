@@ -1,5 +1,7 @@
 import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 import { configureServer, getNormalUser, officeQuotas } from './test-utils';
+import { Arrays } from 'collection-fns';
+
 const { app, resetDb, config } = configureServer('bookings', { defaultWeeklyQuota: 2 });
 
 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
@@ -162,5 +164,36 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(createSecondResponse.status).toEqual(409);
     expect(createSecondResponse.body.message).toEqual(`Can't have multiple bookings per day`);
+  });
+
+  test('cannot exceed weekly quota', async () => {
+    const normalUserEmail = getNormalUser();
+    const office = officeQuotas[0].name;
+    const createBookingBody = {
+      user: normalUserEmail,
+      office,
+      parking: true,
+    };
+
+    const days = Arrays.init({ from: 1, to: config.defaultWeeklyQuota });
+
+    for (const day of days) {
+      const res = await app
+        .post('/api/bookings')
+        .send({ ...createBookingBody, date: format(addDays(new Date(), day), 'yyyy-MM-dd') })
+        .set('bearer', normalUserEmail);
+      expect(res.ok).toBe(true);
+    }
+
+    const createThirdResponse = await app
+      .post('/api/bookings')
+      .send({
+        ...createBookingBody,
+        date: format(addDays(new Date(), config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
+      })
+      .set('bearer', normalUserEmail);
+
+    expect(createThirdResponse.status).toEqual(409);
+    expect(createThirdResponse.body.message).toEqual('User quota exceeded');
   });
 });
