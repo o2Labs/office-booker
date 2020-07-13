@@ -21,7 +21,11 @@ export const officeQuotas: OfficeQuota[] = [
   },
 ];
 
-export const getConfig = (dynamoDBTablePrefix?: string): Config => {
+type TestConfig = Partial<
+  Pick<Config, 'officeQuotas' | 'systemAdminEmails' | 'defaultWeeklyQuota'>
+>;
+
+export const getConfig = (dynamoDBTablePrefix: string, testConfig?: TestConfig): Config => {
   return {
     dynamoDBTablePrefix: (dynamoDBTablePrefix ?? 'test') + '.',
     authConfig: {
@@ -39,16 +43,16 @@ export const getConfig = (dynamoDBTablePrefix?: string): Config => {
       endpoint: 'http://localhost:8000',
     },
     env: 'test',
-    officeQuotas,
-    systemAdminEmails: [adminUserEmail],
-    defaultWeeklyQuota: 1,
+    officeQuotas: testConfig?.officeQuotas ?? officeQuotas,
+    systemAdminEmails: testConfig?.systemAdminEmails ?? [adminUserEmail],
+    defaultWeeklyQuota: testConfig?.defaultWeeklyQuota ?? 1,
     advanceBookingDays: 14,
     dataRetentionDays: 30,
   };
 };
 
-export const configureServer = (dynamoDBTablePrefix?: string) => {
-  const config = getConfig(dynamoDBTablePrefix);
+export const configureServer = (dynamoDBTablePrefix: string, testConfig?: TestConfig) => {
+  const config = getConfig(dynamoDBTablePrefix, testConfig);
   return {
     app: request(configureApp(config)),
     resetDb: () =>
