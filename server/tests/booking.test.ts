@@ -1,14 +1,15 @@
-import { format, addDays } from 'date-fns';
 import { configureServer, normalUserEmail, officeQuotas } from './test-utils';
+import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
 
 const { app, resetDb } = configureServer('bookings');
+const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
 
 beforeAll(resetDb);
 
 describe('Testing DB logic', async () => {
   test('can create booking and successfully increase booking count', async () => {
     const office = officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -40,7 +41,7 @@ describe('Testing DB logic', async () => {
 
   test('can delete booking and successfully decrease booking count', async () => {
     const office = officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
