@@ -35,6 +35,7 @@ describe('Testing DB logic', async () => {
     const officeData = getOfficeBookingsResponse.body.find((item: any) => item.name === office);
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(1);
+    expect(slot.bookedParking).toEqual(0);
   });
 
   test('can delete booking and successfully decrease booking count', async () => {
