@@ -21,17 +21,6 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
 
     expect(createResponse.ok).toBe(true);
-    expect(Object.keys(createResponse.body)).toEqual([
-      'id',
-      'created',
-      'user',
-      'date',
-      'office',
-      'lastCancellation',
-      'parking',
-    ]);
-    expect(typeof createResponse.body?.id).toBe('string');
-    expect(createResponse.body).toMatchObject(createBookingBody);
 
     const getCreatedBookingResponse = await app
       .get(`/api/bookings?user=${normalUserEmail}`)
@@ -94,17 +83,6 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
 
     expect(createResponse.ok).toBe(true);
-    expect(Object.keys(createResponse.body)).toEqual([
-      'id',
-      'created',
-      'user',
-      'date',
-      'office',
-      'lastCancellation',
-      'parking',
-    ]);
-    expect(typeof createResponse.body?.id).toBe('string');
-    expect(createResponse.body).toMatchObject(createBookingBody);
 
     const getCreatedBookingResponse = await app
       .get(`/api/bookings?user=${normalUserEmail}`)
@@ -138,17 +116,6 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
 
     expect(createResponse.ok).toBe(true);
-    expect(Object.keys(createResponse.body)).toEqual([
-      'id',
-      'created',
-      'user',
-      'date',
-      'office',
-      'lastCancellation',
-      'parking',
-    ]);
-    expect(typeof createResponse.body?.id).toBe('string');
-    expect(createResponse.body).toMatchObject(createBookingBody);
 
     const getCreatedBookingResponse = await app
       .get(`/api/bookings?user=${normalUserEmail}`)
@@ -182,17 +149,6 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
 
     expect(createResponse.ok).toBe(true);
-    expect(Object.keys(createResponse.body)).toEqual([
-      'id',
-      'created',
-      'user',
-      'date',
-      'office',
-      'lastCancellation',
-      'parking',
-    ]);
-    expect(typeof createResponse.body?.id).toBe('string');
-    expect(createResponse.body).toMatchObject(createBookingBody);
 
     const createSecondResponse = await app
       .post('/api/bookings')
