@@ -31,6 +31,12 @@ export class Forbidden extends HttpError {
   }
 }
 
+export class Unauthorized extends HttpError {
+  constructor(internalMessage?: string) {
+    super({ httpMessage: 'Unauthorized', status: 401, internalMessage });
+  }
+}
+
 export type ErrorLevel = 'ERROR' | 'INFO';
 
 type ErrorResponseArgs = {
