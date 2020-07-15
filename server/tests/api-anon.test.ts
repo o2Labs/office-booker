@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { configureServer, expectUnauthorized, getNormalUser, officeQuotas } from './test-utils';
+import { configureServer, expectUnauthorised, getNormalUser, officeQuotas } from './test-utils';
 
 const { app, resetDb } = configureServer('anon-users');
 const normalUserEmail = getNormalUser();
@@ -8,22 +8,22 @@ beforeEach(resetDb);
 
 test('get user', async () => {
   const response = await app.get(`/api/users/${normalUserEmail}`);
-  expectUnauthorized(response);
+  expectUnauthorised(response);
 });
 
 test('get list of offices', async () => {
   const response = await app.get(`/api/offices`);
-  expectUnauthorized(response);
+  expectUnauthorised(response);
 });
 
 test('get bookings', async () => {
   const response = await app.get('/api/bookings');
-  expectUnauthorized(response);
+  expectUnauthorised(response);
 });
 
 test('get bookings by user', async () => {
   const response = await app.get(`/api/bookings?user=${normalUserEmail}`);
-  expectUnauthorized(response);
+  expectUnauthorised(response);
 });
 
 test('create booking', async () => {
@@ -32,10 +32,10 @@ test('create booking', async () => {
     office: officeQuotas[0].name,
     date: format(new Date(), 'yyyy-MM-dd'),
   });
-  expectUnauthorized(response);
+  expectUnauthorised(response);
 });
 
 test('delete booking', async () => {
   const response = await app.delete(`/api/bookings/${format(new Date(), 'yyyyMMdd')}`);
-  expectUnauthorized(response);
+  expectUnauthorised(response);
 });
