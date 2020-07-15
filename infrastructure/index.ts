@@ -24,6 +24,7 @@ const selfTestKey = config.requireSecret('selftest-key');
 const selfTestUser = config.require('selftest-user');
 const caseSensitiveEmail = config.getBoolean('case-sensitive-email') ?? false;
 const dnsZone = config.require('dns-zone');
+const showTestBanner = config.getBoolean('show-test-banner') ?? false;
 export const systemAdminEmails = config.requireObject<string[]>('system-admin-emails').join(';');
 export const officeQuotas = JSON.stringify(
   config.requireObject<{ name: string; quota: number }[]>('office-quotas')
@@ -341,6 +342,7 @@ const getHttpEnv = (): aws.types.input.lambda.FunctionEnvironment['variables'] =
     ADVANCE_BOOKING_DAYS: advanceBookingDays.toString(),
     DYNAMODB_PREFIX: dynamoTablePrefix,
     COGNITO_USER_POOL_ID: userPool.id,
+    COGNITO_CLIENT_ID: authClient.id,
     ENV: stackName,
     REGION: aws.getRegion().then((r) => r.name),
     OFFICE_QUOTAS: officeQuotas,
@@ -350,6 +352,7 @@ const getHttpEnv = (): aws.types.input.lambda.FunctionEnvironment['variables'] =
     EMAIL_REGEX: emailRegex,
     DEFAULT_WEEKLY_QUOTA: defaultWeeklyQuota.toString(),
     DATA_RETENTION_DAYS: logRetention.toString(),
+    SHOW_TEST_BANNER: showTestBanner.toString(),
   };
   if (caseSensitiveEmail) {
     env.CASE_SENSITIVE_EMAIL = 'true';

@@ -42,6 +42,28 @@ export const configureApp = (config: Config) => {
     app.set('trust proxy', true);
   }
 
+  app.get('/api/config', (req, res, next) => {
+    try {
+      const clientConfig = {
+        showTestBanner: config.showTestBanner,
+        auth:
+          config.authConfig.type === 'cognito'
+            ? {
+                type: 'cognito',
+                region: config.authConfig.region,
+                userPoolId: config.authConfig.cognitoUserPoolId,
+                webClientId: config.authConfig.cognitoClientId,
+              }
+            : { type: 'test' },
+        emailRegex: config.validEmailMatch?.source,
+        advancedBookingDays: config.advanceBookingDays,
+      };
+      return res.set('Cache-Control', 'public, max-age=3600').json(clientConfig);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
   app.post('/api/selftest', async (req, res, next) => {
     try {
       if (config.selfTestKey === undefined || config.selfTestKey.length < 20) {
