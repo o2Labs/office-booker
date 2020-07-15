@@ -76,6 +76,8 @@ const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
   return officeQuotas;
 };
 
+
+/// create local version of this method without cognito stuff
 export const parseConfigFromEnv = (env: typeof process.env): Config => {
   const {
     REGION,
@@ -88,7 +90,6 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     DATA_RETENTION_DAYS,
     COGNITO_CLIENT_ID,
   } = env;
-
   if (
     typeof REGION !== 'string' ||
     typeof COGNITO_USER_POOL_ID !== 'string' ||

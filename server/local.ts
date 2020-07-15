@@ -10,6 +10,12 @@ const app = configureApp({
   dynamoDB: {
     region: 'eu-west-1',
     endpoint: 'http://localhost:8000',
+  }, /// only switch to testing if env switch is turned on e.g. cognitoTest. cognito user stuff becomes optional.
+  authConfig: {
+    type: 'test',
+    validate: (req) => {
+      return { email: req.get('bearer') };
+    },
   },
   env: 'local',
 });
