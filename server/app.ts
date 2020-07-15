@@ -27,6 +27,11 @@ export const configureApp = (config: Config) => {
     config.caseSensitiveEmail === true ? email : email.toLocaleLowerCase();
 
   const app = express();
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
+  if (config.env !== 'test') {
+    app.use(morgan('combined'));
+  }
 
   app.use(async (req, res, next) => {
     res.locals.env = config.env;
@@ -59,12 +64,6 @@ export const configureApp = (config: Config) => {
   });
 
   configureAuth(config, app);
-
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
-  if (config.env !== 'test') {
-    app.use(morgan('combined'));
-  }
 
   app.get('/api/offices', async (_req, res, next) => {
     try {
