@@ -1,6 +1,6 @@
 import { Express, Response } from 'express';
 import { Config } from './app-config';
-import { Unauthorized } from './errors';
+import { errorResponse } from './errors';
 import { validate } from './cognito';
 
 export const getAuthUserEmail = (res: Response): string => {
@@ -15,24 +15,35 @@ export const configureAuth = (config: Config, app: Express): Express => {
   return app.use(async (req, res, next) => {
     try {
       if (config.authConfig.type === 'test') {
-        const response = config.authConfig.validate(req);
-        const userEmail = response?.email;
-        if (typeof userEmail !== 'string') {
-          throw new Unauthorized('Email property missing on auth validate response');
+        try {
+          const response = config.authConfig.validate(req);
+          const userEmail = response?.email;
+          if (typeof userEmail !== 'string') {
+            return errorResponse(req, res, {
+              error: Error('Email property missing on auth validate response'),
+              status: 401,
+              level: 'INFO',
+              body: { message: 'Unauthorised' },
+            });
+          }
+          res.locals.user =
+            config.caseSensitiveEmail === true ? userEmail : userEmail.toLocaleLowerCase();
+          next();
+        } catch (error) {
+          return errorResponse(req, res, { error, status: 401, body: { message: 'Unauthorised' } });
         }
-        res.locals.user =
-          config.caseSensitiveEmail === true ? userEmail : userEmail.toLocaleLowerCase();
-        next();
       } else {
         //I'm passing in the access token in header under key accessToken
-        const authHeader = req.headers.authorization;
+        const bearerHeader = req.headers.bearer;
 
         //Fail if token not present in header.
-        if (typeof authHeader !== 'string') throw new Unauthorized('Header not set');
-        const bearerRegex = /^Bearer ([a-zA-Z0-9_\-\.]*)$/g;
-        const parsed = bearerRegex.exec(authHeader);
-        const token = parsed?.[1];
-        if (typeof token !== 'string') throw new Unauthorized('Could not parse Bearer token');
+        if (typeof bearerHeader !== 'string')
+          return errorResponse(req, res, {
+            error: Error('id Token missing from header'),
+            status: 401,
+            level: 'INFO',
+            body: { message: 'Unauthorised' },
+          });
 
         const authResult = await validate(
           {
@@ -40,7 +51,7 @@ export const configureAuth = (config: Config, app: Express): Express => {
             userPoolId: config.authConfig.cognitoUserPoolId,
             tokenUse: 'id',
           },
-          token
+          bearerHeader
         );
         if (authResult.valid) {
           const userEmail = authResult.token.email as string;
@@ -48,7 +59,12 @@ export const configureAuth = (config: Config, app: Express): Express => {
             config.caseSensitiveEmail === true ? userEmail : userEmail.toLocaleLowerCase();
           next();
         } else {
-          throw new Unauthorized('Bearer token not valid');
+          return errorResponse(req, res, {
+            error: new Error(authResult.reason),
+            status: 401,
+            level: 'INFO',
+            body: { message: 'Unauthorised' },
+          });
         }
       }
     } catch (e) {

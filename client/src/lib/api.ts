@@ -20,7 +20,7 @@ const buildHeaders = async () => {
 
   return {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${jwtToken}`,
+    bearer: jwtToken,
   };
 };
 
