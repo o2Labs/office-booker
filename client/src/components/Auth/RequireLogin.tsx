@@ -8,7 +8,7 @@ import Layout from '../Layout/Layout';
 import EnterEmail from './EnterEmail';
 import EnterCode from './EnterCode';
 
-import { getAuthState } from '../../lib/auth';
+import { getAuthState, signIn } from '../../lib/auth';
 import { getUserCached } from '../../lib/api';
 import { formatError } from '../../lib/app';
 import LoadingSpinner from '../Assets/LoadingSpinner';
@@ -93,7 +93,16 @@ const RequireLogin: React.FC<RouteComponentProps> = (props) => {
       {view.name === 'email' ? (
         <EnterEmail onComplete={(user) => setView({ name: 'code', user })} />
       ) : view.name === 'code' ? (
-        <EnterCode user={view.user} />
+        <EnterCode
+          user={view.user}
+          onCodeExpired={() => {
+            setLoading(true);
+            signIn(view.user.getUsername()).then((user) => {
+              setLoading(false);
+              setView({ name: 'code', user });
+            });
+          }}
+        />
       ) : null}
     </Layout>
   );

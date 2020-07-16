@@ -14,6 +14,7 @@ import EnterCodeStyles from './EnterCode.styles';
 
 type Props = {
   user: CognitoUser;
+  onCodeExpired: () => void;
 };
 
 const EnterCode: React.FC<Props> = (props) => {
@@ -80,6 +81,16 @@ const EnterCode: React.FC<Props> = (props) => {
         });
       }
 
+      if (err.code === 'NotAuthorizedException') {
+        // Wrong code entered 3 times or expired
+        dispatch({
+          type: 'SET_ERROR',
+          payload:
+            'Sending a new code. Previous code has expired or was entered incorrectly too many times.',
+        });
+        return props.onCodeExpired();
+      }
+
       dispatch({
         type: 'SET_ERROR',
         payload: formatError(err),
@@ -115,6 +126,8 @@ const EnterCode: React.FC<Props> = (props) => {
         <p className="sub">
           The code has been sent to <span>{props.user.getUsername()}</span>
         </p>
+
+        <p className="sub">This code is valid for 3 minutes.</p>
 
         <LoadingButton type="submit" variant="contained" color="primary" isLoading={loading}>
           Submit

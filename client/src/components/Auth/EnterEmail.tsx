@@ -74,6 +74,7 @@ const EnterEmail: React.FC<Props> = (props) => {
 
         <ul className="sub">
           <li>We&apos;ll send you a unique code to sign you in.</li>
+          <li>This code is valid for 3 minutes.</li>
           <li>You must be authorised to use this system.</li>
         </ul>
 
