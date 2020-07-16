@@ -7,10 +7,16 @@ yarn audit --cwd client --groups dependencies || true # Ignore lodash issue temp
 
 ./test.sh
 
+rm -rf dist
+rm -rf client/build
+
 cd server
 npx tsc -p tsconfig.build.json
 cp package.json ../dist/server
 cp yarn.lock ../dist/server
+
+cd ../client
+yarn build
 
 cd ../alerts
 npx tsc --project tsconfig.dist.json
