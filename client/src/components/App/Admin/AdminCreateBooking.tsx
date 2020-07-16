@@ -9,7 +9,16 @@ import { AppContext } from '../../AppProvider';
 import { getOffices, createBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 
-import { FormControl, InputLabel, Select, MenuItem, TextField } from '@material-ui/core';
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from '@material-ui/core';
 import { OfficeSlot } from '../../../types/api';
 import { OurButton } from '../../../styles/MaterialComponents';
 import Snackbar from '@material-ui/core/Snackbar';
@@ -27,6 +36,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   const [selectedOffice, setSelectedOffice] = React.useState('');
   const [selectedBookingDate, setSelectedBookingDate] = React.useState('');
   const [email, setEmail] = useState('');
+  const [parking, setParking] = useState<boolean | undefined>();
   const [officeSlots, setOfficeSlots] = useState<OfficeSlot[] | undefined>(undefined);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showValidationError, setShowValidationError] = useState(false);
@@ -92,6 +102,8 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
       return 'No Office Selected, Please Select an Office';
     } else if (!selectedBookingDate) {
       return 'No Booking Date Selected, Please Select a Booking Date';
+    } else if (parking === undefined) {
+      return 'Please specify if parking is required';
     }
     return;
   };
@@ -101,9 +113,9 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
 
     setLoading(true);
 
-    if (emailIsValid && selectedOffice && selectedBookingDate) {
+    if (emailIsValid && selectedOffice && selectedBookingDate && parking !== undefined) {
       // Create new booking
-      await createBooking(email, selectedBookingDate, selectedOffice)
+      await createBooking(email, selectedBookingDate, selectedOffice, parking)
         .then((data) => {
           // Add booking to global state
           dispatch({
@@ -201,6 +213,27 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                   onChange={(e) => setEmail(e.target.value)}
                 />
 
+                <h2 className="form-label">Parking</h2>
+                <FormControl component="fieldset">
+                  <RadioGroup
+                    aria-label="parking"
+                    name="parking"
+                    value={parking?.toString() ?? ''}
+                    onChange={(e) => {
+                      setParking(
+                        e.currentTarget.value === 'true'
+                          ? true
+                          : e.currentTarget.value === 'false'
+                          ? false
+                          : undefined
+                      );
+                    }}
+                  >
+                    <FormControlLabel value="true" control={<Radio />} label="With Parking" />
+                    <FormControlLabel value="false" control={<Radio />} label="Without Parking" />
+                  </RadioGroup>
+                </FormControl>
+
                 <div className="btn-container">
                   <OurButton type="submit" variant="contained" color="primary">
                     Submit New Booking
@@ -213,11 +246,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                   Booking created for {email}!
                 </Alert>
               </Snackbar>
-              <Snackbar
-                open={showValidationError}
-                autoHideDuration={2000}
-                onClose={handleCloseValidationError}
-              >
+              <Snackbar open={showValidationError} onClose={handleCloseValidationError}>
                 <Alert onClose={handleCloseValidationError} severity="error">
                   {handleValidationErrorMessage()}
                 </Alert>
