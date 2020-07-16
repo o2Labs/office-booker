@@ -133,7 +133,10 @@ const Admin: React.FC<RouteComponentProps> = () => {
             {'Are you sure you want to cancel this booking?'}
           </DialogTitle>
           <DialogContent>
-            <DialogContentText>Do you wish to cancel this booking?</DialogContentText>
+            <DialogContentText>
+              Booking for <b>{booking.user}</b> on <b>{format(new Date(booking.date), 'do MMM')}</b>{' '}
+              for <b>{booking.office}</b>
+            </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeleteDialog(undefined)} color="primary" autoFocus>
