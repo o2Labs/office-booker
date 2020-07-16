@@ -34,6 +34,7 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Checkbox,
 } from '@material-ui/core';
 import { isPast, endOfDay, format, addDays } from 'date-fns';
 import { OurButton } from '../../../styles/MaterialComponents';
@@ -263,6 +264,7 @@ const Admin: React.FC<RouteComponentProps> = () => {
                           <TableHead>
                             <TableRow>
                               <TableCell>User</TableCell>
+                              <TableCell>Parking</TableCell>
                               <TableCell></TableCell>
                             </TableRow>
                           </TableHead>
@@ -271,6 +273,9 @@ const Admin: React.FC<RouteComponentProps> = () => {
                               return (
                                 <TableRow key={index}>
                                   <TableCell>{data.user}</TableCell>
+                                  <TableCell>
+                                    <Checkbox checked={data.parking} disabled />
+                                  </TableCell>
                                   <TableCell align="right">
                                     <div className="btn-container">
                                       <OurButton
