@@ -25,6 +25,9 @@ const EnterEmail: React.FC<Props> = (props) => {
   // Helpers
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) {
+      return;
+    }
 
     // Validate
     const isValid = validateEmail(state.config?.emailRegex, email);
