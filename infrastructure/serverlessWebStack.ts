@@ -421,6 +421,7 @@ export class ServerlessWebStack extends pulumi.ComponentResource {
           forwardedValues: {
             cookies: { forward: 'all' },
             queryString: true,
+            headers: ['Authorization'],
           },
           compress: args.compress,
           minTtl: 0,
