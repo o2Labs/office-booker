@@ -126,9 +126,7 @@ const Help: React.FC<RouteComponentProps> = () => {
 
         <h3>General Information</h3>
 
-        <p>
-          Bookings can only be made {process.env.REACT_APP_ADVANCE_BOOKING_DAYS} days in advance.
-        </p>
+        <p>Bookings can only be made {state.config?.advancedBookingDays} days in advance.</p>
 
         {user && currentOffice && (
           <div className="change-office">

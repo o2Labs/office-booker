@@ -2,16 +2,17 @@ import Auth from '@aws-amplify/auth';
 import { CognitoUser } from 'amazon-cognito-identity-js';
 
 import { User } from '../types/api';
+import { Config } from '../context/stores';
 
-const AUTH_REGION = process.env.REACT_APP_AUTH_REGION;
-const AUTH_USER_POOL_ID = process.env.REACT_APP_AUTH_USER_POOL_ID;
-const AUTH_WEB_CLIENT_ID = process.env.REACT_APP_AUTH_WEB_CLIENT_ID;
-
-Auth.configure({
-  region: AUTH_REGION,
-  userPoolId: AUTH_USER_POOL_ID,
-  userPoolWebClientId: AUTH_WEB_CLIENT_ID,
-});
+export const configureAuth = (config: Config) => {
+  if (config.auth.type === 'cognito') {
+    Auth.configure({
+      region: config.auth.region,
+      userPoolId: config.auth.userPoolId,
+      userPoolWebClientId: config.auth.webClientId,
+    });
+  }
+};
 
 // Helpers
 const intToHex = (nr: number) => nr.toString(16).padStart(2, '0');

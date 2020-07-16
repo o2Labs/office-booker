@@ -21,6 +21,7 @@ import { AppState } from '../context/stores';
 import AdminCreateBooking from './App/AdminCreateBooking';
 import Privacy from './App/Privacy';
 import LoadingSpinner from './Assets/LoadingSpinner';
+import { configureAuth } from '../lib/auth';
 
 const Structure: React.FC = () => {
   const TRANSITION_DURATION = 300;
@@ -35,7 +36,10 @@ const Structure: React.FC = () => {
     if (state.config === undefined) {
       fetch('/api/config')
         .then((res) => res.json())
-        .then((config) => dispatch({ type: 'SET_CONFIG', payload: config }))
+        .then((config) => {
+          configureAuth(config);
+          return dispatch({ type: 'SET_CONFIG', payload: config });
+        })
         .catch((err) =>
           dispatch({
             type: 'SET_ERROR',
@@ -79,7 +83,7 @@ const Structure: React.FC = () => {
   // Render
   return (
     <StructureStyles>
-      {process.env.REACT_APP_SHOW_TEST_BANNER === 'true' && <TestBanner />}
+      {state.config.showTestBanner && <TestBanner />}
 
       <Router>
         <RequireLogin path="/">
