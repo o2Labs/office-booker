@@ -1,21 +1,21 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 
-import Layout from '../Layout/Layout';
-import Loading from '../Assets/LoadingSpinner';
+import Layout from '../../Layout/Layout';
+import Loading from '../../Assets/LoadingSpinner';
 
 import AdminCreateBookingStyles from './AdminCreateBooking.styles';
-import { AppContext } from '../AppProvider';
-import { getOffices, createBooking } from '../../lib/api';
-import { formatError } from '../../lib/app';
+import { AppContext } from '../../AppProvider';
+import { getOffices, createBooking } from '../../../lib/api';
+import { formatError } from '../../../lib/app';
 
 import { FormControl, InputLabel, Select, MenuItem, TextField } from '@material-ui/core';
-import { OfficeSlot } from '../../types/api';
-import { OurButton } from '../../styles/MaterialComponents';
+import { OfficeSlot } from '../../../types/api';
+import { OurButton } from '../../../styles/MaterialComponents';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 import AdminHeader from './AdminHeader';
-import { validateEmail } from '../../lib/emailValidation';
+import { validateEmail } from '../../../lib/emailValidation';
 
 const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   // Global state

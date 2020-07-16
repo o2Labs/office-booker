@@ -1,13 +1,13 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 
-import Layout from '../Layout/Layout';
-import Loading from '../Assets/LoadingSpinner';
+import Layout from '../../Layout/Layout';
+import Loading from '../../Assets/LoadingSpinner';
 
 import AdminStyles from './Admin.styles';
-import { AppContext } from '../AppProvider';
-import { getBookings, cancelBooking } from '../../lib/api';
-import { formatError } from '../../lib/app';
+import { AppContext } from '../../AppProvider';
+import { getBookings, cancelBooking } from '../../../lib/api';
+import { formatError } from '../../../lib/app';
 
 import {
   Table,
@@ -36,9 +36,9 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { isPast, endOfDay, format, addDays } from 'date-fns';
-import { OurButton } from '../../styles/MaterialComponents';
+import { OurButton } from '../../../styles/MaterialComponents';
 import { AddCircle, KeyboardArrowRight, KeyboardArrowLeft } from '@material-ui/icons';
-import { Booking } from '../../types/api';
+import { Booking } from '../../../types/api';
 import AdminHeader from './AdminHeader';
 import BookingStyles from './BookingStyles';
 

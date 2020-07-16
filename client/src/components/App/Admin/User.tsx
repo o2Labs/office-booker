@@ -1,14 +1,14 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 
-import Layout from '../Layout/Layout';
-import Loading from '../Assets/LoadingSpinner';
+import Layout from '../../Layout/Layout';
+import Loading from '../../Assets/LoadingSpinner';
 
-import { AppContext } from '../AppProvider';
-import { getUser, putUser, getOffices } from '../../lib/api';
-import { formatError } from '../../lib/app';
+import { AppContext } from '../../AppProvider';
+import { getUser, putUser, getOffices } from '../../../lib/api';
+import { formatError } from '../../../lib/app';
 
-import { User, Office } from '../../types/api';
+import { User, Office } from '../../../types/api';
 import {
   TextField,
   Paper,
@@ -20,7 +20,7 @@ import {
   Input,
   Chip,
 } from '@material-ui/core';
-import { OurButton } from '../../styles/MaterialComponents';
+import { OurButton } from '../../../styles/MaterialComponents';
 import AdminHeader from './AdminHeader';
 import AdminStyles from './Admin.styles';
 import ManageUsersStyles from './ManageUsers.styles';
