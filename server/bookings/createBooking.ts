@@ -78,10 +78,15 @@ export const createBooking = async (
   );
 
   if (!officeBookedSuccessfully) {
+    const parkingInternalMessageAddition = newBooking.parking
+      ? ` or parking quota of ${requestedOffice.parkingQuota}`
+      : '';
+    const parkingMessageAddition = newBooking.parking ? ` or parking quota` : '';
+
     throw new HttpError({
-      internalMessage: `Office quota of ${requestedOffice.quota} has exceeded for ${requestedOffice.name} on date: ${newBooking.date}`,
+      internalMessage: `Office quota of ${requestedOffice.quota}${parkingInternalMessageAddition} has exceeded for ${requestedOffice.name} on date: ${newBooking.date}`,
       status: 409,
-      httpMessage: 'Office quota exceeded',
+      httpMessage: `Office quota${parkingMessageAddition} exceeded`,
     });
   }
 
