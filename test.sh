@@ -14,7 +14,7 @@ yarn test
 
 cd ../client
 npx tsc --noEmit
-yarn test
+CI=true yarn test
 
 cd ../alerts
 npx tsc --noEmit

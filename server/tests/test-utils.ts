@@ -50,6 +50,7 @@ export const getConfig = (dynamoDBTablePrefix: string, testConfig?: TestConfig):
     defaultWeeklyQuota: testConfig?.defaultWeeklyQuota ?? 1,
     advanceBookingDays: 14,
     dataRetentionDays: 30,
+    showTestBanner: true,
   };
 };
 

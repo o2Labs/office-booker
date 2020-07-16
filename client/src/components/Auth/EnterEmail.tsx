@@ -16,7 +16,7 @@ type Props = { onComplete: (user: CognitoUser) => void };
 
 const EnterEmail: React.FC<Props> = (props) => {
   // Global state
-  const { dispatch } = useContext(AppContext);
+  const { state, dispatch } = useContext(AppContext);
 
   // Local state
   const [email, setEmail] = useState('');
@@ -27,7 +27,7 @@ const EnterEmail: React.FC<Props> = (props) => {
     e.preventDefault();
 
     // Validate
-    const isValid = validateEmail(email);
+    const isValid = validateEmail(state.config?.emailRegex, email);
 
     if (isValid) {
       setLoading(true);
@@ -74,9 +74,7 @@ const EnterEmail: React.FC<Props> = (props) => {
 
         <ul className="sub">
           <li>We&apos;ll send you a unique code to sign you in.</li>
-          <li>
-            You must be authorised to use this system.
-          </li>
+          <li>You must be authorised to use this system.</li>
         </ul>
 
         <LoadingButton type="submit" variant="contained" color="primary" isLoading={loading}>

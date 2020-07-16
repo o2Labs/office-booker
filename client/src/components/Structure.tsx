@@ -20,6 +20,8 @@ import User from './App/User';
 import { AppState } from '../context/stores';
 import AdminCreateBooking from './App/AdminCreateBooking';
 import Privacy from './App/Privacy';
+import LoadingSpinner from './Assets/LoadingSpinner';
+import { configureAuth } from '../lib/auth';
 
 const Structure: React.FC = () => {
   const TRANSITION_DURATION = 300;
@@ -29,6 +31,23 @@ const Structure: React.FC = () => {
 
   // Local state
   const [currentError, setCurrentError] = useState<AppState['error']>(undefined);
+
+  useEffect(() => {
+    if (state.config === undefined) {
+      fetch('/api/config')
+        .then((res) => res.json())
+        .then((config) => {
+          configureAuth(config);
+          return dispatch({ type: 'SET_CONFIG', payload: config });
+        })
+        .catch((err) =>
+          dispatch({
+            type: 'SET_ERROR',
+            payload: err,
+          })
+        );
+    }
+  }, [state.config, dispatch]);
 
   // Effects
   useEffect(() => {
@@ -53,10 +72,18 @@ const Structure: React.FC = () => {
       payload: undefined,
     });
 
+  if (state.config === undefined) {
+    return (
+      <StructureStyles>
+        <LoadingSpinner />
+      </StructureStyles>
+    );
+  }
+
   // Render
   return (
     <StructureStyles>
-      {process.env.REACT_APP_SHOW_TEST_BANNER === 'true' && <TestBanner />}
+      {state.config.showTestBanner && <TestBanner />}
 
       <Router>
         <RequireLogin path="/">

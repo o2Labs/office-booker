@@ -68,12 +68,12 @@ const Users: React.FC<RouteComponentProps> = () => {
   }, [selectedFilter, dispatch]);
 
   useEffect(() => {
-    if (email.length > 0 && !validateEmail(email)) {
+    if (email.length > 0 && !validateEmail(state.config?.emailRegex, email)) {
       setEmailError('Email address not permitted');
     } else {
       setEmailError(undefined);
     }
-  }, [email]);
+  }, [email, state.config]);
 
   const handleSelectedRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const val = event.target.value;

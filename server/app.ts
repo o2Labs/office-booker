@@ -27,6 +27,11 @@ export const configureApp = (config: Config) => {
     config.caseSensitiveEmail === true ? email : email.toLocaleLowerCase();
 
   const app = express();
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
+  if (config.env !== 'test') {
+    app.use(morgan('combined'));
+  }
 
   app.use(async (req, res, next) => {
     res.locals.env = config.env;
@@ -36,6 +41,28 @@ export const configureApp = (config: Config) => {
   if (config.env !== 'local' && config.env !== 'test') {
     app.set('trust proxy', true);
   }
+
+  app.get('/api/config', (req, res, next) => {
+    try {
+      const clientConfig = {
+        showTestBanner: config.showTestBanner,
+        auth:
+          config.authConfig.type === 'cognito'
+            ? {
+                type: 'cognito',
+                region: config.authConfig.region,
+                userPoolId: config.authConfig.cognitoUserPoolId,
+                webClientId: config.authConfig.cognitoClientId,
+              }
+            : { type: 'test' },
+        emailRegex: config.validEmailMatch?.source,
+        advancedBookingDays: config.advanceBookingDays,
+      };
+      return res.set('Cache-Control', 'public, max-age=3600').json(clientConfig);
+    } catch (err) {
+      return next(err);
+    }
+  });
 
   app.post('/api/selftest', async (req, res, next) => {
     try {
@@ -59,12 +86,6 @@ export const configureApp = (config: Config) => {
   });
 
   configureAuth(config, app);
-
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
-  if (config.env !== 'test') {
-    app.use(morgan('combined'));
-  }
 
   app.get('/api/offices', async (_req, res, next) => {
     try {

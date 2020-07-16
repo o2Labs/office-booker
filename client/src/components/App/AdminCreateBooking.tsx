@@ -83,7 +83,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
     setShowValidationError(false);
   };
 
-  const emailIsValid = validateEmail(email);
+  const emailIsValid = validateEmail(state.config?.emailRegex, email);
 
   const handleValidationErrorMessage = () => {
     if (!emailIsValid) {

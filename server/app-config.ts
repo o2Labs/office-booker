@@ -13,6 +13,7 @@ type TestAuthConfig = {
 type CognitoAuthConfig = {
   type: 'cognito';
   cognitoUserPoolId: string;
+  cognitoClientId: string;
   region: string;
 };
 
@@ -47,6 +48,7 @@ export type Config = {
   defaultWeeklyQuota: number;
   advanceBookingDays: number;
   dataRetentionDays: number;
+  showTestBanner: boolean;
 };
 
 const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
@@ -84,11 +86,13 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     DEFAULT_WEEKLY_QUOTA,
     ADVANCE_BOOKING_DAYS,
     DATA_RETENTION_DAYS,
+    COGNITO_CLIENT_ID,
   } = env;
 
   if (
     typeof REGION !== 'string' ||
     typeof COGNITO_USER_POOL_ID !== 'string' ||
+    typeof COGNITO_CLIENT_ID !== 'string' ||
     typeof SYSTEM_ADMIN_EMAILS !== 'string' ||
     typeof OFFICE_QUOTAS !== 'string' ||
     typeof DEFAULT_WEEKLY_QUOTA !== 'string' ||
@@ -115,6 +119,7 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     authConfig: {
       type: 'cognito',
       cognitoUserPoolId: COGNITO_USER_POOL_ID,
+      cognitoClientId: COGNITO_CLIENT_ID,
       region: REGION,
     },
     env: env.ENV,
@@ -127,5 +132,6 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     defaultWeeklyQuota,
     advanceBookingDays,
     dataRetentionDays,
+    showTestBanner: env.SHOW_TEST_BANNER === 'true',
   };
 };

@@ -1,4 +1,4 @@
-import { AppState } from './stores';
+import { AppState, Config } from './stores';
 import { User, Office, Booking, OfficeSlot } from '../types/api';
 import { Color } from '@material-ui/lab/Alert';
 
@@ -8,6 +8,7 @@ type OfficeSlotPayload = {
   date: string;
 };
 
+type ActionSetConfig = { type: 'SET_CONFIG'; payload: Config };
 type ActionSetUser = { type: 'SET_USER'; payload: User | undefined };
 type ActionSetOffices = { type: 'SET_OFFICES'; payload: Office[] };
 type ActionSetCurrentOffice = { type: 'SET_CURRENT_OFFICE'; payload: Office | undefined };
@@ -23,6 +24,7 @@ type ActionSetAlert = {
 };
 
 export type AppAction =
+  | ActionSetConfig
   | ActionSetUser
   | ActionSetOffices
   | ActionSetCurrentOffice
@@ -72,6 +74,8 @@ const updateSlots = (
 // Reducers
 export const appReducer = (state: AppState, action: AppAction): AppState => {
   switch (action.type) {
+    case 'SET_CONFIG':
+      return { ...state, config: action.payload };
     case 'SET_USER':
       return { ...state, user: action.payload };
     case 'SET_OFFICES':
