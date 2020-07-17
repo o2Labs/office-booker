@@ -64,11 +64,10 @@ Before running this application, you should review the privacy policy and adjust
 
 ## Local Quick Start
 
-_Note:_ You need to have deployed a stack as we depend on Cognito to log in.
-
 1. `./install.sh` - Restore packages
-2. `./make-env.sh [STACK]` - Create local environment using auth from the deployed stack
-3. `./start.sh` start API and client application
+2. `./start.sh` start API and client application
+
+_Note:_ Run `./make-env.sh [STACK]` to use config from the deployed stack for local testing.
 
 ## Releases
 
