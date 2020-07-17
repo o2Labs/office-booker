@@ -432,7 +432,7 @@ const MakeBooking: React.FC = () => {
                           </OurButton>
                         </Tooltip>
                         {day.availableCarPark && currentOffice.parkingQuota ? (
-                          <Tooltip title={`${'123'} Car park space left`} arrow>
+                          <Tooltip title={`${day.availableCarPark} Car park space left`} arrow>
                             <OurButton size="small">
                               <LocalParking />
                               {remainderIndicator(
