@@ -74,7 +74,7 @@ describe('Testing DB logic', async () => {
   test('can create booking with parking and successfully increase booking count and parking count', async () => {
     const normalUserEmail = getNormalUser();
     const office = config.officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -103,7 +103,7 @@ describe('Testing DB logic', async () => {
   test('can delete booking with parking and successfully decrease booking count and parking count', async () => {
     const normalUserEmail = getNormalUser();
     const office = config.officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -137,7 +137,7 @@ describe('Testing DB logic', async () => {
   test('cannot have multiple bookings on the same day', async () => {
     const normalUserEmail = getNormalUser();
     const office = config.officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -173,7 +173,7 @@ describe('Testing DB logic', async () => {
     for (const day of days) {
       const res = await app
         .post('/api/bookings')
-        .send({ ...createBookingBody, date: format(addDays(new Date(), day), 'yyyy-MM-dd') })
+        .send({ ...createBookingBody, date: format(addDays(nextMonday, day), 'yyyy-MM-dd') })
         .set('bearer', normalUserEmail);
       expect(res.ok).toBe(true);
     }
@@ -182,7 +182,7 @@ describe('Testing DB logic', async () => {
       .post('/api/bookings')
       .send({
         ...createBookingBody,
-        date: format(addDays(new Date(), config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
+        date: format(addDays(nextMonday, config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
       })
       .set('bearer', normalUserEmail);
 
