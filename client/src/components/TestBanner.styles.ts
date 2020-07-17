@@ -17,7 +17,7 @@ export default styled.div`
   box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.3);
 
   text-align: center;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   line-height: 4rem;
   color: #f0f0f0;
   font-weight: bold;
