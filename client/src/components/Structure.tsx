@@ -8,7 +8,7 @@ import Layout from './Layout/Layout';
 import Home from './App/Home';
 import ViewBooking from './App/ViewBooking';
 import Help from './App/Help';
-import Admin from './App/Admin';
+import Admin from './App/Admin/Admin';
 
 import { AppContext } from './AppProvider';
 
@@ -16,10 +16,10 @@ import StructureStyles from './Structure.styles';
 import PageNotFound from './App/PageNotFound';
 import UpcomingBookings from './App/UpcomingBookings';
 import { TestBanner } from './TestBanner';
-import Users from './App/Users';
-import User from './App/User';
+import Users from './App/Admin/Users';
+import User from './App/Admin/User';
 import { AppState } from '../context/stores';
-import AdminCreateBooking from './App/AdminCreateBooking';
+import AdminCreateBooking from './App/Admin/AdminCreateBooking';
 import Privacy from './App/Privacy';
 import LoadingSpinner from './Assets/LoadingSpinner';
 import { configureAuth } from '../lib/auth';

@@ -2,7 +2,7 @@ import React from 'react';
 import { navigate } from '@reach/router';
 
 import styled from 'styled-components';
-import { TabButton } from '../../styles/MaterialComponents';
+import { TabButton } from '../../../styles/MaterialComponents';
 
 type Props = { currentRoute?: 'manage' | 'home' };
 
