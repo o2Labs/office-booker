@@ -3,7 +3,11 @@ import { Config } from '../app-config';
 import { createBooking as dbCreate } from '../db/bookings';
 import { parse } from 'date-fns';
 import { getAvailableDates, dateStartOfWeek } from '../availableDates';
-import { incrementOfficeBookingCount, decrementOfficeBookingCount } from '../db/officeBookings';
+import {
+  incrementOfficeBookingCount,
+  decrementOfficeBookingCount,
+  getOfficeBookings,
+} from '../db/officeBookings';
 import { incrementUserBookingCount, decrementUserBookingCount } from '../db/userBookings';
 import { Forbidden, HttpError } from '../errors';
 import { User, getUser } from '../users/model';
@@ -68,6 +72,24 @@ export const createBooking = async (
 
   const userEmail = newBooking.user.toLocaleLowerCase();
   const startOfWeek = dateStartOfWeek(newBooking.date);
+
+  const officeBookings = await getOfficeBookings(config, [newBooking.date], [requestedOffice.name]);
+  const isQuotaExceeded = officeBookings[0]?.bookingCount >= requestedOffice.quota;
+  const isParkingExceeded =
+    newBooking.parking && officeBookings[0]?.parkingCount >= requestedOffice.parkingQuota;
+  if (isQuotaExceeded || isParkingExceeded) {
+    const whichExceeded =
+      isQuotaExceeded && isParkingExceeded
+        ? 'Office and parking quota'
+        : isQuotaExceeded
+        ? 'Office quota'
+        : 'Office parking quota';
+    throw new HttpError({
+      internalMessage: `${whichExceeded} has exceeded for ${requestedOffice.name} on date: ${newBooking.date}`,
+      status: 409,
+      httpMessage: `${whichExceeded} exceeded`,
+    });
+  }
 
   audit('1:IncrementingOfficeBookingCount', { newBooking, startOfWeek, currentUser });
   const officeBookedSuccessfully = await incrementOfficeBookingCount(

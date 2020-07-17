@@ -203,11 +203,11 @@ describe('Testing DB logic', async () => {
       .post('/api/bookings')
       .send({
         ...createBookingBody,
-        date: format(addDays(new Date(), config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
+        date: format(addDays(nextMonday, config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
       })
       .set('bearer', normalUserEmail);
 
     expect(response.status).toEqual(409);
-    expect(response.body.message).toEqual('Office quota or parking quota exceeded');
+    expect(response.body.message).toEqual('Office parking quota exceeded');
   });
 });
