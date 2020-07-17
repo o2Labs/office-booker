@@ -152,7 +152,7 @@ export default styled.div`
 
       > .row {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
 
         ${(props) => props.theme.breakpoints.up('xs')} {
           padding: 1.2rem 1.8rem;
@@ -177,23 +177,32 @@ export default styled.div`
         }
 
         > .left {
-          flex: 1 1 50%;
+          flex: 1 1 30%;
 
           > .date {
             margin: 0;
           }
-
-          > button {
-            margin-top: 0.5rem;
-          }
         }
 
         > .right {
-          flex: 1 1 50%;
+          flex: 1 1 70%;
+          display: flex;
+          justify-content: space-between;
+          
+          .availability {
+            display: flex;
+            svg {
+              font-size: 2rem;
+              margin-right: 0.3rem;
+            }
+            button {
+              padding: 0;
+              margin: 0.5rem 0 0  0.5rem;
+            }
+          }
 
-          text-align: right;
-
-          > p {
+   
+          /* > p {
             margin: 0;
 
             &.booked {
@@ -208,9 +217,9 @@ export default styled.div`
               color: ${(props) => props.theme.palette.secondary.main};
               font-weight: bold;
             }
-          }
+          } */
 
-          > button {
+          /* > button {
             margin-top: 2rem;
 
             color: ${(props) => props.theme.palette.secondary.main};
@@ -220,7 +229,7 @@ export default styled.div`
             &.loading {
               color: ${(props) => props.theme.palette.text.disabled};
             }
-          }
+          } */
         }
       }
     }

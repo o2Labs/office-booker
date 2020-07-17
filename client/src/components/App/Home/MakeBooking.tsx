@@ -25,6 +25,10 @@ import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 import { OurButton } from '../../../styles/MaterialComponents';
 import MakeBookingStyles from './MakeBooking.styles';
 
+import DropdownButton from '../../Assets/DropdownButton';
+import { LocalParking, Group, PermContactCalendar } from '@material-ui/icons';
+import { Tooltip, Button } from '@material-ui/core';
+
 // Types
 type Week = {
   id: number;
@@ -223,7 +227,8 @@ const MakeBooking: React.FC = () => {
           days,
         });
       });
-
+      console.log('state', state);
+      console.log('rows', rows);
       setRows(rows);
     }
   }, [bookings, currentOffice, user, weeks]);
@@ -242,7 +247,7 @@ const MakeBooking: React.FC = () => {
     }
   };
 
-  const handleCreateBooking = (date: Date) => {
+  const handleCreateBooking = (date: Date, bookCarPark: number) => {
     const { user, currentOffice } = state;
 
     if (user && currentOffice) {
@@ -251,29 +256,33 @@ const MakeBooking: React.FC = () => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, currentOffice.name)
-        .then((data) => {
-          // Add booking to global state
-          dispatch({
-            type: 'ADD_BOOKING',
-            payload: data,
-          });
+      if (!bookCarPark) {
+        createBooking(user.email, formattedDate, currentOffice.name)
+          .then((data) => {
+            // Add booking to global state
+            dispatch({
+              type: 'ADD_BOOKING',
+              payload: data,
+            });
 
-          // Update office counter
-          dispatch({
-            type: 'INCREASE_OFFICE_SLOT',
-            payload: {
-              office: currentOffice.name,
-              date: formattedDate,
-            },
-          });
-        })
-        .catch((err) =>
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            // Update office counter
+            dispatch({
+              type: 'INCREASE_OFFICE_SLOT',
+              payload: {
+                office: currentOffice.name,
+                date: formattedDate,
+              },
+            });
           })
-        );
+          .catch((err) =>
+            dispatch({
+              type: 'SET_ERROR',
+              payload: formatError(err),
+            })
+          );
+      } else {
+        console.log('TODO: Handle booking Carpark');
+      }
     }
   };
 
@@ -388,38 +397,10 @@ const MakeBooking: React.FC = () => {
                 >
                   <div className="left">
                     <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
-
-                    {day.isBookable && day.booking && (
-                      <OurButton
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          navigate(`./booking/${day.booking?.id}`);
-                        }}
-                      >
-                        View Pass
-                      </OurButton>
-                    )}
-                    {day.isBookable && day.userCanBook && (
-                      <>
-                        <OurButton
-                          size="small"
-                          variant="contained"
-                          color="secondary"
-                          disabled={buttonsLoading}
-                          onClick={() => handleCreateBooking(day.date)}
-                        >
-                          Book
-                        </OurButton>
-                      </>
-                    )}
                   </div>
                   <div className="right">
                     {day.booking ? (
                       <>
-                        <p className="booked">Booked</p>
-
                         {day.isBookable && !isToday(day.date) && (
                           <Link
                             component="button"
@@ -434,8 +415,42 @@ const MakeBooking: React.FC = () => {
                         )}
                       </>
                     ) : day.isBookable ? (
-                      <p className="available">{day.available} available</p>
+                      <div className="availability">
+                        <div>
+                          <Tooltip title={`${day.available} Office space Left`} arrow>
+                            <OurButton size="small">
+                              <PermContactCalendar />
+                              Available
+                            </OurButton>
+                          </Tooltip>
+                        </div>
+                        <div>
+                          <Tooltip title={`${'123'} Car park space left`} arrow>
+                            <OurButton size="small">
+                              <LocalParking />
+                              Low
+                            </OurButton>
+                          </Tooltip>
+                        </div>
+                      </div>
                     ) : null}
+                    {day.isBookable && day.booking && (
+                      <OurButton
+                        size="small"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          navigate(`./booking/${day.booking?.id}`);
+                        }}
+                      >
+                        View Pass
+                      </OurButton>
+                    )}
+                    {day.isBookable && day.userCanBook && (
+                      <DropdownButton
+                        onClick={(bookCarPark) => handleCreateBooking(day.date, bookCarPark)}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
