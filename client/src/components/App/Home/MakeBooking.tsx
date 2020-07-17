@@ -322,6 +322,9 @@ const MakeBooking: React.FC = () => {
     }
   };
 
+  const remainderIndicator = (totalQuantity: number, step: number, leftQuantity: number) =>
+    totalQuantity / step > leftQuantity ? 'Low' : 'Good';
+
   // Render
   if (!currentOffice || !user) {
     return null;
@@ -411,7 +414,7 @@ const MakeBooking: React.FC = () => {
                           <Link
                             component="button"
                             underline="always"
-                            className={(buttonsLoading && 'loading') || undefined}
+                            className={`${(buttonsLoading && 'loading') || undefined} cancelBtn`}
                             onClick={() =>
                               !buttonsLoading && day.booking && handleCancelBooking(day.booking)
                             }
@@ -422,22 +425,24 @@ const MakeBooking: React.FC = () => {
                       </>
                     ) : day.isBookable ? (
                       <div className="availability">
-                        <div>
-                          <Tooltip title={`${day.available} Office space Left`} arrow>
-                            <OurButton size="small">
-                              <PermContactCalendar />
-                              Available
-                            </OurButton>
-                          </Tooltip>
-                        </div>
-                        <div>
+                        <Tooltip title={`${day.available} Office space Left`} arrow>
+                          <OurButton size="small">
+                            <PermContactCalendar />
+                            {remainderIndicator(currentOffice.quota, 2, day.available)}
+                          </OurButton>
+                        </Tooltip>
+                        {day.availableCarPark && currentOffice.parkingQuota ? (
                           <Tooltip title={`${'123'} Car park space left`} arrow>
                             <OurButton size="small">
                               <LocalParking />
-                              Low
+                              {remainderIndicator(
+                                currentOffice.parkingQuota,
+                                2,
+                                day.availableCarPark
+                              )}
                             </OurButton>
                           </Tooltip>
-                        </div>
+                        ) : null}
                       </div>
                     ) : null}
                     {day.isBookable && day.booking && (
