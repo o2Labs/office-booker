@@ -25,7 +25,7 @@ import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 import { OurButton } from '../../../styles/MaterialComponents';
 import MakeBookingStyles from './MakeBooking.styles';
 
-import DropdownButton from '../../Assets/DropdownButton';
+import BookButton from '../../Assets/BookButton';
 import { LocalParking, Group, PermContactCalendar } from '@material-ui/icons';
 import { Tooltip, Button } from '@material-ui/core';
 
@@ -45,6 +45,7 @@ type BookableDay = {
   date: Date;
   isBookable: true;
   available: number;
+  availableCarPark: number;
   userCanBook: boolean;
   booking?: Booking;
 };
@@ -146,7 +147,7 @@ const MakeBooking: React.FC = () => {
 
   useEffect(() => {
     if (weeks && weeks.length > 0 && currentOffice && user && bookings) {
-      const { name, quota: officeQuota, slots } = currentOffice;
+      const { name, quota: officeQuota, parkingQuota, slots } = currentOffice;
       const { quota: userQuota } = user;
 
       const rows: Row[] = [];
@@ -178,6 +179,7 @@ const MakeBooking: React.FC = () => {
           if (slot) {
             // Calculate available spaces
             const available = officeQuota - slot.booked;
+            const availableCarPark = parkingQuota - slot.bookedParking;
 
             // Find any user booking for this office/slot
             const booking = bookings.find((b) => b.office === name && b.date === slot.date);
@@ -201,6 +203,7 @@ const MakeBooking: React.FC = () => {
               date: d,
               isBookable: true,
               available,
+              availableCarPark,
               userCanBook: available > 0 && userWeekBookings.length < userQuota && !userDayBooking,
               booking,
             });
@@ -335,6 +338,9 @@ const MakeBooking: React.FC = () => {
         <li>
           {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>.
         </li>
+        <li>
+          And a daily car park capacity of <span>{currentOffice.parkingQuota}</span>.
+        </li>
       </ul>
 
       {weeks && weeks.length > 0 && selectedWeek && (
@@ -447,8 +453,10 @@ const MakeBooking: React.FC = () => {
                       </OurButton>
                     )}
                     {day.isBookable && day.userCanBook && (
-                      <DropdownButton
+                      <BookButton
                         onClick={(bookCarPark) => handleCreateBooking(day.date, bookCarPark)}
+                        availableCarPark={day.availableCarPark}
+                        buttonsLoading={buttonsLoading}
                       />
                     )}
                   </div>

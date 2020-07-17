@@ -31,11 +31,13 @@ export type User = {
 export type OfficeSlot = {
   date: string;
   booked: number;
+  bookedParking: number;
 };
 
 export type Office = {
   name: string;
   quota: number;
+  parkingQuota: number;
   slots: OfficeSlot[];
 };
 
