@@ -76,8 +76,6 @@ const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
   return officeQuotas;
 };
 
-
-/// create local version of this method without cognito stuff
 export const parseConfigFromEnv = (env: typeof process.env): Config => {
   const {
     REGION,
