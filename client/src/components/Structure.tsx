@@ -4,6 +4,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 
 import RequireLogin from './Auth/RequireLogin';
+import Layout from './Layout/Layout';
 import Home from './App/Home';
 import ViewBooking from './App/ViewBooking';
 import Help from './App/Help';
@@ -38,7 +39,8 @@ const Structure: React.FC = () => {
         .then((res) => res.json())
         .then((config) => {
           configureAuth(config);
-          return dispatch({ type: 'SET_CONFIG', payload: config });
+
+          dispatch({ type: 'SET_CONFIG', payload: config });
         })
         .catch((err) =>
           dispatch({
@@ -72,46 +74,46 @@ const Structure: React.FC = () => {
       payload: undefined,
     });
 
-  if (state.config === undefined) {
-    return (
-      <StructureStyles>
-        <LoadingSpinner />
-      </StructureStyles>
-    );
-  }
-
   // Render
   return (
     <StructureStyles>
-      {state.config.showTestBanner && <TestBanner />}
+      {state.config === undefined ? (
+        <Layout>
+          <LoadingSpinner />
+        </Layout>
+      ) : (
+        <>
+          {state.config.showTestBanner && <TestBanner />}
 
-      <Router>
-        <RequireLogin path="/">
-          <Home path="/" />
-          <ViewBooking path="/booking/:id" />
-          <UpcomingBookings path="/bookings" />
-          <Admin path="/admin" />
-          <Users path="/admin/users" />
-          <User path="/admin/users/:email" />
-          <AdminCreateBooking path="/admin/createBooking" />
-          <Privacy path="/privacy" />
-          <PageNotFound default={true} />
-        </RequireLogin>
+          <Router>
+            <RequireLogin path="/">
+              <Home path="/" />
+              <ViewBooking path="/booking/:id" />
+              <UpcomingBookings path="/bookings" />
+              <Admin path="/admin" />
+              <Users path="/admin/users" />
+              <User path="/admin/users/:email" />
+              <AdminCreateBooking path="/admin/createBooking" />
+              <Privacy path="/privacy" />
+              <PageNotFound default={true} />
+            </RequireLogin>
 
-        <Help path="/help" />
-      </Router>
+            <Help path="/help" />
+          </Router>
 
-      {currentError !== undefined ? (
-        <Snackbar
-          open={state.error !== undefined}
-          onClose={handleCloseError}
-          transitionDuration={TRANSITION_DURATION}
-        >
-          <Alert variant="filled" severity={currentError.color} onClose={handleCloseError}>
-            {currentError.message}
-          </Alert>
-        </Snackbar>
-      ) : null}
+          {currentError !== undefined ? (
+            <Snackbar
+              open={state.error !== undefined}
+              onClose={handleCloseError}
+              transitionDuration={TRANSITION_DURATION}
+            >
+              <Alert variant="filled" severity={currentError.color} onClose={handleCloseError}>
+                {currentError.message}
+              </Alert>
+            </Snackbar>
+          ) : null}
+        </>
+      )}
     </StructureStyles>
   );
 };
