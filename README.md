@@ -4,6 +4,8 @@ The Office Booker was created to solve the problem of coordinating the safe retu
 
 The Lab team of 4 developers put together this real-time booking app in just 10 days for proactively managing demand for office space by allowing you to book ahead of travelling to the office. Although originally created as a tactical solution within Telefónica UK but we decided to share this publicly as it might be a problem other companies are also facing - including some of our own customers.
 
+![](docs/images/screenshots.png)
+
 ## Contributors
 
 [![Atif Khokhar](https://avatars2.githubusercontent.com/u/18725139?s=64&v=4)](https://github.com/AtifKhokhar)
