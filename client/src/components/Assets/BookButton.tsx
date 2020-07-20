@@ -9,7 +9,7 @@ import MenuList from '@material-ui/core/MenuList';
 import { OurButton } from '../../styles/MaterialComponents';
 
 type Props = {
-  onClick: (bookCarPark: number) => void;
+  onClick: (args: { withParking: boolean }) => void;
   availableCarPark: number;
   buttonsLoading: boolean;
 };
@@ -27,7 +27,7 @@ const BookButton: React.FC<Props> = (props) => {
   ) => {
     setSelectedIndex(index);
     setOpen(false);
-    props.onClick(index);
+    props.onClick({ withParking: index === 1 });
   };
 
   const handleToggle = () => {
@@ -107,7 +107,7 @@ const BookButton: React.FC<Props> = (props) => {
           variant="contained"
           color="secondary"
           disabled={props.buttonsLoading}
-          onClick={() => props.onClick(0)}
+          onClick={() => props.onClick({ withParking: false })}
         >
           Book
         </OurButton>

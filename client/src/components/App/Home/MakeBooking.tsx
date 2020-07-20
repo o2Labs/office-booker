@@ -250,7 +250,7 @@ const MakeBooking: React.FC = () => {
     }
   };
 
-  const handleCreateBooking = (date: Date, bookCarPark: number) => {
+  const handleCreateBooking = (date: Date, withParking: boolean) => {
     const { user, currentOffice } = state;
 
     if (user && currentOffice) {
@@ -259,7 +259,7 @@ const MakeBooking: React.FC = () => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, currentOffice.name, !!bookCarPark)
+      createBooking(user.email, formattedDate, currentOffice.name, withParking)
         .then((data) => {
           // Add booking to global state
           dispatch({
@@ -455,7 +455,7 @@ const MakeBooking: React.FC = () => {
                     )}
                     {day.isBookable && day.userCanBook && (
                       <BookButton
-                        onClick={(bookCarPark) => handleCreateBooking(day.date, bookCarPark)}
+                        onClick={(e) => handleCreateBooking(day.date, e.withParking)}
                         availableCarPark={day.availableCarPark}
                         buttonsLoading={buttonsLoading}
                       />
