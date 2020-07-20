@@ -101,17 +101,16 @@ export const configureApp = (config: Config) => {
       const quota = req.query.quota?.toString();
       const role: string | undefined = req.query?.role?.toString();
       const filterQuota = quota?.toLocaleLowerCase() === 'custom';
-      if (!filterQuota && !role) {
-        throw new HttpError({
-          httpMessage: `One of quota=custom or role must be set`,
-          status: 400,
-        });
-      }
+      const paginationToken = req.query.paginationToken?.toString();
       const authUser = await getAuthUser(res);
       if (!authUser.permissions.canViewUsers) {
         throw new Forbidden(`${authUser.email} attempted to list users`);
       }
-      const users = await queryUsers(config, { customQuota: filterQuota, roleName: role });
+      const users = await queryUsers(config, {
+        customQuota: filterQuota,
+        roleName: role,
+        paginationToken,
+      });
       return res.json(users);
     } catch (err) {
       return next(err);
