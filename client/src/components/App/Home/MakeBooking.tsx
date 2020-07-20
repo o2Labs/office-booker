@@ -26,8 +26,8 @@ import { OurButton } from '../../../styles/MaterialComponents';
 import MakeBookingStyles from './MakeBooking.styles';
 
 import BookButton from '../../Assets/BookButton';
-import { LocalParking, Group, PermContactCalendar } from '@material-ui/icons';
-import { Tooltip, Button } from '@material-ui/core';
+import { LocalParking, PermContactCalendar } from '@material-ui/icons';
+import { Tooltip } from '@material-ui/core';
 
 // Types
 type Week = {
@@ -259,33 +259,29 @@ const MakeBooking: React.FC = () => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      if (!bookCarPark) {
-        createBooking(user.email, formattedDate, currentOffice.name)
-          .then((data) => {
-            // Add booking to global state
-            dispatch({
-              type: 'ADD_BOOKING',
-              payload: data,
-            });
+      createBooking(user.email, formattedDate, currentOffice.name, !!bookCarPark)
+        .then((data) => {
+          // Add booking to global state
+          dispatch({
+            type: 'ADD_BOOKING',
+            payload: data,
+          });
 
-            // Update office counter
-            dispatch({
-              type: 'INCREASE_OFFICE_SLOT',
-              payload: {
-                office: currentOffice.name,
-                date: formattedDate,
-              },
-            });
+          // Update office counter
+          dispatch({
+            type: 'INCREASE_OFFICE_SLOT',
+            payload: {
+              office: currentOffice.name,
+              date: formattedDate,
+            },
+          });
+        })
+        .catch((err) =>
+          dispatch({
+            type: 'SET_ERROR',
+            payload: formatError(err),
           })
-          .catch((err) =>
-            dispatch({
-              type: 'SET_ERROR',
-              payload: formatError(err),
-            })
-          );
-      } else {
-        console.log('TODO: Handle booking Carpark');
-      }
+        );
     }
   };
 
