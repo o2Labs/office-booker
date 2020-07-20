@@ -26,14 +26,18 @@ const buildHeaders = async () => {
 
 // Queries
 export const queryUsers = async (
-  query: UserQuery
+  query: UserQuery,
+  paginationToken?: string
 ): Promise<{ users: User[]; paginationToken?: string }> => {
   const url = new URL(`users`, BASE_URL);
-  if ('role' in query) {
+  if (query.role !== undefined) {
     url.searchParams.set('role', query.role);
   }
-  if ('quota' in query) {
+  if (query.quota !== undefined) {
     url.searchParams.set('quota', query.quota);
+  }
+  if (paginationToken !== undefined) {
+    url.searchParams.set('paginationToken', paginationToken);
   }
 
   const headers = await buildHeaders();

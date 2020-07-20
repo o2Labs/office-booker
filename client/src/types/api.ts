@@ -8,12 +8,7 @@ export type SystemAdminRole = { name: 'System Admin' };
 export type OfficeAdminRole = { name: 'Office Admin'; offices: string[] };
 export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole;
 
-type UserCustomQuotaQuery = { quota: 'custom' };
-type UserRoleQuery = { role: UserRole['name'] };
-export type UserQuery =
-  | UserCustomQuotaQuery
-  | UserRoleQuery
-  | (UserCustomQuotaQuery & UserRoleQuery);
+export type UserQuery = { quota?: 'custom'; role?: UserRole['name'] };
 
 export type User = {
   email: string;

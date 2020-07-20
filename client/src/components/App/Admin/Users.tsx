@@ -27,9 +27,10 @@ import Search from '@material-ui/icons/Search';
 import { User } from '../../../types/api';
 import { queryUsers, getUser } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
+import { OurButton } from '../../../styles/MaterialComponents';
 
 type UserFilter =
-  | { name: 'System Admin' | 'Office Admin' | 'custom' }
+  | { name: 'System Admin' | 'Office Admin' | 'custom' | 'all' }
   | { name: 'email'; email: string };
 
 const Users: React.FC<RouteComponentProps> = () => {
@@ -37,6 +38,7 @@ const Users: React.FC<RouteComponentProps> = () => {
   const { state, dispatch } = useContext(AppContext);
   const { user } = state;
   const [queryResult, setQueryResult] = useState<User[] | undefined>(undefined);
+  const [paginationToken, setPaginationToken] = useState<string | undefined>(undefined);
   const [selectedFilter, setSelectedFilter] = useState<UserFilter>({ name: 'System Admin' });
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | undefined>(undefined);
@@ -55,9 +57,16 @@ const Users: React.FC<RouteComponentProps> = () => {
         });
     } else {
       queryUsers(
-        selectedFilter.name === 'custom' ? { quota: 'custom' } : { role: selectedFilter.name }
+        selectedFilter.name === 'all'
+          ? {}
+          : selectedFilter.name === 'custom'
+          ? { quota: 'custom' }
+          : { role: selectedFilter.name }
       )
-        .then((result) => setQueryResult(result.users))
+        .then((result) => {
+          setQueryResult(result.users);
+          setPaginationToken(result.paginationToken);
+        })
         .catch((error) =>
           dispatch({
             type: 'SET_ERROR',
@@ -77,8 +86,25 @@ const Users: React.FC<RouteComponentProps> = () => {
 
   const handleSelectedRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const val = event.target.value;
-    if (val === 'System Admin' || val === 'Office Admin' || val === 'custom') {
+    if (val === 'System Admin' || val === 'Office Admin' || val === 'custom' || val === 'all') {
       setSelectedFilter({ name: val });
+    }
+  };
+
+  const loadMore = () => {
+    if (paginationToken && selectedFilter.name === 'all') {
+      setPaginationToken(undefined);
+      queryUsers({}, paginationToken)
+        .then((result) => {
+          setQueryResult((previousUsers) => [...(previousUsers ?? []), ...result.users]);
+          setPaginationToken(result.paginationToken);
+        })
+        .catch((error) =>
+          dispatch({
+            type: 'SET_ERROR',
+            payload: formatError(error),
+          })
+        );
     }
   };
 
@@ -136,6 +162,7 @@ const Users: React.FC<RouteComponentProps> = () => {
                         <MenuItem value={'System Admin'}>System Admins</MenuItem>
                         <MenuItem value={'Office Admin'}>Office Admins</MenuItem>
                         <MenuItem value={'custom'}>Users with Custom Quota</MenuItem>
+                        <MenuItem value={'all'}>All Registered Users</MenuItem>
                       </Select>
                     </FormControl>
                   </div>
@@ -167,6 +194,13 @@ const Users: React.FC<RouteComponentProps> = () => {
                     </TableBody>
                   </Table>
                 </section>
+                {paginationToken && (
+                  <section className="load-more-container">
+                    <OurButton onClick={loadMore} variant="contained">
+                      Load More
+                    </OurButton>
+                  </section>
+                )}
               </Paper>
             </ManageUsersStyles>
           </>
