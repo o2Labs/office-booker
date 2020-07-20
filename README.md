@@ -62,8 +62,7 @@ This is the same as for the first deploy, excluding creating and configuring the
 
 1. `./install.sh`
 2. `./build.sh`
-3. [`pulumi login`](https://www.pulumi.com/docs/reference/cli/pulumi_login/)
-4. `./deploy.sh [STACK]`
+3. `./deploy.sh [STACK]`
 
 ## Privacy Policy
 
