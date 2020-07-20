@@ -25,7 +25,7 @@ export default styled.div`
     font-weight: bold;
   }
 
-  ul {
+  >ul {
     ${(props) => props.theme.breakpoints.up('xs')} {
       margin: 1.6rem 0 0;
     }

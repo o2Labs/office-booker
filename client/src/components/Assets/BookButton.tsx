@@ -7,6 +7,7 @@ import Popper from '@material-ui/core/Popper';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
 import { OurButton } from '../../styles/MaterialComponents';
+import { ArrowDropDown, Block, DirectionsCar, DirectionsWalk } from '@material-ui/icons';
 
 type Props = {
   onClick: (args: { withParking: boolean }) => void;
@@ -14,7 +15,7 @@ type Props = {
   buttonsLoading: boolean;
 };
 
-const options = ['Without parking', 'With Parking'];
+const options = [`NO parking${(<Block />)}`, 'Parking'];
 
 const BookButton: React.FC<Props> = (props) => {
   const [open, setOpen] = React.useState(false);
@@ -64,6 +65,7 @@ const BookButton: React.FC<Props> = (props) => {
               disabled={props.buttonsLoading}
             >
               Book
+              <ArrowDropDown />
             </OurButton>
           </ButtonGroup>
           <Popper
@@ -81,19 +83,21 @@ const BookButton: React.FC<Props> = (props) => {
                   transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
                 }}
               >
-                <Paper>
+                <Paper elevation={5}>
                   <ClickAwayListener onClickAway={handleClose}>
-                    <MenuList id="split-button-menu">
-                      {options.map((option, index) => (
-                        <MenuItem
-                          key={option}
-                          disabled={index === 2}
-                          selected={index === selectedIndex}
-                          onClick={(event) => handleMenuItemClick(event, index)}
-                        >
-                          {option}
-                        </MenuItem>
-                      ))}
+                    <MenuList id="split-button-menu" disablePadding>
+                      <MenuItem
+                        selected={0 === selectedIndex}
+                        onClick={(event) => handleMenuItemClick(event, 0)}
+                      >
+                        <DirectionsWalk style={{ marginRight: '1rem' }} /> Without Parking
+                      </MenuItem>
+                      <MenuItem
+                        selected={1 === selectedIndex}
+                        onClick={(event) => handleMenuItemClick(event, 1)}
+                      >
+                        <DirectionsCar style={{ marginRight: '1rem' }} /> With Parking
+                      </MenuItem>
                     </MenuList>
                   </ClickAwayListener>
                 </Paper>
