@@ -57,7 +57,7 @@ const Users: React.FC<RouteComponentProps> = () => {
       queryUsers(
         selectedFilter.name === 'custom' ? { quota: 'custom' } : { role: selectedFilter.name }
       )
-        .then(setQueryResult)
+        .then((result) => setQueryResult(result.users))
         .catch((error) =>
           dispatch({
             type: 'SET_ERROR',

@@ -25,7 +25,9 @@ const buildHeaders = async () => {
 };
 
 // Queries
-export const queryUsers = async (query: UserQuery): Promise<User[]> => {
+export const queryUsers = async (
+  query: UserQuery
+): Promise<{ users: User[]; paginationToken?: string }> => {
   const url = new URL(`users`, BASE_URL);
   if ('role' in query) {
     url.searchParams.set('role', query.role);
