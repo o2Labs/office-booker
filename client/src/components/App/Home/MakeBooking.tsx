@@ -421,14 +421,14 @@ const MakeBooking: React.FC = () => {
                       </>
                     ) : day.isBookable ? (
                       <div className="availability">
-                        <Tooltip title={`${day.available} Office space Left`} arrow>
+                        <Tooltip title={`Office Space: ${day.available} left`} arrow>
                           <OurButton size="small">
                             <PermContactCalendar />
                             {remainderIndicator(currentOffice.quota, 2, day.available)}
                           </OurButton>
                         </Tooltip>
                         {day.availableCarPark && currentOffice.parkingQuota ? (
-                          <Tooltip title={`${day.availableCarPark} Car park space left`} arrow>
+                          <Tooltip title={`Car Park: ${day.availableCarPark} left`} arrow>
                             <OurButton size="small">
                               <LocalParking />
                               {remainderIndicator(
