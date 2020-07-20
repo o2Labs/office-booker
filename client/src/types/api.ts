@@ -46,4 +46,5 @@ export type Booking = {
   user: User['email'];
   date: string;
   office: Office['name'];
+  parking: boolean;
 };

@@ -1,13 +1,13 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 
-import Layout from '../Layout/Layout';
-import Loading from '../Assets/LoadingSpinner';
+import Layout from '../../Layout/Layout';
+import Loading from '../../Assets/LoadingSpinner';
 
 import AdminStyles from './Admin.styles';
-import { AppContext } from '../AppProvider';
-import { getBookings, cancelBooking } from '../../lib/api';
-import { formatError } from '../../lib/app';
+import { AppContext } from '../../AppProvider';
+import { getBookings, cancelBooking } from '../../../lib/api';
+import { formatError } from '../../../lib/app';
 
 import {
   Table,
@@ -34,11 +34,12 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Checkbox,
 } from '@material-ui/core';
 import { isPast, endOfDay, format, addDays } from 'date-fns';
-import { OurButton } from '../../styles/MaterialComponents';
+import { OurButton } from '../../../styles/MaterialComponents';
 import { AddCircle, KeyboardArrowRight, KeyboardArrowLeft } from '@material-ui/icons';
-import { Booking } from '../../types/api';
+import { Booking } from '../../../types/api';
 import AdminHeader from './AdminHeader';
 import BookingStyles from './BookingStyles';
 
@@ -133,7 +134,10 @@ const Admin: React.FC<RouteComponentProps> = () => {
             {'Are you sure you want to cancel this booking?'}
           </DialogTitle>
           <DialogContent>
-            <DialogContentText>Do you wish to cancel this booking?</DialogContentText>
+            <DialogContentText>
+              Booking for <b>{booking.user}</b> on <b>{format(new Date(booking.date), 'do MMM')}</b>{' '}
+              for <b>{booking.office}</b>
+            </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeleteDialog(undefined)} color="primary" autoFocus>
@@ -260,6 +264,7 @@ const Admin: React.FC<RouteComponentProps> = () => {
                           <TableHead>
                             <TableRow>
                               <TableCell>User</TableCell>
+                              <TableCell>Parking</TableCell>
                               <TableCell></TableCell>
                             </TableRow>
                           </TableHead>
@@ -268,6 +273,9 @@ const Admin: React.FC<RouteComponentProps> = () => {
                               return (
                                 <TableRow key={index}>
                                   <TableCell>{data.user}</TableCell>
+                                  <TableCell>
+                                    <Checkbox checked={data.parking} disabled />
+                                  </TableCell>
                                   <TableCell align="right">
                                     <div className="btn-container">
                                       <OurButton

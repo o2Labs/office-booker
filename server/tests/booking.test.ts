@@ -1,8 +1,10 @@
 import { format, addDays, startOfWeek, addWeeks } from 'date-fns';
-import { configureServer, getNormalUser, officeQuotas } from './test-utils';
+import { configureServer, getNormalUser } from './test-utils';
 import { Arrays } from 'collection-fns';
 
-const { app, resetDb, config } = configureServer('bookings', { defaultWeeklyQuota: 2 });
+const { app, resetDb, config } = configureServer('bookings', {
+  defaultWeeklyQuota: 2,
+});
 
 const nextMonday = startOfWeek(addWeeks(new Date(), 1), { weekStartsOn: 1 });
 
@@ -11,7 +13,7 @@ beforeEach(resetDb);
 describe('Testing DB logic', async () => {
   test('can create booking and successfully increase booking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = officeQuotas[0].name;
+    const office = config.officeQuotas[0].name;
     const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
@@ -40,7 +42,7 @@ describe('Testing DB logic', async () => {
 
   test('can delete booking and successfully decrease booking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = officeQuotas[0].name;
+    const office = config.officeQuotas[0].name;
     const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
@@ -71,8 +73,8 @@ describe('Testing DB logic', async () => {
 
   test('can create booking with parking and successfully increase booking count and parking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const office = config.officeQuotas[0].name;
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -100,8 +102,8 @@ describe('Testing DB logic', async () => {
 
   test('can delete booking with parking and successfully decrease booking count and parking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const office = config.officeQuotas[0].name;
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -134,8 +136,8 @@ describe('Testing DB logic', async () => {
 
   test('cannot have multiple bookings on the same day', async () => {
     const normalUserEmail = getNormalUser();
-    const office = officeQuotas[0].name;
-    const date = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+    const office = config.officeQuotas[0].name;
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -159,7 +161,7 @@ describe('Testing DB logic', async () => {
 
   test('cannot exceed weekly quota', async () => {
     const normalUserEmail = getNormalUser();
-    const office = officeQuotas[0].name;
+    const office = config.officeQuotas[0].name;
     const createBookingBody = {
       user: normalUserEmail,
       office,
@@ -171,7 +173,7 @@ describe('Testing DB logic', async () => {
     for (const day of days) {
       const res = await app
         .post('/api/bookings')
-        .send({ ...createBookingBody, date: format(addDays(new Date(), day), 'yyyy-MM-dd') })
+        .send({ ...createBookingBody, date: format(addDays(nextMonday, day), 'yyyy-MM-dd') })
         .set('bearer', normalUserEmail);
       expect(res.ok).toBe(true);
     }
@@ -180,11 +182,32 @@ describe('Testing DB logic', async () => {
       .post('/api/bookings')
       .send({
         ...createBookingBody,
-        date: format(addDays(new Date(), config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
+        date: format(addDays(nextMonday, config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
       })
       .set('bearer', normalUserEmail);
 
     expect(createThirdResponse.status).toEqual(409);
     expect(createThirdResponse.body.message).toEqual('User quota exceeded');
+  });
+
+  test('booking failing due to lack of parking', async () => {
+    const normalUserEmail = getNormalUser();
+    const office = config.officeQuotas[1].name;
+    const createBookingBody = {
+      user: normalUserEmail,
+      office,
+      parking: true,
+    };
+
+    const response = await app
+      .post('/api/bookings')
+      .send({
+        ...createBookingBody,
+        date: format(addDays(nextMonday, config.defaultWeeklyQuota + 1), 'yyyy-MM-dd'),
+      })
+      .set('bearer', normalUserEmail);
+
+    expect(response.status).toEqual(409);
+    expect(response.body.message).toEqual('Office parking quota exceeded');
   });
 });

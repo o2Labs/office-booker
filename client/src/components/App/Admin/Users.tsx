@@ -1,12 +1,12 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, Link } from '@reach/router';
 
-import Layout from '../Layout/Layout';
+import Layout from '../../Layout/Layout';
 import ManageUsersStyles from './ManageUsers.styles';
 import AdminHeader from './AdminHeader';
 import AdminStyles from './Admin.styles';
-import { AppContext } from '../AppProvider';
-import { validateEmail } from '../../lib/emailValidation';
+import { AppContext } from '../../AppProvider';
+import { validateEmail } from '../../../lib/emailValidation';
 
 import {
   Table,
@@ -24,9 +24,9 @@ import Create from '@material-ui/icons/Create';
 import { TextField, InputAdornment } from '@material-ui/core';
 import Search from '@material-ui/icons/Search';
 
-import { User } from '../../types/api';
-import { queryUsers, getUser } from '../../lib/api';
-import { formatError } from '../../lib/app';
+import { User } from '../../../types/api';
+import { queryUsers, getUser } from '../../../lib/api';
+import { formatError } from '../../../lib/app';
 
 type UserFilter =
   | { name: 'System Admin' | 'Office Admin' | 'custom' }

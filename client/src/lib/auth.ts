@@ -4,6 +4,7 @@ import { CognitoUser } from 'amazon-cognito-identity-js';
 import { User } from '../types/api';
 import { Config } from '../context/stores';
 
+let mockUser : string | undefined = undefined;
 export const configureAuth = (config: Config) => {
   if (config.auth.type === 'cognito') {
     Auth.configure({
@@ -11,6 +12,9 @@ export const configureAuth = (config: Config) => {
       userPoolId: config.auth.userPoolId,
       userPoolWebClientId: config.auth.webClientId,
     });
+  }
+  else { 
+    mockUser = "mock.user@domain.test";
   }
 };
 
@@ -36,6 +40,9 @@ const tryGetCurrentSession = async () => {
 // Exports
 export const getAuthState = async (): Promise<User['email'] | undefined> => {
   // Check for current session
+  if (mockUser !== undefined) {
+    return mockUser;
+  }
   const session = await tryGetCurrentSession();
 
   if (session === undefined) {
@@ -48,6 +55,9 @@ export const getAuthState = async (): Promise<User['email'] | undefined> => {
 };
 
 export const getJwtToken = async () => {
+  if (mockUser !== undefined) {
+    return mockUser;
+  }
   const session = await Auth.currentSession();
   const accessToken = session.getIdToken();
 
