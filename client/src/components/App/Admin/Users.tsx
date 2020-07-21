@@ -6,7 +6,6 @@ import ManageUsersStyles from './ManageUsers.styles';
 import AdminHeader from './AdminHeader';
 import AdminStyles from './Admin.styles';
 import { AppContext } from '../../AppProvider';
-import { validateEmail } from '../../../lib/emailValidation';
 
 import {
   Table,
@@ -24,14 +23,25 @@ import Create from '@material-ui/icons/Create';
 import { TextField, InputAdornment } from '@material-ui/core';
 import Search from '@material-ui/icons/Search';
 
-import { User } from '../../../types/api';
-import { queryUsers, getUser } from '../../../lib/api';
+import { User, UserQuery } from '../../../types/api';
+import { queryUsers } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-type UserFilter =
-  | { name: 'System Admin' | 'Office Admin' | 'custom' | 'all' }
-  | { name: 'email'; email: string };
+type UserFilter = { name: 'System Admin' | 'Office Admin' | 'custom' | 'all'; email?: string };
+
+const userFilterToQuery = (filter: UserFilter): UserQuery => {
+  const query: UserQuery = { emailPrefix: filter.email };
+  if (filter.name === 'Office Admin') {
+    query.role = 'Office Admin';
+  } else if (filter.name === 'System Admin') {
+    query.role = 'System Admin';
+  }
+  if (filter.name === 'custom') {
+    query.quota = 'custom';
+  }
+  return query;
+};
 
 const Users: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -40,49 +50,21 @@ const Users: React.FC<RouteComponentProps> = () => {
   const [queryResult, setQueryResult] = useState<User[] | undefined>(undefined);
   const [paginationToken, setPaginationToken] = useState<string | undefined>(undefined);
   const [selectedFilter, setSelectedFilter] = useState<UserFilter>({ name: 'System Admin' });
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState<string | undefined>(undefined);
+  const [email, setEmail] = useState<string>('');
 
   useEffect(() => {
-    if (selectedFilter.name === 'email') {
-      getUser(selectedFilter.email)
-        .then((user) => {
-          setQueryResult([user]);
+    queryUsers(userFilterToQuery(selectedFilter))
+      .then((result) => {
+        setQueryResult(result.users);
+        setPaginationToken(result.paginationToken);
+      })
+      .catch((error) =>
+        dispatch({
+          type: 'SET_ERROR',
+          payload: formatError(error),
         })
-        .catch((error) => {
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(error),
-          });
-        });
-    } else {
-      queryUsers(
-        selectedFilter.name === 'all'
-          ? {}
-          : selectedFilter.name === 'custom'
-          ? { quota: 'custom' }
-          : { role: selectedFilter.name }
-      )
-        .then((result) => {
-          setQueryResult(result.users);
-          setPaginationToken(result.paginationToken);
-        })
-        .catch((error) =>
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(error),
-          })
-        );
-    }
+      );
   }, [selectedFilter, dispatch]);
-
-  useEffect(() => {
-    if (email.length > 0 && !validateEmail(state.config?.emailRegex, email)) {
-      setEmailError('Email address not permitted');
-    } else {
-      setEmailError(undefined);
-    }
-  }, [email, state.config]);
 
   const handleSelectedRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const val = event.target.value;
@@ -127,34 +109,6 @@ const Users: React.FC<RouteComponentProps> = () => {
               <Paper>
                 <h3>View Users</h3>
                 <section className="filters">
-                  <div className="search-user">
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (email && !emailError) {
-                          setSelectedFilter({ name: 'email', email });
-                        } else {
-                          setSelectedFilter({ name: 'System Admin' });
-                        }
-                      }}
-                    >
-                      <TextField
-                        placeholder="search by full email address"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        error={emailError !== undefined}
-                        helperText={emailError}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Search />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </form>
-                  </div>
-
                   <div className="filter-roles">
                     <FormControl variant="outlined">
                       <InputLabel style={{ backgroundColor: '#ffffff' }}>Select Filter</InputLabel>
@@ -165,6 +119,32 @@ const Users: React.FC<RouteComponentProps> = () => {
                         <MenuItem value={'all'}>All Registered Users</MenuItem>
                       </Select>
                     </FormControl>
+                  </div>
+
+                  <div className="search-user">
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const sanitisedEmail = email.trim().toLowerCase();
+                        setSelectedFilter((filter) => ({
+                          ...filter,
+                          email: sanitisedEmail === '' ? undefined : sanitisedEmail,
+                        }));
+                      }}
+                    >
+                      <TextField
+                        placeholder="Start of email address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Search />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </form>
                   </div>
                 </section>
 

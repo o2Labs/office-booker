@@ -8,7 +8,9 @@ export type SystemAdminRole = { name: 'System Admin' };
 export type OfficeAdminRole = { name: 'Office Admin'; offices: string[] };
 export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole;
 
-export type UserQuery = { quota?: 'custom'; role?: UserRole['name'] };
+export type UserQuery = { quota?: 'custom'; role?: UserRole['name']; emailPrefix?: string };
+
+export type UserQueryResponse = { users: User[]; paginationToken?: string };
 
 export type User = {
   email: string;
