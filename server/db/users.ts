@@ -46,6 +46,20 @@ export const getAllUsers = async (config: Config): Promise<User[]> => {
   return rows;
 };
 
+export const getUsersDb = async (config: Config, userEmails: string[]): Promise<User[]> => {
+  const mapper = buildMapper(config);
+  const emailsLowered = userEmails.map((e) => e.toLowerCase());
+  const users = [];
+
+  for await (const result of await mapper.batchGet(
+    emailsLowered.map((userEmail) => Object.assign(new UserModel(), { email: userEmail }))
+  )) {
+    users.push(result);
+  }
+  const usersByEmail = new Map(users.map((u) => [u.email, u]));
+  return emailsLowered.map((email) => toUser(config, usersByEmail.get(email) ?? { email }));
+};
+
 export const getUserDb = async (config: Config, userEmail: string): Promise<User> => {
   const mapper = buildMapper(config);
   const email = userEmail.toLocaleLowerCase();

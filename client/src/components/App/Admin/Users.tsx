@@ -24,61 +24,71 @@ import Create from '@material-ui/icons/Create';
 import { TextField, InputAdornment } from '@material-ui/core';
 import Search from '@material-ui/icons/Search';
 
-import { User } from '../../../types/api';
-import { queryUsers, getUser } from '../../../lib/api';
+import { User, UserQuery } from '../../../types/api';
+import { queryUsers } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
+import { OurButton } from '../../../styles/MaterialComponents';
 
-type UserFilter =
-  | { name: 'System Admin' | 'Office Admin' | 'custom' }
-  | { name: 'email'; email: string };
+type UserFilter = { name: 'System Admin' | 'Office Admin' | 'custom' | 'all'; email?: string };
+
+const userFilterToQuery = (filter: UserFilter): UserQuery => {
+  const query: UserQuery = { emailPrefix: filter.email };
+  if (filter.name === 'Office Admin') {
+    query.role = 'Office Admin';
+  } else if (filter.name === 'System Admin') {
+    query.role = 'System Admin';
+  }
+  if (filter.name === 'custom') {
+    query.quota = 'custom';
+  }
+  return query;
+};
 
 const Users: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
   const { user } = state;
   const [queryResult, setQueryResult] = useState<User[] | undefined>(undefined);
+  const [paginationToken, setPaginationToken] = useState<string | undefined>(undefined);
   const [selectedFilter, setSelectedFilter] = useState<UserFilter>({ name: 'System Admin' });
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState<string | undefined>(undefined);
+  const [email, setEmail] = useState<string>('');
 
   useEffect(() => {
-    if (selectedFilter.name === 'email') {
-      getUser(selectedFilter.email)
-        .then((user) => {
-          setQueryResult([user]);
+    setQueryResult(undefined);
+    queryUsers(userFilterToQuery(selectedFilter))
+      .then((result) => {
+        setQueryResult(result.users);
+        setPaginationToken(result.paginationToken);
+      })
+      .catch((error) =>
+        dispatch({
+          type: 'SET_ERROR',
+          payload: formatError(error),
         })
-        .catch((error) => {
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(error),
-          });
-        });
-    } else {
-      queryUsers(
-        selectedFilter.name === 'custom' ? { quota: 'custom' } : { role: selectedFilter.name }
-      )
-        .then(setQueryResult)
+      );
+  }, [selectedFilter, dispatch]);
+
+  const handleSelectedRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+    const val = event.target.value;
+    if (val === 'System Admin' || val === 'Office Admin' || val === 'custom' || val === 'all') {
+      setSelectedFilter((filter) => ({ ...filter, name: val }));
+    }
+  };
+
+  const loadMore = () => {
+    if (paginationToken && selectedFilter.name === 'all') {
+      setPaginationToken(undefined);
+      queryUsers({}, paginationToken)
+        .then((result) => {
+          setQueryResult((previousUsers) => [...(previousUsers ?? []), ...result.users]);
+          setPaginationToken(result.paginationToken);
+        })
         .catch((error) =>
           dispatch({
             type: 'SET_ERROR',
             payload: formatError(error),
           })
         );
-    }
-  }, [selectedFilter, dispatch]);
-
-  useEffect(() => {
-    if (email.length > 0 && !validateEmail(state.config?.emailRegex, email)) {
-      setEmailError('Email address not permitted');
-    } else {
-      setEmailError(undefined);
-    }
-  }, [email, state.config]);
-
-  const handleSelectedRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    const val = event.target.value;
-    if (val === 'System Admin' || val === 'Office Admin' || val === 'custom') {
-      setSelectedFilter({ name: val });
     }
   };
 
@@ -101,23 +111,33 @@ const Users: React.FC<RouteComponentProps> = () => {
               <Paper>
                 <h3>View Users</h3>
                 <section className="filters">
+                  <div className="filter-roles">
+                    <FormControl variant="outlined">
+                      <InputLabel style={{ backgroundColor: '#ffffff' }}>Select Filter</InputLabel>
+                      <Select value={selectedFilter.name} onChange={handleSelectedRoleChange}>
+                        <MenuItem value={'System Admin'}>System Admins</MenuItem>
+                        <MenuItem value={'Office Admin'}>Office Admins</MenuItem>
+                        <MenuItem value={'custom'}>Users with Custom Quota</MenuItem>
+                        <MenuItem value={'all'}>All Registered Users</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+
                   <div className="search-user">
                     <form
                       onSubmit={(e) => {
                         e.preventDefault();
-                        if (email && !emailError) {
-                          setSelectedFilter({ name: 'email', email });
-                        } else {
-                          setSelectedFilter({ name: 'System Admin' });
-                        }
+                        const sanitisedEmail = email.trim().toLowerCase();
+                        setSelectedFilter((filter) => ({
+                          ...filter,
+                          email: sanitisedEmail === '' ? undefined : sanitisedEmail,
+                        }));
                       }}
                     >
                       <TextField
-                        placeholder="search by full email address"
+                        placeholder="Start of email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        error={emailError !== undefined}
-                        helperText={emailError}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -127,17 +147,6 @@ const Users: React.FC<RouteComponentProps> = () => {
                         }}
                       />
                     </form>
-                  </div>
-
-                  <div className="filter-roles">
-                    <FormControl variant="outlined">
-                      <InputLabel style={{ backgroundColor: '#ffffff' }}>Select Filter</InputLabel>
-                      <Select value={selectedFilter.name} onChange={handleSelectedRoleChange}>
-                        <MenuItem value={'System Admin'}>System Admins</MenuItem>
-                        <MenuItem value={'Office Admin'}>Office Admins</MenuItem>
-                        <MenuItem value={'custom'}>Users with Custom Quota</MenuItem>
-                      </Select>
-                    </FormControl>
                   </div>
                 </section>
 
@@ -167,6 +176,30 @@ const Users: React.FC<RouteComponentProps> = () => {
                     </TableBody>
                   </Table>
                 </section>
+
+                {paginationToken && (
+                  <section className="load-more-container">
+                    <OurButton onClick={loadMore} variant="contained">
+                      Load More
+                    </OurButton>
+                  </section>
+                )}
+
+                {selectedFilter.name === 'all' &&
+                  selectedFilter.email !== undefined &&
+                  validateEmail(state.config?.emailRegex, selectedFilter.email) &&
+                  queryResult?.length === 0 && (
+                    <section className="unregistered-user">
+                      <p>
+                        User not yet registered, edit{' '}
+                        <Link to={`/admin/users/${selectedFilter.email}`}>
+                          {selectedFilter.email}
+                          <Create />
+                        </Link>{' '}
+                        anyway.
+                      </p>
+                    </section>
+                  )}
               </Paper>
             </ManageUsersStyles>
           </>
