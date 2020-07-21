@@ -4,6 +4,8 @@ The Office Booker was created to solve the problem of coordinating the safe retu
 
 The Lab team of 4 developers put together this real-time booking app in just 10 days for proactively managing demand for office space by allowing you to book ahead of travelling to the office. Although originally created as a tactical solution within Telefónica UK but we decided to share this publicly as it might be a problem other companies are also facing - including some of our own customers.
 
+![](docs/images/screenshots.png)
+
 ## Contributors
 
 [![Atif Khokhar](https://avatars2.githubusercontent.com/u/18725139?s=64&v=4)](https://github.com/AtifKhokhar)
@@ -11,6 +13,19 @@ The Lab team of 4 developers put together this real-time booking app in just 10 
 [![Jumee](https://avatars0.githubusercontent.com/u/37407768?s=64&v=4)](https://github.com/Jumee-LDN)
 [![K.Turner](https://avatars0.githubusercontent.com/u/921375?s=64&v=4)](https://github.com/otaiga)
 [![Richard Chapman](https://avatars3.githubusercontent.com/u/10833481?s=64&v=4)](https://github.com/chapmanio)
+
+# Getting Started
+
+## Prerequisites
+
+[Node.js](https://nodejs.org/en/download/), [Yarn](https://yarnpkg.com/lang/en/docs/install/), [Pulumi](https://www.pulumi.com/docs/get-started/install/), [Docker](https://download.docker.com/mac/stable/Docker.dmg), [AWS CLI](https://aws.amazon.com/cli/)
+
+## Local Quick Start
+
+1. `./install.sh` - Restore packages
+2. `./start.sh` start API and client application
+
+_Note:_ Run `./make-env.sh [STACK]` to use config from the deployed stack for local testing.
 
 ## User Journey
 
@@ -27,14 +42,6 @@ The Lab team of 4 developers put together this real-time booking app in just 10 
 - Default limit of 1 booking per week per user, can be adjusted by System Administrators
 - Bookings for the today can only be cancelled by Administrators
 - Users pick a single office (can be changed in help)
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/en/download/)
-- [Yarn](https://yarnpkg.com/lang/en/docs/install/)
-- [Pulumi](https://www.pulumi.com/docs/get-started/install/)
-- [Docker](https://download.docker.com/mac/stable/Docker.dmg)
-- [AWS CLI](https://aws.amazon.com/cli/)
 
 ## First Deploy
 
@@ -55,19 +62,11 @@ This is the same as for the first deploy, excluding creating and configuring the
 
 1. `./install.sh`
 2. `./build.sh`
-3. [`pulumi login`](https://www.pulumi.com/docs/reference/cli/pulumi_login/)
-4. `./deploy.sh [STACK]`
+3. `./deploy.sh [STACK]`
 
 ## Privacy Policy
 
 Before running this application, you should review the privacy policy and adjust for your own situation.
-
-## Local Quick Start
-
-1. `./install.sh` - Restore packages
-2. `./start.sh` start API and client application
-
-_Note:_ Run `./make-env.sh [STACK]` to use config from the deployed stack for local testing.
 
 ## Releases
 
@@ -125,9 +124,9 @@ General meanings of log levels:
 
 All changes to the database are audit-logged for trouble-shooting purposes.
 
-## Solution Design
+# Solution Design
 
-### Technical Summary
+## Technical Summary
 
 - Email <abbr title="One Time Access Code">OTAC</abbr> login, limited by configured regular expression
 - Online administration dashboard for booking and user management
@@ -136,23 +135,23 @@ All changes to the database are audit-logged for trouble-shooting purposes.
 - All storage is encrypted-at-rest
 - No remote terminal access or system patching required
 
-### AWS Cloud Infrastructure
+## AWS Cloud Infrastructure
 
 The client application is a React.js single page application (SPA). We uses AWS Cognito for authentication. The API is written on NodeJS running on AWS Lambda via API Gateway with dynamic data stored in DynamoDB (encrypted via AWS KMS).
 
 ![Cloud Infrastructure](docs/images/cloud-infrastructure.png)
 
-### Monitoring
+## Monitoring
 
 All logged errors are centrally monitored by the `alerts` lambda. Add your own code to [alerts/src/lambda.ts](./alerts/src/lambda.ts) in the `postNotification` function to send notifications to somewhere like a slack channel or email account.
 
-### Service Shutdown
+## Service Shutdown
 
 1. Disable the CloudFront CDN to stop all traffic
 2. Empty the S3 `api-cdn-logs` and `api-static-site` buckets
 3. Run `pulumi destroy`
 
-### Cost Estimation
+## Cost Estimation
 
 Due to the serverless architecture of the application, all costs scale linearly based on:
 
