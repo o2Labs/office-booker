@@ -31,6 +31,8 @@ import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 
 import MakeBookingStyles from './MakeBooking.styles';
 
+import BookingStatus from '../../Assets/BookingStatus';
+
 // Types
 type Week = {
   id: number;
@@ -446,13 +448,20 @@ const MakeBooking: React.FC = () => {
                       ) : (
                         <div className="no-booking">
                           <div className="availability">
-                            <Tooltip title={`Office Space: ${day.available} left`} arrow>
+                            <BookingStatus
+                              officeQuota={currentOffice.quota}
+                              officeAvailable={day.available}
+                              parkingQuota={currentOffice.parkingQuota}
+                              parkingAvailable={day.availableCarPark}
+                            />
+
+                            {/* <Tooltip title={`Office Space: ${day.available} left`} arrow>
                               <div className="status">
                                 <PersonIcon />
                                 <p>{remainderIndicator(currentOffice.quota, 2, day.available)}</p>
                               </div>
                             </Tooltip>
-
+ 
                             {day.availableCarPark && currentOffice.parkingQuota && (
                               <Tooltip title={`Car Park: ${day.availableCarPark} left`} arrow>
                                 <div className="status">
@@ -466,7 +475,7 @@ const MakeBooking: React.FC = () => {
                                   </p>
                                 </div>
                               </Tooltip>
-                            )}
+                            )}  */}
                           </div>
 
                           {day.userCanBook && (
