@@ -101,7 +101,7 @@ export const configureApp = (config: Config) => {
       const quota = req.query.quota?.toString();
       const role: string | undefined = req.query?.role?.toString();
       const filterQuota = quota?.toLocaleLowerCase() === 'custom';
-      const emailPrefix = req.query.emailPrefix?.toString();
+      const emailPrefix = req.query.emailPrefix?.toString().toLowerCase();
       const paginationToken = req.query.paginationToken?.toString();
       const authUser = await getAuthUser(res);
       if (!authUser.permissions.canViewUsers) {
