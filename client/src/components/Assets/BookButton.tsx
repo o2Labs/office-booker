@@ -6,8 +6,11 @@ import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
+import { ArrowDropDown, Block } from '@material-ui/icons';
+import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
+import BusinessIcon from '@material-ui/icons/Business';
+
 import { OurButton } from '../../styles/MaterialComponents';
-import { ArrowDropDown, Block, DirectionsCar, DirectionsWalk } from '@material-ui/icons';
 
 type Props = {
   onClick: (args: { withParking: boolean }) => void;
@@ -90,13 +93,13 @@ const BookButton: React.FC<Props> = (props) => {
                         selected={0 === selectedIndex}
                         onClick={(event) => handleMenuItemClick(event, 0)}
                       >
-                        <DirectionsWalk style={{ marginRight: '1rem' }} /> Without Parking
+                        <BusinessIcon style={{ marginRight: '1rem' }} /> Office only
                       </MenuItem>
                       <MenuItem
                         selected={1 === selectedIndex}
                         onClick={(event) => handleMenuItemClick(event, 1)}
                       >
-                        <DirectionsCar style={{ marginRight: '1rem' }} /> With Parking
+                        <EmojiTransportationIcon style={{ marginRight: '1rem' }} /> + Parking
                       </MenuItem>
                     </MenuList>
                   </ClickAwayListener>

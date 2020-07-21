@@ -408,6 +408,7 @@ const MakeBooking: React.FC = () => {
                   <div className="left">
                     <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
                   </div>
+
                   {day.isBookable && (
                     <div className="right">
                       {day.booking ? (
