@@ -16,7 +16,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import DriveEtaIcon from '@material-ui/icons/DriveEta';
-import BusinessIcon from '@material-ui/icons/Business';
+import PersonIcon from '@material-ui/icons/Person';
+import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 
 import { AppContext } from '../../AppProvider';
 
@@ -435,6 +436,11 @@ const MakeBooking: React.FC = () => {
                             }}
                           >
                             View Pass
+                            {day.booking?.parking ? (
+                              <EmojiTransportationIcon style={{ marginLeft: '0.8rem' }} />
+                            ) : (
+                              <PersonIcon style={{ marginLeft: '0.8rem' }} />
+                            )}
                           </OurButton>
                         </>
                       ) : (
@@ -442,7 +448,7 @@ const MakeBooking: React.FC = () => {
                           <div className="availability">
                             <Tooltip title={`Office Space: ${day.available} left`} arrow>
                               <div className="status">
-                                <BusinessIcon />
+                                <PersonIcon />
                                 <p>{remainderIndicator(currentOffice.quota, 2, day.available)}</p>
                               </div>
                             </Tooltip>
