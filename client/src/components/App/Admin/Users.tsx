@@ -54,6 +54,7 @@ const Users: React.FC<RouteComponentProps> = () => {
   const [email, setEmail] = useState<string>('');
 
   useEffect(() => {
+    setQueryResult(undefined);
     queryUsers(userFilterToQuery(selectedFilter))
       .then((result) => {
         setQueryResult(result.users);
@@ -70,7 +71,7 @@ const Users: React.FC<RouteComponentProps> = () => {
   const handleSelectedRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const val = event.target.value;
     if (val === 'System Admin' || val === 'Office Admin' || val === 'custom' || val === 'all') {
-      setSelectedFilter({ name: val });
+      setSelectedFilter((filter) => ({ ...filter, name: val }));
     }
   };
 
@@ -190,9 +191,10 @@ const Users: React.FC<RouteComponentProps> = () => {
                   queryResult?.length === 0 && (
                     <section className="unregistered-user">
                       <p>
-                        User not yet registered,{' '}
+                        User not yet registered, edit{' '}
                         <Link to={`/admin/users/${selectedFilter.email}`}>
-                          edit {selectedFilter.email}
+                          {selectedFilter.email}
+                          <Create />
                         </Link>{' '}
                         anyway.
                       </p>
