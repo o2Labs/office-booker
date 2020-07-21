@@ -335,10 +335,14 @@ const MakeBooking: React.FC = () => {
           You can make <span>{user.quota}</span> booking per week.
         </li>
         <li>
-          {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>.
-        </li>
-        <li>
-          And a daily car park capacity of <span>{currentOffice.parkingQuota}</span>.
+          {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>
+          {currentOffice.parkingQuota > 0 ? (
+            <>
+              {` `} and car park capacity of <span>{currentOffice.parkingQuota}</span>.
+            </>
+          ) : (
+            `.`
+          )}
         </li>
       </ul>
 
