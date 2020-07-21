@@ -6,6 +6,7 @@ import ManageUsersStyles from './ManageUsers.styles';
 import AdminHeader from './AdminHeader';
 import AdminStyles from './Admin.styles';
 import { AppContext } from '../../AppProvider';
+import { validateEmail } from '../../../lib/emailValidation';
 
 import {
   Table,
@@ -174,6 +175,7 @@ const Users: React.FC<RouteComponentProps> = () => {
                     </TableBody>
                   </Table>
                 </section>
+
                 {paginationToken && (
                   <section className="load-more-container">
                     <OurButton onClick={loadMore} variant="contained">
@@ -181,6 +183,21 @@ const Users: React.FC<RouteComponentProps> = () => {
                     </OurButton>
                   </section>
                 )}
+
+                {selectedFilter.name === 'all' &&
+                  selectedFilter.email !== undefined &&
+                  validateEmail(state.config?.emailRegex, selectedFilter.email) &&
+                  queryResult?.length === 0 && (
+                    <section className="unregistered-user">
+                      <p>
+                        User not yet registered,{' '}
+                        <Link to={`/admin/users/${selectedFilter.email}`}>
+                          edit {selectedFilter.email}
+                        </Link>{' '}
+                        anyway.
+                      </p>
+                    </section>
+                  )}
               </Paper>
             </ManageUsersStyles>
           </>
