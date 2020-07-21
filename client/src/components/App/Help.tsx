@@ -131,16 +131,16 @@ const Help: React.FC<RouteComponentProps> = () => {
         {user && currentOffice && (
           <div className="change-office">
             <p>
-              You are currently booking for <span>{currentOffice.name}</span>.{' '}
-              <Link
-                component="button"
-                underline="always"
-                color="primary"
-                onClick={() => handleClearOffice()}
-              >
-                Change office
-              </Link>
+              You are currently booking for <span>{currentOffice.name}</span>.
             </p>
+            <Link
+              component="button"
+              underline="always"
+              color="primary"
+              onClick={() => handleClearOffice()}
+            >
+              Change office
+            </Link>
           </div>
         )}
 
