@@ -27,7 +27,7 @@ const getCognitoUsers = async (
       UserPoolId: config.authConfig.cognitoUserPoolId,
       AttributesToGet: ['email'],
       Filter: filter,
-      Limit: 10, // Max size of Cognito listing
+      Limit: 60,
       PaginationToken: paginationToken,
     })
     .promise();
