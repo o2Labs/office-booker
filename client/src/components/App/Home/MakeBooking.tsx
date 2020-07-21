@@ -414,12 +414,12 @@ const MakeBooking: React.FC = () => {
                           <Link
                             component="button"
                             underline="always"
-                            className={`${(buttonsLoading && 'loading') || undefined} cancelBtn`}
+                            className={`${buttonsLoading ? 'loading ' : ''}cancelBtn`}
                             onClick={() =>
                               !buttonsLoading && day.booking && handleCancelBooking(day.booking)
                             }
                           >
-                            Cancel Booking
+                            Cancel
                           </Link>
                         )}
                       </>
@@ -431,7 +431,8 @@ const MakeBooking: React.FC = () => {
                             {remainderIndicator(currentOffice.quota, 2, day.available)}
                           </OurButton>
                         </Tooltip>
-                        {day.availableCarPark && currentOffice.parkingQuota ? (
+
+                        {day.availableCarPark && currentOffice.parkingQuota && (
                           <Tooltip title={`Car Park: ${day.availableCarPark} left`} arrow>
                             <OurButton size="small">
                               <LocalParking />
@@ -442,9 +443,10 @@ const MakeBooking: React.FC = () => {
                               )}
                             </OurButton>
                           </Tooltip>
-                        ) : null}
+                        )}
                       </div>
                     ) : null}
+
                     {day.isBookable && day.booking && (
                       <OurButton
                         size="small"
@@ -457,6 +459,7 @@ const MakeBooking: React.FC = () => {
                         View Pass
                       </OurButton>
                     )}
+
                     {day.isBookable && day.userCanBook && (
                       <BookButton
                         onClick={(e) => handleCreateBooking(day.date, e.withParking)}

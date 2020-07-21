@@ -25,7 +25,7 @@ export default styled.div`
     font-weight: bold;
   }
 
-  >ul {
+  > ul {
     ${(props) => props.theme.breakpoints.up('xs')} {
       margin: 1.6rem 0 0;
     }
@@ -186,30 +186,30 @@ export default styled.div`
 
         > .right {
           flex: 1 1 70%;
+
           display: flex;
           justify-content: flex-end;
 
-          
           .availability {
             display: flex;
             justify-content: flex-end;
             width: 100%;
             margin-right: 1rem;
-            
+
             svg {
               margin-right: 0.3rem;
               font-size: 2rem;
             }
             button {
               padding: 0;
-              margin: 0.5rem 0  0 0.5rem;
+              margin: 0.5rem 0 0 0.5rem;
             }
           }
 
-   
           .cancelBtn {
-              margin-right: 1rem;
-            }
+            margin-right: 1rem;
+          }
+
           /* > p {
             margin: 0;
 
