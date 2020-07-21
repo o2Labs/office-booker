@@ -25,7 +25,7 @@ export default styled.div`
     font-weight: bold;
   }
 
-  >ul {
+  > ul {
     ${(props) => props.theme.breakpoints.up('xs')} {
       margin: 1.6rem 0 0;
     }
@@ -186,58 +186,46 @@ export default styled.div`
 
         > .right {
           flex: 1 1 70%;
-          display: flex;
-          justify-content: flex-end;
 
-          
-          .availability {
+          text-align: right;
+
+          > .no-booking {
             display: flex;
             justify-content: flex-end;
-            width: 100%;
-            margin-right: 1rem;
-            
-            svg {
-              margin-right: 0.3rem;
-              font-size: 2rem;
-            }
-            button {
-              padding: 0;
-              margin: 0.5rem 0  0 0.5rem;
+
+            > .availability {
+              display: flex;
+              align-items: center;
+              justify-content: flex-end;
+
+              margin-right: 1rem;
+
+              > .status {
+                flex: 0 0 auto;
+
+                display: flex;
+
+                > svg {
+                  flex: 0 0 auto;
+                  font-size: 2rem;
+                }
+
+                > p {
+                  flex: 1 1 auto;
+
+                  margin: 0 0 0 0.4rem;
+                }
+
+                &:not(:first-of-type) {
+                  padding-left: 1rem;
+                }
+              }
             }
           }
 
-   
           .cancelBtn {
-              margin-right: 1rem;
-            }
-          /* > p {
-            margin: 0;
-
-            &.booked {
-              color: ${(props) => props.theme.palette.primary.main};
-              font-size: 1.8rem;
-              line-height: 1.8rem;
-              font-weight: bold;
-              text-transform: uppercase;
-            }
-
-            &.available {
-              color: ${(props) => props.theme.palette.secondary.main};
-              font-weight: bold;
-            }
-          } */
-
-          /* > button {
-            margin-top: 2rem;
-
-            color: ${(props) => props.theme.palette.secondary.main};
-            font-size: 1.2rem;
-            font-weight: bold;
-
-            &.loading {
-              color: ${(props) => props.theme.palette.text.disabled};
-            }
-          } */
+            margin-right: 1.2rem;
+          }
         }
       }
     }

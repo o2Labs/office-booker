@@ -20,6 +20,10 @@ export const OurButton = styled(Button)<ButtonProps>`
 
   text-transform: inherit;
   font-weight: 400;
+
+  svg {
+    font-size: 2rem;
+  }
 `;
 
 export const TabButton = styled(Button)<ButtonProps>`

@@ -12,22 +12,24 @@ import endOfWeek from 'date-fns/endOfWeek';
 import IconButton from '@material-ui/core/IconButton';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
+import Tooltip from '@material-ui/core/Tooltip';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
+import DriveEtaIcon from '@material-ui/icons/DriveEta';
+import PersonIcon from '@material-ui/icons/Person';
+import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 
 import { AppContext } from '../../AppProvider';
+
+import BookButton from '../../Assets/BookButton';
+import { OurButton } from '../../../styles/MaterialComponents';
 
 import { Booking } from '../../../types/api';
 import { createBooking, cancelBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 
-import { OurButton } from '../../../styles/MaterialComponents';
 import MakeBookingStyles from './MakeBooking.styles';
-
-import BookButton from '../../Assets/BookButton';
-import { LocalParking, PermContactCalendar } from '@material-ui/icons';
-import { Tooltip } from '@material-ui/core';
 
 // Types
 type Week = {
@@ -319,7 +321,7 @@ const MakeBooking: React.FC = () => {
   };
 
   const remainderIndicator = (totalQuantity: number, step: number, leftQuantity: number) =>
-    totalQuantity / step > leftQuantity ? 'Low' : 'Good';
+    totalQuantity / step > leftQuantity ? 'L' : 'H';
 
   // Render
   if (!currentOffice || !user) {
@@ -335,10 +337,14 @@ const MakeBooking: React.FC = () => {
           You can make <span>{user.quota}</span> booking per week.
         </li>
         <li>
-          {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>.
-        </li>
-        <li>
-          And a daily car park capacity of <span>{currentOffice.parkingQuota}</span>.
+          {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>
+          {currentOffice.parkingQuota > 0 ? (
+            <>
+              {` `} and car park capacity of <span>{currentOffice.parkingQuota}</span>.
+            </>
+          ) : (
+            `.`
+          )}
         </li>
       </ul>
 
@@ -398,69 +404,82 @@ const MakeBooking: React.FC = () => {
                   key={dayIndex}
                   className="row"
                   data-today={isToday(day.date)}
-                  data-bookable={day.isBookable && (day.userCanBook || day.booking)}
+                  data-bookable={day.isBookable && (day.userCanBook || day.booking) ? true : false}
                 >
                   <div className="left">
                     <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
                   </div>
-                  <div className="right">
-                    {day.booking ? (
-                      <>
-                        {day.isBookable && !isToday(day.date) && (
-                          <Link
-                            component="button"
-                            underline="always"
-                            className={`${(buttonsLoading && 'loading') || undefined} cancelBtn`}
-                            onClick={() =>
-                              !buttonsLoading && day.booking && handleCancelBooking(day.booking)
-                            }
+
+                  {day.isBookable && (
+                    <div className="right">
+                      {day.booking ? (
+                        <>
+                          {!isToday(day.date) && (
+                            <Link
+                              component="button"
+                              underline="always"
+                              className={`${buttonsLoading ? 'loading ' : ''}cancelBtn`}
+                              onClick={() =>
+                                !buttonsLoading && day.booking && handleCancelBooking(day.booking)
+                              }
+                            >
+                              Cancel
+                            </Link>
+                          )}
+
+                          <OurButton
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => {
+                              navigate(`./booking/${day.booking?.id}`);
+                            }}
                           >
-                            Cancel Booking
-                          </Link>
-                        )}
-                      </>
-                    ) : day.isBookable ? (
-                      <div className="availability">
-                        <Tooltip title={`Office Space: ${day.available} left`} arrow>
-                          <OurButton size="small">
-                            <PermContactCalendar />
-                            {remainderIndicator(currentOffice.quota, 2, day.available)}
+                            View Pass
+                            {day.booking?.parking ? (
+                              <EmojiTransportationIcon style={{ marginLeft: '0.8rem' }} />
+                            ) : (
+                              <PersonIcon style={{ marginLeft: '0.8rem' }} />
+                            )}
                           </OurButton>
-                        </Tooltip>
-                        {day.availableCarPark && currentOffice.parkingQuota ? (
-                          <Tooltip title={`Car Park: ${day.availableCarPark} left`} arrow>
-                            <OurButton size="small">
-                              <LocalParking />
-                              {remainderIndicator(
-                                currentOffice.parkingQuota,
-                                2,
-                                day.availableCarPark
-                              )}
-                            </OurButton>
-                          </Tooltip>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    {day.isBookable && day.booking && (
-                      <OurButton
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          navigate(`./booking/${day.booking?.id}`);
-                        }}
-                      >
-                        View Pass
-                      </OurButton>
-                    )}
-                    {day.isBookable && day.userCanBook && (
-                      <BookButton
-                        onClick={(e) => handleCreateBooking(day.date, e.withParking)}
-                        availableCarPark={day.availableCarPark}
-                        buttonsLoading={buttonsLoading}
-                      />
-                    )}
-                  </div>
+                        </>
+                      ) : (
+                        <div className="no-booking">
+                          <div className="availability">
+                            <Tooltip title={`Office Space: ${day.available} left`} arrow>
+                              <div className="status">
+                                <PersonIcon />
+                                <p>{remainderIndicator(currentOffice.quota, 2, day.available)}</p>
+                              </div>
+                            </Tooltip>
+
+                            {day.availableCarPark && currentOffice.parkingQuota && (
+                              <Tooltip title={`Car Park: ${day.availableCarPark} left`} arrow>
+                                <div className="status">
+                                  <DriveEtaIcon />
+                                  <p>
+                                    {remainderIndicator(
+                                      currentOffice.parkingQuota,
+                                      2,
+                                      day.availableCarPark
+                                    )}
+                                  </p>
+                                </div>
+                              </Tooltip>
+                            )}
+                          </div>
+
+                          {day.userCanBook && (
+                            <BookButton
+                              onClick={(e) => handleCreateBooking(day.date, e.withParking)}
+                              availableCarPark={day.availableCarPark}
+                              buttonsLoading={buttonsLoading}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
