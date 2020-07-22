@@ -232,8 +232,7 @@ const MakeBooking: React.FC = () => {
           days,
         });
       });
-      console.log('state', state);
-      console.log('rows', rows);
+
       setRows(rows);
     }
   }, [bookings, currentOffice, user, weeks]);
@@ -319,9 +318,6 @@ const MakeBooking: React.FC = () => {
         );
     }
   };
-
-  const remainderIndicator = (totalQuantity: number, step: number, leftQuantity: number) =>
-    totalQuantity / step > leftQuantity ? 'L' : 'H';
 
   // Render
   if (!currentOffice || !user) {
