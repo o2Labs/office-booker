@@ -319,6 +319,20 @@ const MakeBooking: React.FC = () => {
     }
   };
 
+  const handleClearOffice = () => {
+    // Update local storage
+    localStorage.removeItem('office');
+
+    // Update global state
+    dispatch({
+      type: 'SET_CURRENT_OFFICE',
+      payload: undefined,
+    });
+
+    // Change page if required
+    navigate('/');
+  };
+
   // Render
   if (!currentOffice || !user) {
     return null;
@@ -326,7 +340,18 @@ const MakeBooking: React.FC = () => {
 
   return (
     <MakeBookingStyles>
-      <h2>{currentOffice.name}</h2>
+      <div className="header-area">
+        <h2>{currentOffice.name}</h2>
+        <Link
+          className="change-office-link"
+          component="button"
+          underline="always"
+          color="primary"
+          onClick={() => handleClearOffice()}
+        >
+          Change office
+        </Link>
+      </div>
 
       <ul>
         <li>

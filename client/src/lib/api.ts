@@ -1,5 +1,13 @@
 import { getJwtToken } from './auth';
-import { User, Office, Booking, UserQuery, DefaultRole, OfficeAdminRole } from '../types/api';
+import {
+  User,
+  Office,
+  Booking,
+  UserQuery,
+  DefaultRole,
+  OfficeAdminRole,
+  UserQueryResponse,
+} from '../types/api';
 
 // Constants
 const BASE_URL = new URL('/api/', window.location.origin);
@@ -25,13 +33,22 @@ const buildHeaders = async () => {
 };
 
 // Queries
-export const queryUsers = async (query: UserQuery): Promise<User[]> => {
+export const queryUsers = async (
+  query: UserQuery,
+  paginationToken?: string
+): Promise<UserQueryResponse> => {
   const url = new URL(`users`, BASE_URL);
-  if ('role' in query) {
+  if (query.role !== undefined) {
     url.searchParams.set('role', query.role);
   }
-  if ('quota' in query) {
+  if (query.quota !== undefined) {
     url.searchParams.set('quota', query.quota);
+  }
+  if (query.emailPrefix !== undefined) {
+    url.searchParams.set('emailPrefix', query.emailPrefix);
+  }
+  if (paginationToken !== undefined) {
+    url.searchParams.set('paginationToken', paginationToken);
   }
 
   const headers = await buildHeaders();
