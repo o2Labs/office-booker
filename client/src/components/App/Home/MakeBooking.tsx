@@ -14,7 +14,7 @@ import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import PersonIcon from '@material-ui/icons/Person';
+import BusinessIcon from '@material-ui/icons/Business';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 
 import { AppContext } from '../../AppProvider';
@@ -439,7 +439,7 @@ const MakeBooking: React.FC = () => {
                             {day.booking?.parking ? (
                               <EmojiTransportationIcon style={{ marginLeft: '0.8rem' }} />
                             ) : (
-                              <PersonIcon style={{ marginLeft: '0.8rem' }} />
+                              <BusinessIcon style={{ marginLeft: '0.8rem' }} />
                             )}
                           </OurButton>
                         </>
