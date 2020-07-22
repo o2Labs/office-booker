@@ -68,6 +68,13 @@ export const TabButton = styled(Button)<ButtonProps>`
           padding: 0.8rem 4rem;
           font-size: 1.6rem;
         `}
+
+  &.current {
+    font-weight: 500;
+    background-color: #ffffff;
+    color: ${(props) => props.theme.palette.secondary.main};
+    box-shadow: 0 -0.2rem ${(props) => props.theme.palette.secondary.main} inset;
+  }
 `;
 
 export const SubButton = styled(Button)`

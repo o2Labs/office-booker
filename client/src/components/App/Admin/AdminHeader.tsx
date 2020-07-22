@@ -30,14 +30,6 @@ export const AdminHeaderStyles = styled.div`
     position: absolute;
     bottom: 0;
   }
-
-  /* This is here because doesn't work in TabButton style */
-  .current {
-    font-weight: 500;
-    background-color: #ffffff;
-    color: ${(props) => props.theme.palette.secondary.main};
-    box-shadow: 0 -0.2rem ${(props) => props.theme.palette.secondary.main} inset;
-  }
 `;
 
 const AdminHeader: React.FC<Props> = ({ currentRoute }: Props) => (
