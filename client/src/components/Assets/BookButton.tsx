@@ -18,8 +18,6 @@ type Props = {
   buttonsLoading: boolean;
 };
 
-const options = [`NO parking${(<Block />)}`, 'Parking'];
-
 const BookButton: React.FC<Props> = (props) => {
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);

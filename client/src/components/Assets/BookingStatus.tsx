@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import DriveEtaIcon from '@material-ui/icons/DriveEta';
 import PersonIcon from '@material-ui/icons/Person';
 
