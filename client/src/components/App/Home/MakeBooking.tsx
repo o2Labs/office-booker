@@ -12,10 +12,8 @@ import endOfWeek from 'date-fns/endOfWeek';
 import IconButton from '@material-ui/core/IconButton';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
-import Tooltip from '@material-ui/core/Tooltip';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import DriveEtaIcon from '@material-ui/icons/DriveEta';
 import PersonIcon from '@material-ui/icons/Person';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 
@@ -454,28 +452,6 @@ const MakeBooking: React.FC = () => {
                               parkingQuota={currentOffice.parkingQuota}
                               parkingAvailable={day.availableCarPark}
                             />
-
-                            {/* <Tooltip title={`Office Space: ${day.available} left`} arrow>
-                              <div className="status">
-                                <PersonIcon />
-                                <p>{remainderIndicator(currentOffice.quota, 2, day.available)}</p>
-                              </div>
-                            </Tooltip>
- 
-                            {day.availableCarPark && currentOffice.parkingQuota && (
-                              <Tooltip title={`Car Park: ${day.availableCarPark} left`} arrow>
-                                <div className="status">
-                                  <DriveEtaIcon />
-                                  <p>
-                                    {remainderIndicator(
-                                      currentOffice.parkingQuota,
-                                      2,
-                                      day.availableCarPark
-                                    )}
-                                  </p>
-                                </div>
-                              </Tooltip>
-                            )}  */}
                           </div>
 
                           {day.userCanBook && (

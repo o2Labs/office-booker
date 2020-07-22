@@ -2,86 +2,87 @@ import styled, { css } from 'styled-components';
 import { Status } from './BookingStatus';
 
 type BookingStatusStylesProps = {
-  office?: Status;
-  parking?: Status;
+  officeLeft?: number;
+  officeStatus?: Status;
+  parkingLeft?: number;
+  parkingStatus?: Status;
 };
-
-const barWidth = 0.4;
-const barMargin = 0.2;
 
 export default styled.div<BookingStatusStylesProps>`
   display: flex;
-  position: absolute;
+  box-sizing: border-box;
+  height: 100%;
 
-  > section {
+  section {
     display: flex;
     align-items: center;
 
-    margin: 0 0.2rem;
+    margin: 0 0.2rem 0 0.5rem;
 
-    svg {
-      margin-right: 0.2rem;
-      font-size: 2rem;
+    > svg {
+        margin-right: 0.2rem;
+        font-size: 2rem;
+        
+        color: #5f5f5f;
     }
 
     > .bars {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
+        height: 85%;
+        width: 0.8rem;
 
-      height: min-content;
-      width: ${(barWidth + barMargin * 2) * 4}rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
 
-      background-color: #59efb0;
+        background: lightgray;
 
-      position: relative;
+        padding: 2px;
 
       > .bar {
-        width: ${barWidth}rem;
-        height: 1rem;
-        background-color: #000000de;
-        margin: ${barMargin}rem;
-
-        border-radius: 0.1rem;
+        flex: 0 0 100%; /* Default */
       }
     }
 
-    .office{
-    ${(props) =>
-      props.office === 'h' &&
-      css`
-        background-color: #59efb0;
-      `}
+    .bars .office{
+        flex: 0 0 ${(props) => props.officeLeft}%;
 
-      ${(props) =>
-        props.office === 'm' &&
-        css`
-          background-color: #fff942;
-        `}
+        ${(props) =>
+          props.officeStatus === 'h' &&
+          css`
+            background-color: #59efb0;
+          `}
 
-      ${(props) =>
-        props.office === 'l' &&
-        css`
-          background-color: #ff7790;
-        `}
+        ${(props) =>
+          props.officeStatus === 'm' &&
+          css`
+            background-color: #fff942;
+          `}
+
+        ${(props) =>
+          props.officeStatus === 'l' &&
+          css`
+            background-color: #ff7790;
+          `}
 
     }
 
-    .parking{
+    .bars .parking{
+     flex: 0 0 ${(props) => props.parkingLeft}%;
+
     ${(props) =>
-      props.parking === 'h' &&
+      props.parkingStatus === 'h' &&
       css`
         background-color: #59efb0;
       `}
 
       ${(props) =>
-        props.parking === 'm' &&
+        props.parkingStatus === 'm' &&
         css`
           background-color: #fff942;
         `}
 
       ${(props) =>
-        props.parking === 'l' &&
+        props.parkingStatus === 'l' &&
         css`
           background-color: #ff7790;
         `}

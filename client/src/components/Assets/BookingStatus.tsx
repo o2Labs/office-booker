@@ -3,6 +3,7 @@ import DriveEtaIcon from '@material-ui/icons/DriveEta';
 import PersonIcon from '@material-ui/icons/Person';
 
 import BookingStatusStyles from './BookingStatus.styles';
+import { Tooltip } from '@material-ui/core';
 
 export type Status = 'h' | 'm' | 'l';
 
@@ -29,45 +30,29 @@ const BookingStatus: React.FC<Props> = (props) => {
     }
   }
 
-  function getBarNums(quota: number, available: number) {
-    const unit = quota / splitBy;
-    const num = available && Math.round(available / unit);
-    return num ? num : 1;
-  }
-
   return (
     <BookingStatusStyles
-      //   office={getStatus(officeQuota, officeAvailable)}
-      //   parking={getStatus(parkingQuota, parkingAvailable)}
-      office={getStatus(100, 70)}
-      parking={getStatus(100, 10)}
+      officeLeft={(officeAvailable / officeQuota) * 100}
+      officeStatus={getStatus(officeQuota, officeAvailable)}
+      parkingLeft={(parkingAvailable / parkingQuota) * 100}
+      parkingStatus={getStatus(parkingQuota, parkingAvailable)}
     >
-      <section>
-        <PersonIcon />
-        <div className="bars office">
-          {[
-            ...Array(
-              //   getBarNums(officeQuota, officeAvailable)
-              getBarNums(100, 70)
-            ),
-          ].map((e, i) => (
-            <div className="bar" key={i}></div>
-          ))}
-        </div>
-      </section>
-      <section>
-        <DriveEtaIcon />
-        <div className="bars parking">
-          {[
-            ...Array(
-              //   getBarNums(parkingQuota, parkingAvailable)
-              getBarNums(100, 10)
-            ),
-          ].map((e, i) => (
-            <div className="bar" key={i}></div>
-          ))}
-        </div>
-      </section>
+      <Tooltip title={`Office Space: ${officeAvailable} left`} arrow>
+        <section>
+          <PersonIcon />
+          <div className="bars">
+            <div className="bar office"></div>
+          </div>
+        </section>
+      </Tooltip>
+      <Tooltip title={`Office Space: ${parkingAvailable} left`} arrow>
+        <section>
+          <DriveEtaIcon />
+          <div className="bars">
+            <div className="bar parking"></div>
+          </div>
+        </section>
+      </Tooltip>
     </BookingStatusStyles>
   );
 };
