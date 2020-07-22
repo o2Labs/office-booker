@@ -331,6 +331,11 @@ new aws.iam.RolePolicy('lambda-iam-policy', {
           bookingsTable.arn.apply((tableArn) => `${tableArn}/index/office-date-bookings`),
         ],
       },
+      {
+        Effect: 'Allow',
+        Action: ['cognito-idp:ListUsersInGroup', 'cognito-idp:ListUsers'],
+        Resource: [userPool.arn],
+      },
     ],
   }),
 });
