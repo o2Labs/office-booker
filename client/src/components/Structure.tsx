@@ -13,7 +13,7 @@ import PageNotFound from './App/PageNotFound';
 import Home from './App/Home';
 import ViewBooking from './App/ViewBooking';
 import Help from './App/Help';
-import Admin from './App/Admin/Admin';
+import Bookings from './App/Admin/Bookings';
 import Users from './App/Admin/Users';
 import User from './App/Admin/User';
 import AdminCreateBooking from './App/Admin/AdminCreateBooking';
@@ -92,7 +92,7 @@ const Structure: React.FC = () => {
               <ViewBooking path="/booking/:id" />
               <UpcomingBookings path="/bookings" />
 
-              <Admin path="/admin" />
+              <Bookings path="/admin" />
               <Users path="/admin/users" />
               <User path="/admin/users/:email" />
               <AdminCreateBooking path="/admin/createBooking" />

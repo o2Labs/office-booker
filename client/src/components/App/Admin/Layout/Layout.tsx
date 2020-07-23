@@ -1,15 +1,13 @@
 import React, { useContext } from 'react';
-import { RouteComponentProps } from '@reach/router';
 
-import { AppContext } from '../../AppProvider';
+import { AppContext } from '../../../AppProvider';
 
-import Layout from '../../Layout/Layout';
-import AdminHeader from './Layout/Header';
-import Bookings from './Bookings';
+import Layout from '../../../Layout/Layout';
+import Header from './Header';
 
-import AdminStyles from './Admin.styles';
+import AdminLayoutStyles from './Layout.styles';
 
-const Admin: React.FC<RouteComponentProps> = () => {
+const Admin: React.FC = (props) => {
   // Global state
   const { state } = useContext(AppContext);
   const { user } = state;
@@ -21,7 +19,7 @@ const Admin: React.FC<RouteComponentProps> = () => {
 
   return (
     <Layout>
-      <AdminStyles>
+      <AdminLayoutStyles>
         {!user.permissions.canViewAdminPanel ? (
           <div className="redirect">
             <h2>Only for admins</h2>
@@ -29,11 +27,11 @@ const Admin: React.FC<RouteComponentProps> = () => {
           </div>
         ) : (
           <>
-            <AdminHeader currentRoute="home" />
-            <Bookings />
+            <Header currentRoute="home" />
+            {props.children}
           </>
         )}
-      </AdminStyles>
+      </AdminLayoutStyles>
     </Layout>
   );
 };

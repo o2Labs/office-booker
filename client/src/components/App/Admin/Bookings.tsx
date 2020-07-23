@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { navigate } from '@reach/router';
+import { RouteComponentProps, navigate } from '@reach/router';
 import isPast from 'date-fns/isPast';
 import endOfDay from 'date-fns/endOfDay';
 import format from 'date-fns/format';
@@ -30,9 +30,10 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
 
-import Loading from '../../Assets/LoadingSpinner';
-
 import { AppContext } from '../../AppProvider';
+
+import Loading from '../../Assets/LoadingSpinner';
+import AdminLayout from './Layout/Layout';
 
 import { OurButton } from '../../../styles/MaterialComponents';
 
@@ -42,7 +43,7 @@ import { Booking } from '../../../types/api';
 
 import BookingStyles from './Bookings.styles';
 
-const Bookings = () => {
+const Bookings: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
   const { user } = state;
@@ -165,126 +166,132 @@ const Bookings = () => {
   }
 
   return (
-    <BookingStyles>
-      {loading ? (
-        <Loading />
-      ) : (
-        <>
-          <h3>Bookings</h3>
+    <AdminLayout>
+      <BookingStyles>
+        {loading ? (
+          <Loading />
+        ) : (
+          <>
+            <h3>Bookings</h3>
 
-          <Button
-            startIcon={<AddCircleIcon />}
-            type="submit"
-            color="secondary"
-            onClick={() => navigate('/admin/createBooking')}
-            variant="contained"
-            size="small"
-          >
-            New Booking
-          </Button>
+            <Button
+              startIcon={<AddCircleIcon />}
+              type="submit"
+              color="secondary"
+              onClick={() => navigate('/admin/createBooking')}
+              variant="contained"
+              size="small"
+            >
+              New Booking
+            </Button>
 
-          <Paper square className="table-container">
-            <div className="filter">
-              <FormControl className="filter-office">
-                <InputLabel id="office-label">Office</InputLabel>
-                <Select
-                  labelId="office-label"
-                  id="office"
-                  value={selectedOffice}
-                  onChange={(e) => setSelectedOffice(e.target.value as string)}
-                >
-                  {user.permissions.officesCanManageBookingsFor.map((office, index) => (
-                    <MenuItem value={office} key={index}>
-                      {office}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <Paper square className="table-container">
+              <div className="filter">
+                <FormControl className="filter-office">
+                  <InputLabel id="office-label">Office</InputLabel>
+                  <Select
+                    labelId="office-label"
+                    id="office"
+                    value={selectedOffice}
+                    onChange={(e) => setSelectedOffice(e.target.value as string)}
+                  >
+                    {user.permissions.officesCanManageBookingsFor.map((office, index) => (
+                      <MenuItem value={office} key={index}>
+                        {office}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-              <TextField
-                id="date"
-                label="Date"
-                type="date"
-                className="filter-date"
-                defaultValue={format(new Date(), 'yyyy-MM-dd')}
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <IconButton
-                        edge="start"
-                        onClick={() =>
-                          setSelectedDate(format(addDays(new Date(selectedDate), -1), 'yyyy-MM-dd'))
-                        }
-                      >
-                        <KeyboardArrowLeftIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        edge="end"
-                        onClick={() =>
-                          setSelectedDate(format(addDays(new Date(selectedDate), 1), 'yyyy-MM-dd'))
-                        }
-                      >
-                        <KeyboardArrowRightIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </div>
+                <TextField
+                  id="date"
+                  label="Date"
+                  type="date"
+                  className="filter-date"
+                  defaultValue={format(new Date(), 'yyyy-MM-dd')}
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <IconButton
+                          edge="start"
+                          onClick={() =>
+                            setSelectedDate(
+                              format(addDays(new Date(selectedDate), -1), 'yyyy-MM-dd')
+                            )
+                          }
+                        >
+                          <KeyboardArrowLeftIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          edge="end"
+                          onClick={() =>
+                            setSelectedDate(
+                              format(addDays(new Date(selectedDate), 1), 'yyyy-MM-dd')
+                            )
+                          }
+                        >
+                          <KeyboardArrowRightIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </div>
 
-            <TableContainer className="table">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell className="table-header">User</TableCell>
-                    <TableCell className="table-header">Parking</TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {allBookings && allBookings.length > 0 ? (
-                    allBookings.map((data, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{data.user}</TableCell>
-                        <TableCell>{data.parking ? 'Yes' : 'No'}</TableCell>
-                        <TableCell align="right">
-                          <div className="btn-container">
-                            <OurButton
-                              type="submit"
-                              variant="contained"
-                              color="secondary"
-                              size="small"
-                              onClick={() => setDeleteDialog(data)}
-                            >
-                              Cancel Booking
-                            </OurButton>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
+              <TableContainer className="table">
+                <Table>
+                  <TableHead>
                     <TableRow>
-                      <TableCell>No bookings found</TableCell>
-                      <TableCell />
-                      <TableCell />
+                      <TableCell className="table-header">User</TableCell>
+                      <TableCell className="table-header">Parking</TableCell>
+                      <TableCell></TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        </>
-      )}
+                  </TableHead>
+                  <TableBody>
+                    {allBookings && allBookings.length > 0 ? (
+                      allBookings.map((data, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{data.user}</TableCell>
+                          <TableCell>{data.parking ? 'Yes' : 'No'}</TableCell>
+                          <TableCell align="right">
+                            <div className="btn-container">
+                              <OurButton
+                                type="submit"
+                                variant="contained"
+                                color="secondary"
+                                size="small"
+                                onClick={() => setDeleteDialog(data)}
+                              >
+                                Cancel Booking
+                              </OurButton>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell>No bookings found</TableCell>
+                        <TableCell />
+                        <TableCell />
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          </>
+        )}
 
-      {adminCancelDialog(deleteDialog)}
-    </BookingStyles>
+        {adminCancelDialog(deleteDialog)}
+      </BookingStyles>
+    </AdminLayout>
   );
 };
 
