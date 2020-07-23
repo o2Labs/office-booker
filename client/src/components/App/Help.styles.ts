@@ -52,8 +52,15 @@ export default styled.div`
   }
 
   .change-office {
+    display: flex;
+
+    margin-bottom: 2rem;
+
     > p {
+      flex: 0 0 auto;
+
       margin: 0;
+      padding-right: 1rem;
 
       color: ${(props) => props.theme.palette.secondary.main};
       font-size: 1.6rem;
@@ -63,13 +70,13 @@ export default styled.div`
         color: ${(props) => props.theme.palette.primary.main};
         font-weight: 500;
       }
+    }
 
-      > button {
-        padding-left: 1rem;
-        font-size: 1.6rem;
-        font-weight: 400;
-        vertical-align: inherit;
-      }
+    > button {
+      flex: 0 0 auto;
+      font-size: 1.6rem;
+      font-weight: 700;
+      vertical-align: inherit;
     }
   }
 `;

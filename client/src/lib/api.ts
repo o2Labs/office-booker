@@ -179,7 +179,7 @@ export const createBooking = async (
   user: User['email'],
   date: string,
   office: Office['name'],
-  parking?: boolean // TODO: require this later
+  parking?: boolean
 ): Promise<Booking> => {
   const url = new URL('bookings', BASE_URL);
 

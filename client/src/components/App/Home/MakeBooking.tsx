@@ -14,16 +14,22 @@ import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
+import BusinessIcon from '@material-ui/icons/Business';
+import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 
 import { AppContext } from '../../AppProvider';
+
+import BookButton from '../../Assets/BookButton';
+import { OurButton } from '../../../styles/MaterialComponents';
 
 import { Booking } from '../../../types/api';
 import { createBooking, cancelBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 
-import { OurButton } from '../../../styles/MaterialComponents';
 import MakeBookingStyles from './MakeBooking.styles';
+
+import BookingStatus from '../../Assets/BookingStatus';
 
 // Types
 type Week = {
@@ -41,6 +47,7 @@ type BookableDay = {
   date: Date;
   isBookable: true;
   available: number;
+  availableCarPark: number;
   userCanBook: boolean;
   booking?: Booking;
 };
@@ -142,7 +149,7 @@ const MakeBooking: React.FC = () => {
 
   useEffect(() => {
     if (weeks && weeks.length > 0 && currentOffice && user && bookings) {
-      const { name, quota: officeQuota, slots } = currentOffice;
+      const { name, quota: officeQuota, parkingQuota, slots } = currentOffice;
       const { quota: userQuota } = user;
 
       const rows: Row[] = [];
@@ -174,6 +181,7 @@ const MakeBooking: React.FC = () => {
           if (slot) {
             // Calculate available spaces
             const available = officeQuota - slot.booked;
+            const availableCarPark = parkingQuota - slot.bookedParking;
 
             // Find any user booking for this office/slot
             const booking = bookings.find((b) => b.office === name && b.date === slot.date);
@@ -197,6 +205,7 @@ const MakeBooking: React.FC = () => {
               date: d,
               isBookable: true,
               available,
+              availableCarPark,
               userCanBook: available > 0 && userWeekBookings.length < userQuota && !userDayBooking,
               booking,
             });
@@ -242,7 +251,7 @@ const MakeBooking: React.FC = () => {
     }
   };
 
-  const handleCreateBooking = (date: Date) => {
+  const handleCreateBooking = (date: Date, withParking: boolean) => {
     const { user, currentOffice } = state;
 
     if (user && currentOffice) {
@@ -251,7 +260,7 @@ const MakeBooking: React.FC = () => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, currentOffice.name)
+      createBooking(user.email, formattedDate, currentOffice.name, withParking)
         .then((data) => {
           // Add booking to global state
           dispatch({
@@ -349,7 +358,14 @@ const MakeBooking: React.FC = () => {
           You can make <span>{user.quota}</span> booking per week.
         </li>
         <li>
-          {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>.
+          {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>
+          {currentOffice.parkingQuota > 0 ? (
+            <>
+              {` `} and car park capacity of <span>{currentOffice.parkingQuota}</span>.
+            </>
+          ) : (
+            `.`
+          )}
         </li>
       </ul>
 
@@ -409,59 +425,67 @@ const MakeBooking: React.FC = () => {
                   key={dayIndex}
                   className="row"
                   data-today={isToday(day.date)}
-                  data-bookable={day.isBookable && (day.userCanBook || day.booking)}
+                  data-bookable={day.isBookable && (day.userCanBook || day.booking) ? true : false}
                 >
                   <div className="left">
                     <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
-
-                    {day.isBookable && day.booking && (
-                      <OurButton
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          navigate(`./booking/${day.booking?.id}`);
-                        }}
-                      >
-                        View Pass
-                      </OurButton>
-                    )}
-                    {day.isBookable && day.userCanBook && (
-                      <>
-                        <OurButton
-                          size="small"
-                          variant="contained"
-                          color="secondary"
-                          disabled={buttonsLoading}
-                          onClick={() => handleCreateBooking(day.date)}
-                        >
-                          Book
-                        </OurButton>
-                      </>
-                    )}
                   </div>
-                  <div className="right">
-                    {day.booking ? (
-                      <>
-                        <p className="booked">Booked</p>
 
-                        {day.isBookable && !isToday(day.date) && (
-                          <Link
-                            component="button"
-                            underline="always"
-                            className={(buttonsLoading && 'loading') || undefined}
-                            onClick={() =>
-                              !buttonsLoading && day.booking && handleCancelBooking(day.booking)
-                            }
+                  {day.isBookable && (
+                    <div className="right">
+                      {day.booking ? (
+                        <>
+                          {!isToday(day.date) && (
+                            <Link
+                              component="button"
+                              underline="always"
+                              className={`${buttonsLoading ? 'loading ' : ''}cancelBtn`}
+                              onClick={() =>
+                                !buttonsLoading && day.booking && handleCancelBooking(day.booking)
+                              }
+                            >
+                              Cancel
+                            </Link>
+                          )}
+
+                          <OurButton
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={() => {
+                              navigate(`./booking/${day.booking?.id}`);
+                            }}
                           >
-                            Cancel Booking
-                          </Link>
-                        )}
-                      </>
-                    ) : day.isBookable ? (
-                      <p className="available">{day.available} available</p>
-                    ) : null}
-                  </div>
+                            View Pass
+                            {day.booking?.parking ? (
+                              <EmojiTransportationIcon style={{ marginLeft: '0.8rem' }} />
+                            ) : (
+                              <BusinessIcon style={{ marginLeft: '0.8rem' }} />
+                            )}
+                          </OurButton>
+                        </>
+                      ) : (
+                        <div className="no-booking">
+                          <div className="availability">
+                            <BookingStatus
+                              officeQuota={currentOffice.quota}
+                              officeAvailable={day.available}
+                              parkingQuota={currentOffice.parkingQuota}
+                              parkingAvailable={day.availableCarPark}
+                            />
+                          </div>
+
+                          {day.userCanBook && (
+                            <BookButton
+                              onClick={(e) => handleCreateBooking(day.date, e.withParking)}
+                              availableCarPark={day.availableCarPark}
+                              buttonsLoading={buttonsLoading}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -16,6 +16,7 @@ import { DATE_FNS_OPTIONS } from '../../constants/dates';
 import ViewBookingStyles from './ViewBooking.styles';
 import { OurButton } from '../../styles/MaterialComponents';
 import { formatError } from '../../lib/app';
+import { Checkbox } from '@material-ui/core';
 
 type Props = {
   id: Booking['id'];
@@ -99,6 +100,12 @@ const ViewBooking: React.FC<RouteComponentProps<Props>> = (props) => {
                 )}
               </h2>
               <h3>{booking.office}</h3>
+              {booking.parking && (
+                <p className="parking">
+                  Parking
+                  <Checkbox defaultChecked color="primary" />
+                </p>
+              )}
               <div className="breaker"></div>
               <h4>{emailSplit && emailSplit[0]}</h4>
               <h5>@{emailSplit && emailSplit[1]}</h5>

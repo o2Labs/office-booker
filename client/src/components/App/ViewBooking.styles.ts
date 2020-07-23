@@ -79,7 +79,7 @@ export default styled.div`
 
       height: 0.8rem;
 
-      background-color: #48acde;
+      background-color: ${(props) => props.theme.palette.secondary.main};
     }
 
     > h4 {
@@ -109,6 +109,15 @@ export default styled.div`
 
       color: #a0a0a0;
       font-style: italic;
+    }
+
+    > .parking {
+      color: ${(props) => props.theme.palette.secondary.main};
+
+      font-size: 3.4rem;
+      svg {
+        font-size: 3.4rem;
+      }
     }
   }
 
