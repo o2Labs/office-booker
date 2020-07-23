@@ -3,11 +3,17 @@ import React, { useContext } from 'react';
 import { AppContext } from '../../../AppProvider';
 
 import Layout from '../../../Layout/Layout';
-import Header from './Header';
+import Header, { Routes } from './Header';
 
 import AdminLayoutStyles from './Layout.styles';
 
-const Admin: React.FC = (props) => {
+// Types
+type Props = {
+  currentRoute: Routes;
+};
+
+// Component
+const Admin: React.FC<Props> = (props) => {
   // Global state
   const { state } = useContext(AppContext);
   const { user } = state;
@@ -27,7 +33,7 @@ const Admin: React.FC = (props) => {
           </div>
         ) : (
           <>
-            <Header currentRoute="home" />
+            <Header currentRoute={props.currentRoute} />
             {props.children}
           </>
         )}

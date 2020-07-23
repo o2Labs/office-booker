@@ -5,18 +5,22 @@ import { TabButton } from '../../../../styles/MaterialComponents';
 
 import AdminHeaderStyles from './Header.styles';
 
+// Types
+export type Routes = 'bookings' | 'users';
+
 type Props = {
-  currentRoute?: 'manage' | 'home';
+  currentRoute: Routes;
 };
 
-const AdminHeader: React.FC<Props> = ({ currentRoute }: Props) => (
+// Component
+const AdminHeader: React.FC<Props> = ({ currentRoute }) => (
   <AdminHeaderStyles>
     <h2>Admin</h2>
 
     <div className="btns">
       <TabButton
-        className={currentRoute === 'home' ? 'current' : ''}
-        color={currentRoute === 'home' ? 'secondary' : 'default'}
+        className={currentRoute === 'bookings' ? 'current' : ''}
+        color={currentRoute === 'bookings' ? 'secondary' : 'default'}
         size="small"
         onClick={() => navigate(`/admin/`)}
       >
@@ -24,8 +28,8 @@ const AdminHeader: React.FC<Props> = ({ currentRoute }: Props) => (
       </TabButton>
 
       <TabButton
-        className={currentRoute === 'manage' ? 'current' : ''}
-        color={currentRoute === 'manage' ? 'secondary' : 'default'}
+        className={currentRoute === 'users' ? 'current' : ''}
+        color={currentRoute === 'users' ? 'secondary' : 'default'}
         size="small"
         onClick={() => navigate(`/admin/users`)}
       >

@@ -49,9 +49,9 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const { user } = state;
 
   // Local state
-  const [allBookings, setAllBookings] = useState<Booking[] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [selectedOffice, setSelectedOffice] = React.useState('');
+  const [allBookings, setAllBookings] = useState<Booking[] | undefined>(undefined);
   const [deleteDialog, setDeleteDialog] = useState<undefined | Booking>(undefined);
   const [selectedDate, setSelectedDate] = React.useState<string>(format(new Date(), 'yyyy-MM-dd'));
 
@@ -166,7 +166,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout currentRoute="bookings">
       <BookingStyles>
         {loading ? (
           <Loading />
