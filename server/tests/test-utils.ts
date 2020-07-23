@@ -67,10 +67,10 @@ export const configureServer = (dynamoDBTablePrefix: string, testConfig?: TestCo
   };
 };
 
-export const expectUnauthorised = (response: Response) => {
+export const expectUnauthorized = (response: Response) => {
   expect(response.status).toBe(401);
   expect(response.body).toMatchObject({
-    message: 'Unauthorised',
+    message: 'Unauthorized',
   });
   expect(Object.keys(response.body)).toEqual(['message', 'reference', 'error']);
 };
