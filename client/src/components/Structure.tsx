@@ -3,26 +3,27 @@ import { Router } from '@reach/router';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 
+import { AppContext } from './AppProvider';
+import { AppState } from '../context/stores';
+
 import RequireLogin from './Auth/RequireLogin';
 import Layout from './Layout/Layout';
+import TestBanner from './TestBanner';
+import PageNotFound from './App/PageNotFound';
 import Home from './App/Home';
 import ViewBooking from './App/ViewBooking';
 import Help from './App/Help';
 import Admin from './App/Admin/Admin';
-
-import { AppContext } from './AppProvider';
-
-import StructureStyles from './Structure.styles';
-import PageNotFound from './App/PageNotFound';
-import UpcomingBookings from './App/UpcomingBookings';
-import { TestBanner } from './TestBanner';
 import Users from './App/Admin/Users';
 import User from './App/Admin/User';
-import { AppState } from '../context/stores';
 import AdminCreateBooking from './App/Admin/AdminCreateBooking';
+import UpcomingBookings from './App/UpcomingBookings';
 import Privacy from './App/Privacy';
 import LoadingSpinner from './Assets/LoadingSpinner';
+
 import { configureAuth } from '../lib/auth';
+
+import StructureStyles from './Structure.styles';
 
 const Structure: React.FC = () => {
   const TRANSITION_DURATION = 300;
@@ -90,10 +91,12 @@ const Structure: React.FC = () => {
               <Home path="/" />
               <ViewBooking path="/booking/:id" />
               <UpcomingBookings path="/bookings" />
+
               <Admin path="/admin" />
               <Users path="/admin/users" />
               <User path="/admin/users/:email" />
               <AdminCreateBooking path="/admin/createBooking" />
+
               <Privacy path="/privacy" />
               <PageNotFound default={true} />
             </RequireLogin>
