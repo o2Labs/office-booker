@@ -50,10 +50,10 @@ const Bookings: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [loading, setLoading] = useState(true);
-  const [selectedOffice, setSelectedOffice] = React.useState('');
+  const [selectedOffice, setSelectedOffice] = useState('');
   const [allBookings, setAllBookings] = useState<Booking[] | undefined>(undefined);
   const [deleteDialog, setDeleteDialog] = useState<undefined | Booking>(undefined);
-  const [selectedDate, setSelectedDate] = React.useState<string>(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -208,7 +208,6 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                   label="Date"
                   type="date"
                   className="filter-date"
-                  defaultValue={format(new Date(), 'yyyy-MM-dd')}
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   InputLabelProps={{ shrink: true }}
