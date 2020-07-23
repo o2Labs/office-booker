@@ -16,7 +16,7 @@ import Help from './App/Help';
 import Bookings from './App/Admin/Bookings';
 import Users from './App/Admin/Users';
 import User from './App/Admin/User';
-import AdminCreateBooking from './App/Admin/AdminCreateBooking';
+import CreateBooking from './App/Admin/CreateBooking';
 import UpcomingBookings from './App/UpcomingBookings';
 import Privacy from './App/Privacy';
 import LoadingSpinner from './Assets/LoadingSpinner';
@@ -93,9 +93,9 @@ const Structure: React.FC = () => {
               <UpcomingBookings path="/bookings" />
 
               <Bookings path="/admin" />
+              <CreateBooking path="/admin/createBooking" />
               <Users path="/admin/users" />
               <User path="/admin/users/:email" />
-              <AdminCreateBooking path="/admin/createBooking" />
 
               <Privacy path="/privacy" />
               <PageNotFound default={true} />

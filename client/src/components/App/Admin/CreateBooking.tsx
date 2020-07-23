@@ -1,14 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
-
-import Layout from '../../Layout/Layout';
-import Loading from '../../Assets/LoadingSpinner';
-
-import AdminCreateBookingStyles from './AdminCreateBooking.styles';
-import { AppContext } from '../../AppProvider';
-import { getOffices, createBooking } from '../../../lib/api';
-import { formatError } from '../../../lib/app';
-
 import {
   FormControl,
   InputLabel,
@@ -19,12 +10,21 @@ import {
   FormControlLabel,
   Radio,
 } from '@material-ui/core';
-import { OfficeSlot } from '../../../types/api';
-import { OurButton } from '../../../styles/MaterialComponents';
 import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
-import AdminHeader from './AdminHeader';
+
+import { AppContext } from '../../AppProvider';
+
+import AdminLayout from './Layout/Layout';
+import Loading from '../../Assets/LoadingSpinner';
+import { OurButton } from '../../../styles/MaterialComponents';
+
+import { getOffices, createBooking } from '../../../lib/api';
+import { formatError } from '../../../lib/app';
+import { OfficeSlot } from '../../../types/api';
 import { validateEmail } from '../../../lib/emailValidation';
+
+import CreateBookingStyles from './CreateBooking.styles';
 
 const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -146,17 +146,11 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
     }
   };
 
+  // Render
   return (
-    <Layout>
-      <AdminHeader currentRoute={'home'} />
-
-      <AdminCreateBookingStyles>
-        {user.permissions.officesCanManageBookingsFor.length === 0 ? (
-          <div className="redirect">
-            <h2>Only for admins</h2>
-            <p>You don&apos;t have an access to view this page, redirecting you to home...</p>
-          </div>
-        ) : loading ? (
+    <AdminLayout currentRoute="bookings">
+      <CreateBookingStyles>
+        {loading ? (
           <Loading />
         ) : (
           <>
@@ -254,8 +248,8 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
             </section>
           </>
         )}
-      </AdminCreateBookingStyles>
-    </Layout>
+      </CreateBookingStyles>
+    </AdminLayout>
   );
 };
 
