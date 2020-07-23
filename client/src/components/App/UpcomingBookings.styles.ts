@@ -17,6 +17,16 @@ export default styled.div`
     font-weight: 400;
   }
 
+  > .previous-bookings {
+    > .previous-bookings-list {
+      > .previous-booking-item {
+        > .previous-booking-office {
+          margin-left: 0.5em;
+        }
+      }
+    }
+  }
+
   > .bookings {
     max-width: 40rem;
 
