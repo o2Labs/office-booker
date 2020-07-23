@@ -6,7 +6,7 @@ import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
-import { ArrowDropDown, Block } from '@material-ui/icons';
+import { ArrowDropDown } from '@material-ui/icons';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 import BusinessIcon from '@material-ui/icons/Business';
 
@@ -17,8 +17,6 @@ type Props = {
   availableCarPark: number;
   buttonsLoading: boolean;
 };
-
-const options = [`NO parking${(<Block />)}`, 'Parking'];
 
 const BookButton: React.FC<Props> = (props) => {
   const [open, setOpen] = React.useState(false);

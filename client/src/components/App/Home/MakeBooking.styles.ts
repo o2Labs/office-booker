@@ -9,13 +9,21 @@ export default styled.div`
     padding: 3rem 3rem 4rem;
   }
 
-  > h2 {
-    margin: 0 2rem 0 0;
+  > .header-area {
+    display: flex;
+    flex-direction: inherit;
+    > h2 {
+      margin: 0 2rem 0 0;
 
-    color: ${(props) => props.theme.palette.primary.main};
-    font-size: 2.4rem;
-    line-height: 2.4rem;
-    font-weight: 400;
+      color: ${(props) => props.theme.palette.primary.main};
+      font-size: 2.4rem;
+      line-height: 2.4rem;
+      font-weight: 400;
+    }
+
+    > .change-office-link {
+      margin-top: 1rem;
+    }
   }
 
   > .change {

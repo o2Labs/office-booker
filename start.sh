@@ -1,18 +1,12 @@
 #!/bin/bash
 set -e # stop on error
 
-unset AWS_ACCESS_KEY_ID
-unset AWS_SECRET_ACCESS_KEY
-unset AWS_SESSION_TOKEN
-unset AWS_SECURITY_TOKEN
 docker-compose up -d
 run_client(){
     cd client
     yarn start
 }
 run_server(){
-    export AWS_ACCESS_KEY_ID=xxxxxxxxxxxxx
-    export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxx
     cd server
     npx ts-node scripts/init-dynamo-local.ts
     npx nodemon local.ts

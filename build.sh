@@ -3,7 +3,7 @@ set -e # stop on error
 yarn audit --cwd server --groups dependencies
 yarn audit --cwd infrastructure --groups dependencies
 yarn audit --cwd alerts --groups dependencies
-yarn audit --cwd client --groups dependencies || true # Ignore lodash issue temporarily
+yarn audit --cwd client
 
 ./test.sh
 
@@ -24,5 +24,5 @@ cp package.json ../dist/alerts
 cp yarn.lock ../dist/alerts
 
 cd ..
-yarn install --production --cwd dist/server --non-interactive
-yarn install --production --cwd dist/alerts --non-interactive
+yarn install --production --cwd dist/server --non-interactive --frozen-lockfile
+yarn install --production --cwd dist/alerts --non-interactive --frozen-lockfile

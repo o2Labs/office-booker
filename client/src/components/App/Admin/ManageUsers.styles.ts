@@ -149,4 +149,10 @@ export default styled.div`
   .listing-container {
     overflow: scroll;
   }
+
+  .load-more-container {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+  }
 `;

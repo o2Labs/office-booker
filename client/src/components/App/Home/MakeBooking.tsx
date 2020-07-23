@@ -12,11 +12,9 @@ import endOfWeek from 'date-fns/endOfWeek';
 import IconButton from '@material-ui/core/IconButton';
 import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
-import Tooltip from '@material-ui/core/Tooltip';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import DriveEtaIcon from '@material-ui/icons/DriveEta';
-import PersonIcon from '@material-ui/icons/Person';
+import BusinessIcon from '@material-ui/icons/Business';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 
 import { AppContext } from '../../AppProvider';
@@ -30,6 +28,8 @@ import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 
 import MakeBookingStyles from './MakeBooking.styles';
+
+import BookingStatus from '../../Assets/BookingStatus';
 
 // Types
 type Week = {
@@ -232,8 +232,7 @@ const MakeBooking: React.FC = () => {
           days,
         });
       });
-      console.log('state', state);
-      console.log('rows', rows);
+
       setRows(rows);
     }
   }, [bookings, currentOffice, user, weeks]);
@@ -320,8 +319,19 @@ const MakeBooking: React.FC = () => {
     }
   };
 
-  const remainderIndicator = (totalQuantity: number, step: number, leftQuantity: number) =>
-    totalQuantity / step > leftQuantity ? 'L' : 'H';
+  const handleClearOffice = () => {
+    // Update local storage
+    localStorage.removeItem('office');
+
+    // Update global state
+    dispatch({
+      type: 'SET_CURRENT_OFFICE',
+      payload: undefined,
+    });
+
+    // Change page if required
+    navigate('/');
+  };
 
   // Render
   if (!currentOffice || !user) {
@@ -330,7 +340,18 @@ const MakeBooking: React.FC = () => {
 
   return (
     <MakeBookingStyles>
-      <h2>{currentOffice.name}</h2>
+      <div className="header-area">
+        <h2>{currentOffice.name}</h2>
+        <Link
+          className="change-office-link"
+          component="button"
+          underline="always"
+          color="primary"
+          onClick={() => handleClearOffice()}
+        >
+          Change office
+        </Link>
+      </div>
 
       <ul>
         <li>
@@ -439,34 +460,19 @@ const MakeBooking: React.FC = () => {
                             {day.booking?.parking ? (
                               <EmojiTransportationIcon style={{ marginLeft: '0.8rem' }} />
                             ) : (
-                              <PersonIcon style={{ marginLeft: '0.8rem' }} />
+                              <BusinessIcon style={{ marginLeft: '0.8rem' }} />
                             )}
                           </OurButton>
                         </>
                       ) : (
                         <div className="no-booking">
                           <div className="availability">
-                            <Tooltip title={`Office Space: ${day.available} left`} arrow>
-                              <div className="status">
-                                <PersonIcon />
-                                <p>{remainderIndicator(currentOffice.quota, 2, day.available)}</p>
-                              </div>
-                            </Tooltip>
-
-                            {day.availableCarPark && currentOffice.parkingQuota && (
-                              <Tooltip title={`Car Park: ${day.availableCarPark} left`} arrow>
-                                <div className="status">
-                                  <DriveEtaIcon />
-                                  <p>
-                                    {remainderIndicator(
-                                      currentOffice.parkingQuota,
-                                      2,
-                                      day.availableCarPark
-                                    )}
-                                  </p>
-                                </div>
-                              </Tooltip>
-                            )}
+                            <BookingStatus
+                              officeQuota={currentOffice.quota}
+                              officeAvailable={day.available}
+                              parkingQuota={currentOffice.parkingQuota}
+                              parkingAvailable={day.availableCarPark}
+                            />
                           </div>
 
                           {day.userCanBook && (

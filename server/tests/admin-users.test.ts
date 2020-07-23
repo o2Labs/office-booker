@@ -22,21 +22,23 @@ test('can query admin users', async () => {
   const getInitialUserResponse = await app
     .get(`/api/users?role=System Admin`)
     .set('bearer', adminUserEmail);
-  expect(getInitialUserResponse.body).toEqual([
-    {
-      email: adminUserEmail,
-      quota: 1,
-      admin: true,
-      role: { name: 'System Admin' },
-      permissions: {
-        canEditUsers: true,
-        canManageAllBookings: true,
-        canViewAdminPanel: true,
-        canViewUsers: true,
-        officesCanManageBookingsFor: ['Office A', 'Office B'],
+  expect(getInitialUserResponse.body).toEqual({
+    users: [
+      {
+        email: adminUserEmail,
+        quota: 1,
+        admin: true,
+        role: { name: 'System Admin' },
+        permissions: {
+          canEditUsers: true,
+          canManageAllBookings: true,
+          canViewAdminPanel: true,
+          canViewUsers: true,
+          officesCanManageBookingsFor: ['Office A', 'Office B'],
+        },
       },
-    },
-  ]);
+    ],
+  });
 });
 
 test('can query custom quota users', async () => {
@@ -100,7 +102,7 @@ test('can set user quotas', async () => {
   expect(putResponse.status).toBe(200);
 
   const queryResponse = await app.get(`/api/users?quota=custom`).set('bearer', adminUserEmail);
-  expect(queryResponse.body).toContainEqual(putResponse.body);
+  expect(queryResponse.body.users).toContainEqual(putResponse.body);
 
   const getUpdatedUserResponse = await app
     .get(`/api/users/${otherUser}`)
@@ -124,7 +126,7 @@ test('can set user role', async () => {
   expect(putResponse.status).toBe(200);
 
   const queryResponse = await app.get(`/api/users?role=Office Admin`).set('bearer', adminUserEmail);
-  expect(queryResponse.body).toContainEqual(putResponse.body);
+  expect(queryResponse.body.users).toContainEqual(putResponse.body);
 
   const getUpdatedUserResponse = await app
     .get(`/api/users/${otherUser}`)
