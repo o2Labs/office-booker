@@ -4,7 +4,8 @@ import Paper from '@material-ui/core/Paper';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import isFuture from 'date-fns/isFuture';
-
+import isBefore from 'date-fns/isBefore';
+import startOfDay from 'date-fns/startOfDay';
 import { AppContext } from '../AppProvider';
 
 import LoadingSpinner from '../Assets/LoadingSpinner';
@@ -57,7 +58,9 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   );
 
   const previousBookings = bookings?.filter(
-    (b) => isFuture(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)) === false
+    (b) =>
+      isBefore(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS), startOfDay(new Date())) ===
+      true
   );
 
   // Render
@@ -100,9 +103,9 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
               ))}
             </Paper>
           )}
-          <h3>Previous Bookings</h3>
           {previousBookings && previousBookings.length > 0 && (
             <ul className="previous-bookings">
+              <h3>Previous Bookings</h3>
               {previousBookings.map((row, index) => (
                 <li key={row.id} className="previous-bookings-list">
                   <p className="previous-booking-item">
