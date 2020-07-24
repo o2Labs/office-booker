@@ -23,16 +23,41 @@ export default styled.div`
     > .filter {
       display: flex;
 
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        flex-wrap: wrap;
+      }
+
       padding: 3rem 3rem 2rem;
 
       > .filter-office {
-        flex: 0 0 auto;
+        ${(props) => props.theme.breakpoints.only('xs')} {
+          flex: 1 1 auto;
+        }
 
-        margin-right: 4rem;
+        ${(props) => props.theme.breakpoints.up('sm')} {
+          flex: 0 0 auto;
+
+          margin-right: 4rem;
+        }
       }
 
       > .filter-date {
-        flex: 0 0 auto;
+        ${(props) => props.theme.breakpoints.only('xs')} {
+          flex: 1 1 auto;
+          margin-top: 2rem;
+
+          > .date-arrow {
+            display: none;
+          }
+
+          > .date-picker {
+            width: 100%;
+          }
+        }
+
+        ${(props) => props.theme.breakpoints.up('sm')} {
+          flex: 0 0 auto;
+        }
       }
     }
 

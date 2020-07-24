@@ -29,6 +29,7 @@ import IconButton from '@material-ui/core/IconButton';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft';
+import { DatePicker } from '@material-ui/pickers';
 
 import { AppContext } from '../../AppProvider';
 
@@ -50,10 +51,10 @@ const Bookings: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [loading, setLoading] = useState(true);
-  const [selectedOffice, setSelectedOffice] = useState('');
-  const [allBookings, setAllBookings] = useState<Booking[] | undefined>(undefined);
-  const [deleteDialog, setDeleteDialog] = useState<undefined | Booking>(undefined);
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedOffice, setSelectedOffice] = useState<string | undefined>();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [allBookings, setAllBookings] = useState<Booking[] | undefined>();
+  const [deleteDialog, setDeleteDialog] = useState<undefined | Booking>();
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -71,7 +72,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (selectedOffice) {
       // Retrieve bookings
-      getBookings({ office: selectedOffice, date: selectedDate })
+      getBookings({ office: selectedOffice, date: format(selectedDate, 'yyyy-MM-dd') })
         .then((data) => {
           setAllBookings(data.filter((booking) => !isPast(endOfDay(new Date(booking.date)))));
         })
@@ -178,7 +179,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
               startIcon={<AddCircleIcon />}
               type="submit"
               color="secondary"
-              onClick={() => navigate('/admin/createBooking')}
+              onClick={() => navigate('/admin/booking')}
               variant="contained"
               size="small"
             >
@@ -203,45 +204,32 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                   </Select>
                 </FormControl>
 
-                <TextField
-                  id="date"
-                  label="Date"
-                  type="date"
-                  className="filter-date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <IconButton
-                          edge="start"
-                          onClick={() =>
-                            setSelectedDate(
-                              format(addDays(new Date(selectedDate), -1), 'yyyy-MM-dd')
-                            )
-                          }
-                        >
-                          <KeyboardArrowLeftIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          edge="end"
-                          onClick={() =>
-                            setSelectedDate(
-                              format(addDays(new Date(selectedDate), 1), 'yyyy-MM-dd')
-                            )
-                          }
-                        >
-                          <KeyboardArrowRightIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                <div className="filter-date">
+                  <IconButton
+                    onClick={() => setSelectedDate(addDays(new Date(selectedDate), -1))}
+                    className="date-arrow"
+                  >
+                    <KeyboardArrowLeftIcon />
+                  </IconButton>
+
+                  <DatePicker
+                    autoOk
+                    disableToolbar
+                    variant="inline"
+                    label="Date"
+                    format="dd/MM/yyyy"
+                    value={selectedDate}
+                    onChange={(date) => setSelectedDate(date as Date)}
+                    className="date-picker"
+                  />
+
+                  <IconButton
+                    onClick={() => setSelectedDate(addDays(new Date(selectedDate), 1))}
+                    className="date-arrow"
+                  >
+                    <KeyboardArrowRightIcon />
+                  </IconButton>
+                </div>
               </div>
 
               <TableContainer className="table">
