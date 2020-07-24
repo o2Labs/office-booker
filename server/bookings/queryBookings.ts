@@ -31,7 +31,10 @@ export const queryBookings = async (config: Config, currentUser: User, query: Bo
     const userBookings = await getUserBookings(config, query.email);
     return mapBookings(userBookings.filter(filterBookings));
   } else if (query.office !== undefined) {
-    const officeBookings = await queryBookingsDb(config, { office: query.office });
+    const officeBookings = await queryBookingsDb(config, {
+      office: query.office,
+      date: query.date,
+    });
     return mapBookings(officeBookings.filter(filterBookings));
   } else {
     const allBookings = await getAllBookings(config);
