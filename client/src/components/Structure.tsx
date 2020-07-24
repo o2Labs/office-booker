@@ -93,7 +93,7 @@ const Structure: React.FC = () => {
               <UpcomingBookings path="/bookings" />
 
               <Bookings path="/admin" />
-              <CreateBooking path="/admin/createBooking" />
+              <CreateBooking path="/admin/booking" />
               <Users path="/admin/users" />
               <User path="/admin/users/:email" />
 
