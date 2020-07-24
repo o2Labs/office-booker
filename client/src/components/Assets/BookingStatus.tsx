@@ -45,14 +45,16 @@ const BookingStatus: React.FC<Props> = (props) => {
           </div>
         </section>
       </Tooltip>
-      <Tooltip title={`Office Space: ${parkingAvailable} left`} arrow>
-        <section>
-          <DriveEtaIcon />
-          <div className="bars">
-            <div className="bar parking"></div>
-          </div>
-        </section>
-      </Tooltip>
+      {parkingQuota > 0 && (
+        <Tooltip title={`Office Space: ${parkingAvailable} left`} arrow>
+          <section>
+            <DriveEtaIcon />
+            <div className="bars">
+              <div className="bar parking"></div>
+            </div>
+          </section>
+        </Tooltip>
+      )}
     </BookingStatusStyles>
   );
 };
