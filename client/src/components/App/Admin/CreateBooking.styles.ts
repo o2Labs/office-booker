@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export default styled.div`
-  ${(props) => props.theme.breakpoints.up('xs')} {
+  ${(props) => props.theme.breakpoints.only('xs')} {
     padding: 0 2rem 2rem;
   }
 
@@ -55,7 +55,13 @@ export default styled.div`
         }
 
         > .input {
-          min-width: 25rem;
+          ${(props) => props.theme.breakpoints.only('xs')} {
+            width: 100%;
+          }
+
+          ${(props) => props.theme.breakpoints.up('sm')} {
+            min-width: 25rem;
+          }
         }
       }
     }
