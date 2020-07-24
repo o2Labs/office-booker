@@ -1,5 +1,6 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
+import parse from 'date-fns/parse';
 import isPast from 'date-fns/isPast';
 import endOfDay from 'date-fns/endOfDay';
 import format from 'date-fns/format';
@@ -23,8 +24,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
-import TextField from '@material-ui/core/TextField';
-import InputAdornment from '@material-ui/core/InputAdornment';
 import IconButton from '@material-ui/core/IconButton';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
@@ -38,41 +37,78 @@ import AdminLayout from './Layout/Layout';
 
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { getBookings, cancelBooking } from '../../../lib/api';
+import { getBookings, cancelBooking, getOffices } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { Booking } from '../../../types/api';
+import { Booking, Office } from '../../../types/api';
 
 import BookingStyles from './Bookings.styles';
 
 const Bookings: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user } = state;
+  const { user, offices } = state;
 
   // Local state
   const [loading, setLoading] = useState(true);
-  const [selectedOffice, setSelectedOffice] = useState<string | undefined>();
+  const [selectedOffice, setSelectedOffice] = useState<Office | undefined>();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [allBookings, setAllBookings] = useState<Booking[] | undefined>();
-  const [deleteDialog, setDeleteDialog] = useState<undefined | Booking>();
 
+  const [allBookings, setAllBookings] = useState<Booking[] | undefined>();
+
+  const [deleteBooking, setDeleteBooking] = useState<undefined | Booking>();
+
+  // Theme
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Helpers
+  const getAllOffices = useCallback(() => {
+    getOffices()
+      .then((data) =>
+        // Store in global state
+        dispatch({
+          type: 'SET_OFFICES',
+          payload: data,
+        })
+      )
+      .catch((err) => {
+        // Handle errors
+        setLoading(false);
+
+        dispatch({
+          type: 'SET_ERROR',
+          payload: formatError(err),
+        });
+      });
+  }, [dispatch]);
+
+  const findOffice = useCallback(
+    (name: Office['name']) => offices && offices.find((o) => o.name === name),
+    [offices]
+  );
 
   // Effects
   useEffect(() => {
     if (user) {
-      // Retrieve first office user can manage bookings for
-      const firstOffice = user.permissions.officesCanManageBookingsFor[0];
-
-      setSelectedOffice(firstOffice);
+      // Get all offices
+      getAllOffices();
     }
-  }, [user]);
+  }, [user, getAllOffices]);
+
+  useEffect(() => {
+    if (user && offices) {
+      // Retrieve first office user can manage bookings for
+      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
+
+      // Wait for global state to be ready
+      setLoading(false);
+    }
+  }, [user, offices, findOffice]);
 
   useEffect(() => {
     if (selectedOffice) {
       // Retrieve bookings
-      getBookings({ office: selectedOffice, date: format(selectedDate, 'yyyy-MM-dd') })
+      getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
         .then((data) => {
           setAllBookings(data.filter((booking) => !isPast(endOfDay(new Date(booking.date)))));
         })
@@ -96,69 +132,21 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   }, [allBookings]);
 
   // Handlers
-  const handleAdminCancelBooking = async (booking: Booking) => {
-    setLoading(true);
+  const handleCancelBooking = () => {
+    if (deleteBooking) {
+      cancelBooking(deleteBooking.id, deleteBooking.user)
+        .then(() => {
+          // Clear selected booking
+          setDeleteBooking(undefined);
 
-    // Cancel existing booking
-    await cancelBooking(booking.id, booking.user)
-      .then(() => {
-        setLoading(false);
-        // Hack: trigger reload of bookings
-        setSelectedOffice('');
-        setSelectedOffice(selectedOffice);
-      })
-      .catch((err) => {
-        setLoading(false);
-        dispatch({ type: 'SET_ERROR', payload: err });
-      });
-  };
-
-  const adminCancelDialog = (booking?: Booking) => {
-    if (booking === undefined) {
-      return null;
+          // Retrieve updated bookings
+          getAllOffices();
+        })
+        .catch((err) => {
+          // Handle error
+          dispatch({ type: 'SET_ERROR', payload: err });
+        });
     }
-    return (
-      <div>
-        <Dialog
-          fullScreen={fullScreen}
-          open={true}
-          onClose={() => setDeleteDialog(undefined)}
-          aria-labelledby="responsive-dialog-title"
-        >
-          <DialogTitle id="responsive-dialog-title">
-            {'Are you sure you want to cancel this booking?'}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Booking for <b>{booking.user}</b> on <b>{format(new Date(booking.date), 'do MMM')}</b>{' '}
-              for <b>{booking.office}</b>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialog(undefined)} color="primary" autoFocus>
-              No
-            </Button>
-            <Button
-              autoFocus
-              onClick={async () => {
-                try {
-                  await handleAdminCancelBooking(booking);
-                  setDeleteDialog(undefined);
-                } catch (error) {
-                  dispatch({
-                    type: 'SET_ERROR',
-                    payload: formatError(error),
-                  });
-                }
-              }}
-              color="primary"
-            >
-              Yes
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </div>
-    );
   };
 
   // Render
@@ -186,97 +174,124 @@ const Bookings: React.FC<RouteComponentProps> = () => {
               New Booking
             </Button>
 
-            <Paper square className="table-container">
-              <div className="filter">
-                <FormControl className="filter-office">
-                  <InputLabel id="office-label">Office</InputLabel>
-                  <Select
-                    labelId="office-label"
-                    id="office"
-                    value={selectedOffice}
-                    onChange={(e) => setSelectedOffice(e.target.value as string)}
-                  >
-                    {user.permissions.officesCanManageBookingsFor.map((office, index) => (
-                      <MenuItem value={office} key={index}>
-                        {office}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+            {selectedOffice && (
+              <Paper square className="table-container">
+                <div className="filter">
+                  <FormControl className="filter-office">
+                    <InputLabel id="office-label">Office</InputLabel>
+                    <Select
+                      labelId="office-label"
+                      id="office"
+                      value={selectedOffice.name}
+                      onChange={(e) => setSelectedOffice(findOffice(e.target.value as string))}
+                    >
+                      {user.permissions.officesCanManageBookingsFor.map((office, index) => (
+                        <MenuItem value={office} key={index}>
+                          {office}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
 
-                <div className="filter-date">
-                  <IconButton
-                    onClick={() => setSelectedDate(addDays(new Date(selectedDate), -1))}
-                    className="date-arrow"
-                  >
-                    <KeyboardArrowLeftIcon />
-                  </IconButton>
+                  <div className="filter-date">
+                    <IconButton
+                      onClick={() => setSelectedDate(addDays(new Date(selectedDate), -1))}
+                      className="date-arrow"
+                    >
+                      <KeyboardArrowLeftIcon />
+                    </IconButton>
 
-                  <DatePicker
-                    autoOk
-                    disableToolbar
-                    variant="inline"
-                    label="Date"
-                    format="dd/MM/yyyy"
-                    value={selectedDate}
-                    onChange={(date) => setSelectedDate(date as Date)}
-                    className="date-picker"
-                  />
+                    <DatePicker
+                      autoOk
+                      disableToolbar
+                      variant="inline"
+                      label="Date"
+                      format="dd/MM/yyyy"
+                      value={selectedDate}
+                      onChange={(date) => setSelectedDate(date as Date)}
+                      className="date-picker"
+                    />
 
-                  <IconButton
-                    onClick={() => setSelectedDate(addDays(new Date(selectedDate), 1))}
-                    className="date-arrow"
-                  >
-                    <KeyboardArrowRightIcon />
-                  </IconButton>
+                    <IconButton
+                      onClick={() => setSelectedDate(addDays(new Date(selectedDate), 1))}
+                      className="date-arrow"
+                    >
+                      <KeyboardArrowRightIcon />
+                    </IconButton>
+                  </div>
                 </div>
-              </div>
 
-              <TableContainer className="table">
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell className="table-header">User</TableCell>
-                      <TableCell className="table-header">Parking</TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {allBookings && allBookings.length > 0 ? (
-                      allBookings.map((data, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{data.user}</TableCell>
-                          <TableCell>{data.parking ? 'Yes' : 'No'}</TableCell>
-                          <TableCell align="right">
-                            <div className="btn-container">
-                              <OurButton
-                                type="submit"
-                                variant="contained"
-                                color="secondary"
-                                size="small"
-                                onClick={() => setDeleteDialog(data)}
-                              >
-                                Cancel Booking
-                              </OurButton>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
+                <TableContainer className="table">
+                  <Table>
+                    <TableHead>
                       <TableRow>
-                        <TableCell>No bookings found</TableCell>
-                        <TableCell />
-                        <TableCell />
+                        <TableCell className="table-header">User</TableCell>
+                        {selectedOffice.parkingQuota > 0 && (
+                          <TableCell className="table-header">Parking</TableCell>
+                        )}
+                        <TableCell></TableCell>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
+                    </TableHead>
+                    <TableBody>
+                      {allBookings && allBookings.length > 0 ? (
+                        allBookings.map((data, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{data.user}</TableCell>
+                            {selectedOffice.parkingQuota > 0 && (
+                              <TableCell>{data.parking ? 'Yes' : 'No'}</TableCell>
+                            )}
+                            <TableCell align="right">
+                              <div className="btn-container">
+                                <OurButton
+                                  type="submit"
+                                  variant="contained"
+                                  color="secondary"
+                                  size="small"
+                                  onClick={() => setDeleteBooking(data)}
+                                >
+                                  Cancel Booking
+                                </OurButton>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell>No bookings found</TableCell>
+                          {selectedOffice.parkingQuota > 0 && <TableCell />}
+                          <TableCell />
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            )}
           </>
         )}
 
-        {adminCancelDialog(deleteDialog)}
+        {deleteBooking && (
+          <Dialog fullScreen={fullScreen} open={true} onClose={() => setDeleteBooking(undefined)}>
+            <DialogTitle>{'Are you sure you want to cancel this booking?'}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Booking for <strong>{deleteBooking.user}</strong> on{' '}
+                <strong>
+                  {format(parse(deleteBooking.date, 'yyyy-MM-dd', new Date()), 'do MMM')}
+                </strong>{' '}
+                for <strong>{deleteBooking.office}</strong>
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDeleteBooking(undefined)} color="primary" autoFocus>
+                No
+              </Button>
+              <Button autoFocus onClick={() => handleCancelBooking()} color="primary">
+                Yes
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
       </BookingStyles>
     </AdminLayout>
   );
