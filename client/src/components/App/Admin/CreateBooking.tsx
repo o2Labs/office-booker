@@ -24,7 +24,6 @@ import { getOffices, createBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { OfficeSlot, Office } from '../../../types/api';
 import { validateEmail } from '../../../lib/emailValidation';
-import { TRANSITION_DURATION } from '../../../constants/theme';
 
 import CreateBookingStyles from './CreateBooking.styles';
 
@@ -353,11 +352,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
               </form>
             </Paper>
 
-            <Snackbar
-              open={alert.visible}
-              onClose={() => alertDispatch({ type: 'hide' })}
-              transitionDuration={TRANSITION_DURATION}
-            >
+            <Snackbar open={alert.visible} onClose={() => alertDispatch({ type: 'hide' })}>
               <Alert
                 variant="filled"
                 severity={alert.severity}
