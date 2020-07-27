@@ -17,6 +17,7 @@ import { formatError } from '../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../constants/dates';
 
 import UpcomingBookingsStyles from './UpcomingBookings.styles';
+import { isToday } from 'date-fns';
 
 const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -54,8 +55,8 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   }, [bookings]);
 
   const upcomingBookings = bookings?.filter(
-    (b) => isFuture(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)) === true
-  );
+    (b) => isFuture(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)) === true || isToday(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)
+  ));
 
   const previousBookings = bookings?.filter(
     (b) =>

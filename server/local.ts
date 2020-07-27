@@ -19,7 +19,7 @@ const getLocalConfig = (): Config => {
       authConfig: {
         type: 'test',
         validate: (req) => {
-          return { email: req.get('bearer') };
+          return { email: req.get('authorization')?.slice(7) };
         },
       },
     };
