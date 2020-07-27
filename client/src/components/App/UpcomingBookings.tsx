@@ -55,7 +55,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   }, [bookings]);
 
   const upcomingBookings = bookings?.filter(
-    (b) => isFuture(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)) === true || isToday(parse(b.date, 'y-MM-dd', new Date())
+    (b) => isFuture(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)) === true || !isToday(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)
   ));
 
   const previousBookings = bookings?.filter(
