@@ -43,7 +43,7 @@ const Home: React.FC<RouteComponentProps> = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (offices.length > 0) {
+    if (offices.length > 0 && !currentOffice) {
       // Restore selected office from local storage
       const localOffice = localStorage.getItem('office');
 
@@ -64,7 +64,7 @@ const Home: React.FC<RouteComponentProps> = () => {
         payload: office,
       });
     }
-  }, [dispatch, offices]);
+  }, [dispatch, offices, currentOffice]);
 
   useEffect(() => {
     // Only retrieve bookings if a current office is found

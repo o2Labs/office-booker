@@ -1,14 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
-
-import Layout from '../../Layout/Layout';
-import Loading from '../../Assets/LoadingSpinner';
-
-import { AppContext } from '../../AppProvider';
-import { getUser, putUser, getOffices } from '../../../lib/api';
-import { formatError } from '../../../lib/app';
-
-import { User, Office } from '../../../types/api';
 import {
   TextField,
   Paper,
@@ -20,14 +11,23 @@ import {
   Input,
   Chip,
 } from '@material-ui/core';
-import { OurButton } from '../../../styles/MaterialComponents';
-import AdminHeader from './AdminHeader';
-import AdminStyles from './Admin.styles';
-import ManageUsersStyles from './ManageUsers.styles';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 
+import { AppContext } from '../../AppProvider';
+
+import AdminLayout from './Layout/Layout';
+import { OurButton } from '../../../styles/MaterialComponents';
+
+import { getUser, putUser, getOffices } from '../../../lib/api';
+import { formatError } from '../../../lib/app';
+import { User, Office } from '../../../types/api';
+
+import UserStyles from './User.styles';
+
+// Types
 type UserRole = { name: 'System Admin' | 'Office Admin' | 'Default' };
 
+// Component
 const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
@@ -93,161 +93,146 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
     }
   };
 
-  if (!currentUser) {
+  // TO DO:
+  // Loading instead?
+  if (!user || !offices) {
     return null;
   }
 
   return (
-    <Layout>
-      <AdminStyles>
-        {!currentUser.permissions.canViewUsers ? (
-          <div className="redirect">
-            <h2>Only for admins</h2>
-            <p>You don&apos;t have an accesss to view this page, redirecting you to home...</p>
-          </div>
-        ) : user === undefined || offices === undefined ? (
-          <Loading />
-        ) : (
-          <>
-            <AdminHeader currentRoute={'manage'} />
-            <ManageUsersStyles>
-              <Paper>
-                <Breadcrumbs
-                  separator={<NavigateNextIcon fontSize="small" />}
-                  aria-label="breadcrumb"
-                >
-                  <h3 className="breadcrumb-text previous"> Manage Users</h3>
+    <AdminLayout currentRoute="users">
+      <UserStyles>
+        <Paper>
+          <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
+            <h3 className="breadcrumb-text previous"> Manage Users</h3>
 
-                  <h3 className="breadcrumb-text ">Edit User</h3>
-                </Breadcrumbs>
-                <section className="edit-user">
-                  <form onSubmit={saveChange}>
-                    <p className="user-email-tt"> {user.email}</p>
-                    <div className="role-container">
-                      <h3>Role</h3>
-                      <FormControl variant="outlined">
-                        <InputLabel style={{ backgroundColor: '#ffffff' }}>Select Role</InputLabel>
-                        <Select
-                          value={user.role.name}
-                          disabled={user.role.name === 'System Admin' || !canEdit}
-                          onChange={(e) => {
-                            const newValue = e.target.value;
-                            setUser((user) => {
-                              if (user === undefined) {
-                                return;
-                              }
-                              if (newValue === 'Default') {
-                                return { ...user, role: { name: 'Default' } };
-                              } else if (newValue === 'Office Admin') {
-                                return { ...user, role: { name: 'Office Admin', offices: [] } };
-                              }
-                              return user;
-                            });
-                          }}
-                        >
-                          <MenuItem value={'Default'}>Default</MenuItem>
-                          <MenuItem value={'Office Admin'}>Office Admin</MenuItem>
-                          <MenuItem value={'System Admin'} disabled>
-                            System Admin
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
-                      {user.role.name === 'Office Admin' && (
-                        <FormControl>
-                          <InputLabel id="demo-mutiple-chip-label">Select Offices</InputLabel>
-                          <Select
-                            className="chips-select"
-                            multiple
-                            disabled={!canEdit}
-                            value={user.role.name === 'Office Admin' ? user.role.offices : []}
-                            onChange={(e) => {
-                              const newValue = e.target.value as string[];
-
-                              setUser((user) => {
-                                if (user === undefined) {
-                                  return;
-                                }
-                                return {
-                                  ...user,
-                                  role: { name: 'Office Admin', offices: newValue },
-                                };
-                              });
-                            }}
-                            input={<Input id="select-multiple-chip" />}
-                            renderValue={(selected) => (
-                              <div>
-                                {(selected as string[]).map((value) => (
-                                  <Chip key={value} label={value} />
-                                ))}
-                              </div>
-                            )}
-                            error={user.role.offices.length === 0}
-                          >
-                            {offices.map((office) => (
-                              <MenuItem key={office.name} value={office.name}>
-                                {office.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      )}
-                    </div>
-                    <h3>Allocated Quota </h3>
-                    <TextField
-                      type="number"
-                      variant="outlined"
+            <h3 className="breadcrumb-text ">Edit User</h3>
+          </Breadcrumbs>
+          <section className="edit-user">
+            <form onSubmit={saveChange}>
+              <p className="user-email-tt"> {user.email}</p>
+              <div className="role-container">
+                <h3>Role</h3>
+                <FormControl variant="outlined">
+                  <InputLabel style={{ backgroundColor: '#ffffff' }}>Select Role</InputLabel>
+                  <Select
+                    value={user.role.name}
+                    disabled={user.role.name === 'System Admin' || !canEdit}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      setUser((user) => {
+                        if (user === undefined) {
+                          return;
+                        }
+                        if (newValue === 'Default') {
+                          return { ...user, role: { name: 'Default' } };
+                        } else if (newValue === 'Office Admin') {
+                          return { ...user, role: { name: 'Office Admin', offices: [] } };
+                        }
+                        return user;
+                      });
+                    }}
+                  >
+                    <MenuItem value={'Default'}>Default</MenuItem>
+                    <MenuItem value={'Office Admin'}>Office Admin</MenuItem>
+                    <MenuItem value={'System Admin'} disabled>
+                      System Admin
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+                {user.role.name === 'Office Admin' && (
+                  <FormControl>
+                    <InputLabel id="demo-mutiple-chip-label">Select Offices</InputLabel>
+                    <Select
+                      className="chips-select"
+                      multiple
                       disabled={!canEdit}
-                      label="Select Quota"
-                      value={user.quota}
+                      value={user.role.name === 'Office Admin' ? user.role.offices : []}
                       onChange={(e) => {
-                        const newValue = e.target.value;
-                        setUser((user) => user && { ...user, quota: Number.parseInt(newValue) });
+                        const newValue = e.target.value as string[];
+
+                        setUser((user) => {
+                          if (user === undefined) {
+                            return;
+                          }
+                          return {
+                            ...user,
+                            role: { name: 'Office Admin', offices: newValue },
+                          };
+                        });
                       }}
-                      error={user.quota < 0}
-                    />
+                      input={<Input id="select-multiple-chip" />}
+                      renderValue={(selected) => (
+                        <div>
+                          {(selected as string[]).map((value) => (
+                            <Chip key={value} label={value} />
+                          ))}
+                        </div>
+                      )}
+                      error={user.role.offices.length === 0}
+                    >
+                      {offices.map((office) => (
+                        <MenuItem key={office.name} value={office.name}>
+                          {office.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              </div>
+              <h3>Allocated Quota </h3>
+              <TextField
+                type="number"
+                variant="outlined"
+                disabled={!canEdit}
+                label="Select Quota"
+                value={user.quota}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setUser((user) => user && { ...user, quota: Number.parseInt(newValue) });
+                }}
+                error={user.quota < 0}
+              />
 
-                    {canEdit && (
-                      <div className="buttons">
-                        <OurButton
-                          type="submit"
-                          color="primary"
-                          variant="contained"
-                          disabled={user.quota < 0}
-                        >
-                          Save
-                        </OurButton>
-                      </div>
-                    )}
-                  </form>
-                </section>
-                <section className="docs">
-                  <h2>About Roles</h2>
+              {canEdit && (
+                <div className="buttons">
+                  <OurButton
+                    type="submit"
+                    color="primary"
+                    variant="contained"
+                    disabled={user.quota < 0}
+                  >
+                    Save
+                  </OurButton>
+                </div>
+              )}
+            </form>
+          </section>
+          <section className="docs">
+            <h2>About Roles</h2>
 
-                  <h3>Default</h3>
-                  <ul>
-                    <li>Any user with a valid email address gets this role.</li>
-                    <li>Can manage their own bookings only.</li>
-                  </ul>
-                  <h3>System Admin</h3>
-                  <ul>
-                    <li>Must be configured in infrastructure.</li>
-                    <li>Can view and edit all bookings in the system.</li>
-                    <li>Can view and edit all users</li>
-                  </ul>
-                  <h3>Office Admin</h3>
-                  <ul>
-                    <li>Must be assigned by a System Admin.</li>
-                    <li>Can view and edit bookings for their assigned offices.</li>
-                    <li>Can view other users (but can't edit).</li>
-                  </ul>
-                  <p>Quotas are applied to all users regardless of role.</p>
-                </section>
-              </Paper>
-            </ManageUsersStyles>
-          </>
-        )}
-      </AdminStyles>
-    </Layout>
+            <h3>Default</h3>
+            <ul>
+              <li>Any user with a valid email address gets this role.</li>
+              <li>Can manage their own bookings only.</li>
+            </ul>
+            <h3>System Admin</h3>
+            <ul>
+              <li>Must be configured in infrastructure.</li>
+              <li>Can view and edit all bookings in the system.</li>
+              <li>Can view and edit all users</li>
+            </ul>
+            <h3>Office Admin</h3>
+            <ul>
+              <li>Must be assigned by a System Admin.</li>
+              <li>Can view and edit bookings for their assigned offices.</li>
+              <li>Can view other users (but can't edit).</li>
+            </ul>
+            <p>Quotas are applied to all users regardless of role.</p>
+          </section>
+        </Paper>
+      </UserStyles>
+    </AdminLayout>
   );
 };
 
