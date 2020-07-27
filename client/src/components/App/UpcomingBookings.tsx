@@ -3,8 +3,6 @@ import { RouteComponentProps, navigate } from '@reach/router';
 import Paper from '@material-ui/core/Paper';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
-import isFuture from 'date-fns/isFuture';
-import isBefore from 'date-fns/isBefore';
 import startOfDay from 'date-fns/startOfDay';
 import { AppContext } from '../AppProvider';
 
@@ -17,7 +15,6 @@ import { formatError } from '../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../constants/dates';
 
 import UpcomingBookingsStyles from './UpcomingBookings.styles';
-import { isToday } from 'date-fns';
 
 const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -54,15 +51,10 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
     }
   }, [bookings]);
 
-  const upcomingBookings = bookings?.filter(
-    (b) => isFuture(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)) === true || isToday(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)
-  ));
+  const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
 
-  const previousBookings = bookings?.filter(
-    (b) =>
-      isBefore(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS), startOfDay(new Date())) ===
-      true
-  );
+  const upcomingBookings = bookings?.filter((b) => b.date >= today);
+  const previousBookings = bookings?.filter((b) => b.date < today);
 
   // Render
   return (
