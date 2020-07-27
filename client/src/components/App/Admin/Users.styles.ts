@@ -18,6 +18,8 @@ export default styled.div`
   }
 
   > .table-container {
+    margin-top: 2rem;
+
     > .filters {
       display: flex;
 
@@ -27,13 +29,18 @@ export default styled.div`
 
       ${(props) => props.theme.breakpoints.up('sm')} {
         align-items: center;
-        justify-content: space-between;
       }
 
       padding: 3rem 3rem 2rem;
 
       > .filter-roles {
         flex: 0 0 auto;
+      }
+
+      > .filter-quota {
+        flex: 1 1 auto;
+
+        padding: 1.6rem 0 0 3rem;
       }
 
       > .search-user {
@@ -49,26 +56,41 @@ export default styled.div`
       padding: 0 1.6rem 3rem;
       overflow: scroll;
     }
-  }
 
-  > .load-more-container {
-    padding: 0 3rem 3rem;
+    .table-header {
+      font-weight: 700;
+    }
 
-    text-align: center;
-  }
+    > .load-more-container {
+      padding: 0 3rem 3rem;
 
-  > .unregistered-user {
-    padding: 0 3rem 3rem;
+      text-align: center;
+    }
 
-    > p {
-      color: ${(props) => props.theme.palette.secondary.main};
-      font-size: 1.6rem;
-      font-weight: 400;
+    > .unregistered-user {
+      display: flex;
+      align-items: center;
 
-      margin: 0;
+      padding: 0 3rem 3rem;
 
-      > a {
-        color: ${(props) => props.theme.palette.primary.main};
+      > p {
+        flex: 0 1 auto;
+
+        padding-right: 2rem;
+
+        color: ${(props) => props.theme.palette.secondary.main};
+        font-size: 1.6rem;
+        font-weight: 400;
+
+        margin: 0;
+
+        > span {
+          color: ${(props) => props.theme.palette.primary.main};
+        }
+      }
+
+      > button {
+        flex: 0 0 auto;
       }
     }
   }
