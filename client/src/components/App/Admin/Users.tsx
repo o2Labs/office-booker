@@ -1,36 +1,41 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { RouteComponentProps, Link } from '@reach/router';
+import TableContainer from '@material-ui/core/TableContainer';
+import Table from '@material-ui/core/Table';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
+import TableBody from '@material-ui/core/TableBody';
+import Paper from '@material-ui/core/Paper';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import TextField from '@material-ui/core/TextField';
+import FormControl from '@material-ui/core/FormControl';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import CreateIcon from '@material-ui/icons/Create';
+import SearchIcon from '@material-ui/icons/Search';
 
-import Layout from '../../Layout/Layout';
-import ManageUsersStyles from './ManageUsers.styles';
-import AdminHeader from './AdminHeader';
-import AdminStyles from './Admin.styles';
 import { AppContext } from '../../AppProvider';
+import Loading from '../../Assets/LoadingSpinner';
+
+import AdminLayout from './Layout/Layout';
+import { OurButton } from '../../../styles/MaterialComponents';
+
 import { validateEmail } from '../../../lib/emailValidation';
-
-import {
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControl,
-} from '@material-ui/core';
-import Create from '@material-ui/icons/Create';
-import { TextField, InputAdornment } from '@material-ui/core';
-import Search from '@material-ui/icons/Search';
-
 import { User, UserQuery } from '../../../types/api';
 import { queryUsers } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { OurButton } from '../../../styles/MaterialComponents';
 
-type UserFilter = { name: 'System Admin' | 'Office Admin' | 'custom' | 'all'; email?: string };
+import UsersStyles from './Users.styles';
 
+// Types
+type UserFilter = {
+  name: 'System Admin' | 'Office Admin' | 'custom' | 'all';
+  email?: string;
+};
+
+// Helpers
 const userFilterToQuery = (filter: UserFilter): UserQuery => {
   const query: UserQuery = { emailPrefix: filter.email };
   if (filter.name === 'Office Admin') {
@@ -44,30 +49,45 @@ const userFilterToQuery = (filter: UserFilter): UserQuery => {
   return query;
 };
 
+// Component
 const Users: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
   const { user } = state;
+
+  // Local state
+  const [loading, setLoading] = useState(true);
   const [queryResult, setQueryResult] = useState<User[] | undefined>(undefined);
   const [paginationToken, setPaginationToken] = useState<string | undefined>(undefined);
   const [selectedFilter, setSelectedFilter] = useState<UserFilter>({ name: 'System Admin' });
   const [email, setEmail] = useState<string>('');
 
+  // Effects
   useEffect(() => {
-    setQueryResult(undefined);
     queryUsers(userFilterToQuery(selectedFilter))
       .then((result) => {
         setQueryResult(result.users);
         setPaginationToken(result.paginationToken);
       })
-      .catch((error) =>
+      .catch((err) => {
+        // Handle errors
+        setLoading(false);
+
         dispatch({
           type: 'SET_ERROR',
-          payload: formatError(error),
-        })
-      );
+          payload: formatError(err),
+        });
+      });
   }, [selectedFilter, dispatch]);
 
+  useEffect(() => {
+    if (queryResult) {
+      // Wait for local state to be ready
+      setLoading(false);
+    }
+  }, [queryResult]);
+
+  // Handlers
   const handleSelectedRoleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const val = event.target.value;
     if (val === 'System Admin' || val === 'Office Admin' || val === 'custom' || val === 'all') {
@@ -92,120 +112,123 @@ const Users: React.FC<RouteComponentProps> = () => {
     }
   };
 
+  // Render
   if (!user) {
     return null;
   }
 
   return (
-    <Layout>
-      <AdminStyles>
-        {!user.permissions.canViewUsers ? (
-          <div className="redirect">
-            <h2>Only for admins</h2>
-            <p>You don&apos;t have an access to view this page, redirecting you to home...</p>
-          </div>
+    <AdminLayout currentRoute="users">
+      <UsersStyles>
+        {' '}
+        {loading ? (
+          <Loading />
         ) : (
           <>
-            <AdminHeader currentRoute={'manage'} />
-            <ManageUsersStyles>
-              <Paper>
-                <h3>View Users</h3>
-                <section className="filters">
-                  <div className="filter-roles">
-                    <FormControl variant="outlined">
-                      <InputLabel style={{ backgroundColor: '#ffffff' }}>Select Filter</InputLabel>
-                      <Select value={selectedFilter.name} onChange={handleSelectedRoleChange}>
-                        <MenuItem value={'System Admin'}>System Admins</MenuItem>
-                        <MenuItem value={'Office Admin'}>Office Admins</MenuItem>
-                        <MenuItem value={'custom'}>Users with Custom Quota</MenuItem>
-                        <MenuItem value={'all'}>All Registered Users</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </div>
+            <h3>Users</h3>
 
-                  <div className="search-user">
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const sanitisedEmail = email.trim().toLowerCase();
-                        setSelectedFilter((filter) => ({
-                          ...filter,
-                          email: sanitisedEmail === '' ? undefined : sanitisedEmail,
-                        }));
+            <Paper square className="table-container">
+              <section className="filters">
+                <div className="filter-roles">
+                  <FormControl variant="outlined">
+                    <InputLabel style={{ backgroundColor: '#ffffff' }}>Select Filter</InputLabel>
+                    <Select value={selectedFilter.name} onChange={handleSelectedRoleChange}>
+                      <MenuItem value={'System Admin'}>System Admins</MenuItem>
+                      <MenuItem value={'Office Admin'}>Office Admins</MenuItem>
+                      <MenuItem value={'custom'}>Users with Custom Quota</MenuItem>
+                      <MenuItem value={'all'}>All Registered Users</MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+
+                <div className="search-user">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const sanitisedEmail = email.trim().toLowerCase();
+                      setSelectedFilter((filter) => ({
+                        ...filter,
+                        email: sanitisedEmail === '' ? undefined : sanitisedEmail,
+                      }));
+                    }}
+                  >
+                    <TextField
+                      placeholder="Start of email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon />
+                          </InputAdornment>
+                        ),
                       }}
-                    >
-                      <TextField
-                        placeholder="Start of email address"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Search />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </form>
-                  </div>
-                </section>
+                    />
+                  </form>
+                </div>
+              </section>
 
-                <section className="listing-container">
-                  <Table>
-                    <TableHead>
+              <TableContainer className="table">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>User Email</TableCell>
+                      <TableCell>Quota</TableCell>
+                      <TableCell>Role</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {queryResult && queryResult.length > 0 ? (
+                      queryResult.map((user) => (
+                        <TableRow key={user.email}>
+                          <TableCell>
+                            <Link to={`/admin/users/${user.email}`}>
+                              {user.email} <CreateIcon />
+                            </Link>
+                          </TableCell>
+                          <TableCell>{user.quota}</TableCell>
+                          <TableCell>{user.role.name}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
                       <TableRow>
-                        <TableCell>User Email</TableCell>
-                        <TableCell>Quota</TableCell>
-                        <TableCell>Role</TableCell>
+                        <TableCell>No users found</TableCell>
+                        <TableCell />
+                        <TableCell />
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {!queryResult
-                        ? null
-                        : queryResult.map((user) => (
-                            <TableRow key={user.email}>
-                              <TableCell>
-                                <Link to={`/admin/users/${user.email}`}>
-                                  {user.email} <Create />
-                                </Link>
-                              </TableCell>
-                              <TableCell>{user.quota}</TableCell>
-                              <TableCell>{user.role.name}</TableCell>
-                            </TableRow>
-                          ))}
-                    </TableBody>
-                  </Table>
-                </section>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-                {paginationToken && (
-                  <section className="load-more-container">
-                    <OurButton onClick={loadMore} variant="contained">
-                      Load More
-                    </OurButton>
+              {paginationToken && (
+                <section className="load-more-container">
+                  <OurButton onClick={loadMore} variant="contained">
+                    Load More
+                  </OurButton>
+                </section>
+              )}
+
+              {selectedFilter.name === 'all' &&
+                selectedFilter.email !== undefined &&
+                validateEmail(state.config?.emailRegex, selectedFilter.email) &&
+                queryResult?.length === 0 && (
+                  <section className="unregistered-user">
+                    <p>
+                      User not yet registered, edit{' '}
+                      <Link to={`/admin/users/${selectedFilter.email}`}>
+                        {selectedFilter.email}
+                        <CreateIcon />
+                      </Link>{' '}
+                      anyway.
+                    </p>
                   </section>
                 )}
-
-                {selectedFilter.name === 'all' &&
-                  selectedFilter.email !== undefined &&
-                  validateEmail(state.config?.emailRegex, selectedFilter.email) &&
-                  queryResult?.length === 0 && (
-                    <section className="unregistered-user">
-                      <p>
-                        User not yet registered, edit{' '}
-                        <Link to={`/admin/users/${selectedFilter.email}`}>
-                          {selectedFilter.email}
-                          <Create />
-                        </Link>{' '}
-                        anyway.
-                      </p>
-                    </section>
-                  )}
-              </Paper>
-            </ManageUsersStyles>
+            </Paper>
           </>
         )}
-      </AdminStyles>
-    </Layout>
+      </UsersStyles>
+    </AdminLayout>
   );
 };
 
