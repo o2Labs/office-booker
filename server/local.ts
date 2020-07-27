@@ -19,7 +19,15 @@ const getLocalConfig = (): Config => {
       authConfig: {
         type: 'test',
         validate: (req) => {
-          return { email: req.get('authorization')?.slice(7) };
+          const bearerPrefix = 'bearer ';
+          const authorization = req.get('authorization');
+          if (authorization === undefined) {
+            throw new Error('Authorization header not set');
+          }
+          if (!authorization.toLowerCase().startsWith(bearerPrefix)) {
+            throw new Error('Malformed bearer prefix');
+          }
+          return { email: authorization?.slice(bearerPrefix.length) };
         },
       },
     };
