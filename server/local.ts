@@ -8,7 +8,7 @@ const getLocalConfig = (): Config => {
   try {
     return parseConfigFromEnv(process.env);
   } catch (error) {
-    console.log('No Env Configured using stub setup');
+    console.log('Env not configured correctly, falling back to stub setup\n' + error.message);
     return {
       advanceBookingDays: 14,
       dataRetentionDays: 30,
