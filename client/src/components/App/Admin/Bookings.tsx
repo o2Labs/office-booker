@@ -82,10 +82,9 @@ const Bookings: React.FC<RouteComponentProps> = () => {
       });
   }, [dispatch]);
 
-  const findOffice = useCallback(
-    (name: Office['name']) => offices && offices.find((o) => o.name === name),
-    [offices]
-  );
+  const findOffice = useCallback((name: Office['name']) => offices.find((o) => o.name === name), [
+    offices,
+  ]);
 
   // Effects
   useEffect(() => {
@@ -96,14 +95,11 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   }, [user, getAllOffices]);
 
   useEffect(() => {
-    if (user && offices) {
+    if (user && offices.length > 0 && !selectedOffice) {
       // Retrieve first office user can manage bookings for
       setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
-
-      // Wait for global state to be ready
-      setLoading(false);
     }
-  }, [user, offices, findOffice]);
+  }, [user, offices, selectedOffice, findOffice]);
 
   useEffect(() => {
     if (selectedOffice) {
