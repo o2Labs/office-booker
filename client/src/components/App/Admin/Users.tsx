@@ -172,30 +172,32 @@ const Users: React.FC<RouteComponentProps> = () => {
 
             <Paper square className="table-container">
               <section className="filters">
-                <div className="filter-roles">
-                  <FormControl>
-                    <InputLabel>User Role</InputLabel>
-                    <Select value={selectedFilter.role} onChange={handleRoleFilter}>
-                      <MenuItem value="all">All Registered Users</MenuItem>
-                      <MenuItem value="System Admin">System Admins</MenuItem>
-                      <MenuItem value="Office Admin">Office Admins</MenuItem>
-                    </Select>
-                  </FormControl>
-                </div>
+                <div className="filter-roles-and-quota">
+                  <div className="filter-role">
+                    <FormControl>
+                      <InputLabel>User Role</InputLabel>
+                      <Select value={selectedFilter.role} onChange={handleRoleFilter}>
+                        <MenuItem value="all">All Registered Users</MenuItem>
+                        <MenuItem value="System Admin">System Admins</MenuItem>
+                        <MenuItem value="Office Admin">Office Admins</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
 
-                <div className="filter-quota">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={selectedFilter.customQuota}
-                        onChange={(_, checked) =>
-                          setSelectedFilter((filter) => ({ ...filter, customQuota: checked }))
-                        }
-                      />
-                    }
-                    label="Custom quota?"
-                    labelPlacement="start"
-                  />
+                  <div className="filter-quota">
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={selectedFilter.customQuota}
+                          onChange={(_, checked) =>
+                            setSelectedFilter((filter) => ({ ...filter, customQuota: checked }))
+                          }
+                        />
+                      }
+                      label="Custom quota?"
+                      labelPlacement="start"
+                    />
+                  </div>
                 </div>
 
                 <div className="search-user">
