@@ -92,23 +92,28 @@ const ViewBooking: React.FC<RouteComponentProps<Props>> = (props) => {
         <ViewBookingStyles>
           {booking ? (
             <Paper square className="card">
+              <p className="day">
+                {format(
+                  parse(booking.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS),
+                  'eeee',
+                  DATE_FNS_OPTIONS
+                )}
+              </p>
               <h2>
                 {format(
                   parse(booking.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS),
-                  'eeee do LLL',
+                  'do LLLL',
                   DATE_FNS_OPTIONS
                 )}
               </h2>
+
               <h3>{booking.office}</h3>
-              {booking.parking && (
-                <p className="parking">
-                  Parking
-                  <Checkbox defaultChecked color="primary" />
-                </p>
-              )}
+              {booking.parking && <p className="parking">+ parking</p>}
+
               <div className="breaker"></div>
+
               <h4>{emailSplit && emailSplit[0]}</h4>
-              <h5>@{emailSplit && emailSplit[1]}</h5>
+              <p className="domain">@{emailSplit && emailSplit[1]}</p>
             </Paper>
           ) : (
             <p className="not-found">
