@@ -62,48 +62,8 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Helpers
-  const getAllOffices = useCallback(() => {
-    getOffices()
-      .then((data) =>
-        // Store in global state
-        dispatch({
-          type: 'SET_OFFICES',
-          payload: data,
-        })
-      )
-      .catch((err) => {
-        // Handle errors
-        setLoading(false);
-
-        dispatch({
-          type: 'SET_ERROR',
-          payload: formatError(err),
-        });
-      });
-  }, [dispatch]);
-
-  const findOffice = useCallback((name: Office['name']) => offices.find((o) => o.name === name), [
-    offices,
-  ]);
-
-  // Effects
-  useEffect(() => {
-    if (user) {
-      // Get all offices
-      getAllOffices();
-    }
-  }, [user, getAllOffices]);
-
-  useEffect(() => {
-    if (user && offices.length > 0 && !selectedOffice) {
-      // Retrieve first office user can manage bookings for
-      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
-    }
-  }, [user, offices, selectedOffice, findOffice]);
-
-  useEffect(() => {
+  const getAllBookings = useCallback(() => {
     if (selectedOffice) {
-      // Retrieve bookings
       getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
         .then((data) => {
           setAllBookings(data.filter((booking) => !isPast(endOfDay(new Date(booking.date)))));
@@ -118,7 +78,49 @@ const Bookings: React.FC<RouteComponentProps> = () => {
           });
         });
     }
-  }, [dispatch, selectedOffice, selectedDate]);
+  }, [selectedOffice, selectedDate, dispatch]);
+
+  const findOffice = useCallback((name: Office['name']) => offices.find((o) => o.name === name), [
+    offices,
+  ]);
+
+  // Effects
+  useEffect(() => {
+    if (user) {
+      // Get all offices
+      getOffices()
+        .then((data) =>
+          // Store in global state
+          dispatch({
+            type: 'SET_OFFICES',
+            payload: data,
+          })
+        )
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
+
+          dispatch({
+            type: 'SET_ERROR',
+            payload: formatError(err),
+          });
+        });
+    }
+  }, [user, dispatch]);
+
+  useEffect(() => {
+    if (user && offices.length > 0 && !selectedOffice) {
+      // Retrieve first office user can manage bookings for
+      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
+    }
+  }, [user, offices, selectedOffice, findOffice]);
+
+  useEffect(() => {
+    if (selectedOffice) {
+      // Retrieve bookings
+      getAllBookings();
+    }
+  }, [dispatch, selectedOffice, selectedDate, getAllBookings]);
 
   useEffect(() => {
     if (allBookings) {
@@ -130,13 +132,23 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   // Handlers
   const handleCancelBooking = () => {
     if (deleteBooking) {
+      console.log('cancelling');
       cancelBooking(deleteBooking.id, deleteBooking.user)
         .then(() => {
+          console.log('cancelled');
           // Clear selected booking
           setDeleteBooking(undefined);
 
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: 'Booking cancelled',
+              color: 'success',
+            },
+          });
+
           // Retrieve updated bookings
-          getAllOffices();
+          getAllBookings();
         })
         .catch((err) => {
           // Handle error
@@ -245,7 +257,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                                   size="small"
                                   onClick={() => setDeleteBooking(data)}
                                 >
-                                  Cancel Booking
+                                  Cancel
                                 </OurButton>
                               </div>
                             </TableCell>
@@ -273,7 +285,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
               <DialogContentText>
                 Booking for <strong>{deleteBooking.user}</strong> on{' '}
                 <strong>
-                  {format(parse(deleteBooking.date, 'yyyy-MM-dd', new Date()), 'do MMM')}
+                  {format(parse(deleteBooking.date, 'yyyy-MM-dd', new Date()), 'do LLLL')}
                 </strong>{' '}
                 for <strong>{deleteBooking.office}</strong>
               </DialogContentText>
