@@ -8,6 +8,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
 import Paper from '@material-ui/core/Paper';
 import InputLabel from '@material-ui/core/InputLabel';
+import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
@@ -15,6 +16,10 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import CreateIcon from '@material-ui/icons/Create';
 import SearchIcon from '@material-ui/icons/Search';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
@@ -73,6 +78,10 @@ const Users: React.FC<RouteComponentProps> = () => {
   });
   const [email, setEmail] = useState<string>('');
 
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [addUserEmail, setAddUserEmail] = useState('');
+  const [addUserError, setAddUserError] = useState(false);
+
   // Effects
   useEffect(() => {
     // Retrieve results
@@ -123,7 +132,7 @@ const Users: React.FC<RouteComponentProps> = () => {
     }
   };
 
-  const loadMore = () => {
+  const handleLoadMore = () => {
     if (paginationToken && selectedFilter.role === 'all') {
       // Clear the current token
       setPaginationToken(undefined);
@@ -145,6 +154,16 @@ const Users: React.FC<RouteComponentProps> = () => {
     }
   };
 
+  const handleAdduser = () => {
+    if (validateEmail(state.config?.emailRegex, addUserEmail)) {
+      setAddUserError(false);
+
+      navigate(`/admin/users/${addUserEmail}`);
+    } else {
+      setAddUserError(true);
+    }
+  };
+
   // Render
   if (!user) {
     return null;
@@ -163,7 +182,7 @@ const Users: React.FC<RouteComponentProps> = () => {
               startIcon={<AddCircleIcon />}
               type="submit"
               color="secondary"
-              onClick={() => {}}
+              onClick={() => setShowAddUser(true)}
               variant="contained"
               size="small"
             >
@@ -254,7 +273,7 @@ const Users: React.FC<RouteComponentProps> = () => {
 
               {paginationToken && (
                 <section className="load-more-container">
-                  <OurButton onClick={loadMore} color="primary" variant="contained">
+                  <OurButton onClick={handleLoadMore} color="primary" variant="contained">
                     Load More
                   </OurButton>
                 </section>
@@ -282,6 +301,38 @@ const Users: React.FC<RouteComponentProps> = () => {
                   </section>
                 )}
             </Paper>
+
+            <Dialog open={showAddUser} onClose={() => setShowAddUser(false)}>
+              <DialogContent>
+                <DialogContentText>
+                  Please enter the email address for the user you wish to create
+                </DialogContentText>
+
+                <TextField
+                  autoFocus
+                  label="Email Address"
+                  type="email"
+                  value={addUserEmail}
+                  onChange={(e) => setAddUserEmail(e.target.value)}
+                  error={addUserError}
+                  helperText={addUserError && `Invalid email address`}
+                  fullWidth
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setShowAddUser(false)} color="primary" autoFocus>
+                  Cancel
+                </Button>
+                <Button
+                  startIcon={<AddCircleIcon />}
+                  variant="contained"
+                  onClick={() => handleAdduser()}
+                  color="secondary"
+                >
+                  New user
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
         )}
       </UsersStyles>
