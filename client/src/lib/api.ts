@@ -1,4 +1,4 @@
-import { getJwtToken } from './auth';
+import { getAuthorization } from './auth';
 import {
   User,
   Office,
@@ -23,13 +23,18 @@ const buildHttpError = async (response: Response): Promise<Error> => {
 };
 
 const buildHeaders = async () => {
-  // Get JWT Token
-  const jwtToken = await getJwtToken();
-
-  return {
+  const defaultHeaders = {
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${jwtToken}`,
   };
+  // Get JWT Token
+  const Authorization = await getAuthorization();
+  if (Authorization !== undefined) {
+    return {
+      ...defaultHeaders,
+      Authorization,
+    };
+  }
+  return defaultHeaders;
 };
 
 // Queries
