@@ -188,7 +188,7 @@ export default styled.div`
         }
 
         > .left {
-          flex: 1 1 30%;
+          flex: 1 1 auto;
 
           > .date {
             margin: 0;
@@ -196,7 +196,7 @@ export default styled.div`
         }
 
         > .right {
-          flex: 1 1 70%;
+          flex: 0 0 auto;
 
           text-align: right;
 
@@ -205,32 +205,16 @@ export default styled.div`
             justify-content: flex-end;
 
             > .availability {
+              flex: 0 0 auto;
+
               display: flex;
               align-items: center;
-              justify-content: flex-end;
+            }
 
-              margin-right: 1rem;
+            > .book {
+              flex: 0 0 auto;
 
-              > .status {
-                flex: 0 0 auto;
-
-                display: flex;
-
-                > svg {
-                  flex: 0 0 auto;
-                  font-size: 2rem;
-                }
-
-                > p {
-                  flex: 1 1 auto;
-
-                  margin: 0 0 0 0.4rem;
-                }
-
-                &:not(:first-of-type) {
-                  padding-left: 1rem;
-                }
-              }
+              padding-left: 1.6rem;
             }
           }
 

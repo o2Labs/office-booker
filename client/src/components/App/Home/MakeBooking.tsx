@@ -473,11 +473,13 @@ const MakeBooking: React.FC = () => {
                           </div>
 
                           {day.userCanBook && (
-                            <BookButton
-                              onClick={(e) => handleCreateBooking(day.date, e.withParking)}
-                              availableCarPark={day.availableCarPark}
-                              buttonsLoading={buttonsLoading}
-                            />
+                            <div className="book">
+                              <BookButton
+                                onClick={(e) => handleCreateBooking(day.date, e.withParking)}
+                                availableCarPark={day.availableCarPark}
+                                buttonsLoading={buttonsLoading}
+                              />
+                            </div>
                           )}
                         </div>
                       )}
