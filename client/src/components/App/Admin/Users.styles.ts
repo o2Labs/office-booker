@@ -27,50 +27,15 @@ export default styled.div`
         flex-direction: column;
       }
 
-      ${(props) => props.theme.breakpoints.only('sm')} {
-        align-items: flex-start;
-      }
-
-      ${(props) => props.theme.breakpoints.up('md')} {
-        align-items: center;
+      ${(props) => props.theme.breakpoints.up('sm')} {
+        align-items: flex-end;
+        justify-content: space-between;
       }
 
       padding: 3rem 3rem 2rem;
 
-      > .filter-roles-and-quota {
-        flex: 1 1 auto;
-
-        display: flex;
-
-        ${(props) => props.theme.breakpoints.down('sm')} {
-          flex-direction: column;
-        }
-
-        ${(props) => props.theme.breakpoints.up('md')} {
-          align-items: center;
-
-          padding-right: 2rem;
-        }
-
-        > .filter-role {
-          flex: 0 0 auto;
-        }
-
-        > .filter-quota {
-          flex: 1 1 auto;
-
-          ${(props) => props.theme.breakpoints.down('sm')} {
-            padding: 1rem 0 0 0;
-
-            > label {
-              margin-left: 0;
-            }
-          }
-
-          ${(props) => props.theme.breakpoints.up('md')} {
-            padding: 1.6rem 0 0 2rem;
-          }
-        }
+      > .filter-role {
+        flex: 0 0 auto;
       }
 
       > .search-user {
@@ -80,6 +45,13 @@ export default styled.div`
           padding-top: 2rem;
         }
       }
+    }
+
+    > p.note {
+      margin: 0 3rem 2rem;
+
+      font-size: 1.4rem;
+      font-style: italic;
     }
 
     > .table {
@@ -98,29 +70,39 @@ export default styled.div`
     }
 
     > .unregistered-user {
-      display: flex;
-      align-items: center;
-
       padding: 0 3rem 3rem;
 
       > p {
-        flex: 0 1 auto;
+        margin: 2rem 0 0;
 
-        padding-right: 2rem;
-
-        color: ${(props) => props.theme.palette.secondary.main};
-        font-size: 1.6rem;
+        font-size: 1.4rem;
         font-weight: 400;
-
-        margin: 0;
-
-        > span {
-          color: ${(props) => props.theme.palette.primary.main};
-        }
+        font-style: italic;
       }
 
-      > button {
-        flex: 0 0 auto;
+      > .link {
+        display: flex;
+        align-items: center;
+
+        > p {
+          flex: 0 1 auto;
+
+          padding-right: 2rem;
+
+          color: ${(props) => props.theme.palette.secondary.main};
+          font-size: 1.6rem;
+          font-weight: 400;
+
+          margin: 0;
+
+          > span {
+            color: ${(props) => props.theme.palette.primary.main};
+          }
+        }
+
+        > button {
+          flex: 0 0 auto;
+        }
       }
     }
   }

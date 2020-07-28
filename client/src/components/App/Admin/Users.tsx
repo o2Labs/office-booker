@@ -12,9 +12,7 @@ import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
-import Checkbox from '@material-ui/core/Checkbox';
 import FormControl from '@material-ui/core/FormControl';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -37,11 +35,11 @@ import { queryUsers } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 
 import UsersStyles from './Users.styles';
+import { DialogTitle } from '@material-ui/core';
 
 // Types
 type UserFilter = {
-  role: 'all' | 'System Admin' | 'Office Admin';
-  customQuota: boolean;
+  user: 'active' | 'custom' | 'System Admin' | 'Office Admin';
   email?: string;
 };
 
@@ -49,13 +47,11 @@ type UserFilter = {
 const userFilterToQuery = (filter: UserFilter): UserQuery => {
   const query: UserQuery = { emailPrefix: filter.email };
 
-  if (filter.role === 'Office Admin') {
+  if (filter.user === 'Office Admin') {
     query.role = 'Office Admin';
-  } else if (filter.role === 'System Admin') {
+  } else if (filter.user === 'System Admin') {
     query.role = 'System Admin';
-  }
-
-  if (filter.customQuota) {
+  } else if (filter.user === 'custom') {
     query.quota = 'custom';
   }
 
@@ -73,8 +69,7 @@ const Users: React.FC<RouteComponentProps> = () => {
   const [queryResult, setQueryResult] = useState<User[] | undefined>(undefined);
   const [paginationToken, setPaginationToken] = useState<string | undefined>();
   const [selectedFilter, setSelectedFilter] = useState<UserFilter>({
-    role: 'all',
-    customQuota: false,
+    user: 'active',
   });
   const [email, setEmail] = useState<string>('');
 
@@ -109,31 +104,47 @@ const Users: React.FC<RouteComponentProps> = () => {
   }, [queryResult]);
 
   useEffect(() => {
-    // Search after typing has stopped
+    // Only allow the following
+    // - Different to value in local state
+    // AND
+    // - Not blank OR blank when there was a previous value
     const sanitisedEmail = email.trim().toLowerCase();
 
-    const searchEmailTimer = setTimeout(() => {
-      setSelectedFilter((filter) => ({
-        ...filter,
-        email: sanitisedEmail,
-      }));
-    }, 1000);
+    if (
+      sanitisedEmail !== selectedFilter.email &&
+      (sanitisedEmail !== '' || (selectedFilter.email && sanitisedEmail === ''))
+    ) {
+      // Search after typing has stopped
+      const searchEmailTimer = setTimeout(() => {
+        setSelectedFilter((filter) => ({
+          ...filter,
+          email: sanitisedEmail,
+        }));
+      }, 1000);
 
-    // Cleanup
-    return () => clearTimeout(searchEmailTimer);
-  }, [email]);
+      // Cleanup
+      return () => clearTimeout(searchEmailTimer);
+    }
+
+    return;
+  }, [selectedFilter.email, email]);
 
   // Handlers
-  const handleRoleFilter = (e: React.ChangeEvent<{ value: unknown }>) => {
-    const role = e.target.value as string;
+  const handleChangeUser = (e: React.ChangeEvent<{ value: unknown }>) => {
+    const user = e.target.value as string;
 
-    if (role === 'all' || role === 'System Admin' || role === 'Office Admin') {
-      setSelectedFilter((filter) => ({ ...filter, role }));
+    if (
+      user === 'active' ||
+      user === 'System Admin' ||
+      user === 'Office Admin' ||
+      user === 'custom'
+    ) {
+      setSelectedFilter((filter) => ({ ...filter, user }));
     }
   };
 
   const handleLoadMore = () => {
-    if (paginationToken && selectedFilter.role === 'all') {
+    if (paginationToken && selectedFilter.user === 'active') {
       // Clear the current token
       setPaginationToken(undefined);
 
@@ -191,32 +202,16 @@ const Users: React.FC<RouteComponentProps> = () => {
 
             <Paper square className="table-container">
               <section className="filters">
-                <div className="filter-roles-and-quota">
-                  <div className="filter-role">
-                    <FormControl>
-                      <InputLabel>User Role</InputLabel>
-                      <Select value={selectedFilter.role} onChange={handleRoleFilter}>
-                        <MenuItem value="all">All Registered Users</MenuItem>
-                        <MenuItem value="System Admin">System Admins</MenuItem>
-                        <MenuItem value="Office Admin">Office Admins</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </div>
-
-                  <div className="filter-quota">
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={selectedFilter.customQuota}
-                          onChange={(_, checked) =>
-                            setSelectedFilter((filter) => ({ ...filter, customQuota: checked }))
-                          }
-                        />
-                      }
-                      label="Custom quota?"
-                      labelPlacement="start"
-                    />
-                  </div>
+                <div className="filter-role">
+                  <FormControl>
+                    <InputLabel>User</InputLabel>
+                    <Select value={selectedFilter.user} onChange={handleChangeUser}>
+                      <MenuItem value="active">All active users</MenuItem>
+                      <MenuItem value="System Admin">System Admins</MenuItem>
+                      <MenuItem value="Office Admin">Office Admins</MenuItem>
+                      <MenuItem value="custom">With custom quota</MenuItem>
+                    </Select>
+                  </FormControl>
                 </div>
 
                 <div className="search-user">
@@ -234,6 +229,13 @@ const Users: React.FC<RouteComponentProps> = () => {
                   />
                 </div>
               </section>
+
+              {selectedFilter.user === 'active' && (
+                <p className="note">
+                  Please note, a user is only considered "active" after logging into the app the
+                  first time.
+                </p>
+              )}
 
               <TableContainer className="table">
                 <Table>
@@ -279,33 +281,42 @@ const Users: React.FC<RouteComponentProps> = () => {
                 </section>
               )}
 
-              {selectedFilter.role === 'all' &&
+              {selectedFilter.user === 'active' &&
                 selectedFilter.email !== undefined &&
                 validateEmail(state.config?.emailRegex, selectedFilter.email) &&
                 queryResult?.length === 0 && (
                   <section className="unregistered-user">
-                    <p>
-                      User <span>{selectedFilter.email}</span> not yet registered
-                    </p>
+                    <div className="link">
+                      <p>
+                        User <span>{selectedFilter.email}</span> not yet registered
+                      </p>
 
-                    <OurButton
-                      startIcon={<AddCircleIcon />}
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      onClick={() => navigate(`/admin/users/${selectedFilter.email}`)}
-                      size="small"
-                    >
-                      Add user
-                    </OurButton>
+                      <OurButton
+                        startIcon={<AddCircleIcon />}
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        onClick={() => navigate(`/admin/users/${selectedFilter.email}`)}
+                        size="small"
+                      >
+                        Add user
+                      </OurButton>
+                    </div>
+
+                    <p>
+                      Please note the user will not be considered "active" until they login for the
+                      first time.
+                    </p>
                   </section>
                 )}
             </Paper>
 
             <Dialog open={showAddUser} onClose={() => setShowAddUser(false)}>
+              <DialogTitle>Enter the email address for the user you wish to create.</DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  Please enter the email address for the user you wish to create
+                  Please note the user will not be considered "active" until they login for the
+                  first time.
                 </DialogContentText>
 
                 <TextField
