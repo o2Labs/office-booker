@@ -132,10 +132,8 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   // Handlers
   const handleCancelBooking = () => {
     if (deleteBooking) {
-      console.log('cancelling');
       cancelBooking(deleteBooking.id, deleteBooking.user)
         .then(() => {
-          console.log('cancelled');
           // Clear selected booking
           setDeleteBooking(undefined);
 
