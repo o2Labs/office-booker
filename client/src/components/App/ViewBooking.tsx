@@ -7,16 +7,15 @@ import parse from 'date-fns/parse';
 import { AppContext } from '../AppProvider';
 
 import LoadingSpinner from '../Assets/LoadingSpinner';
+import { OurButton } from '../../styles/MaterialComponents';
 import Layout from '../Layout/Layout';
 
 import { getBookings } from '../../lib/api';
+import { formatError } from '../../lib/app';
 import { Booking } from '../../types/api';
 import { DATE_FNS_OPTIONS } from '../../constants/dates';
 
 import ViewBookingStyles from './ViewBooking.styles';
-import { OurButton } from '../../styles/MaterialComponents';
-import { formatError } from '../../lib/app';
-import { Checkbox } from '@material-ui/core';
 
 type Props = {
   id: Booking['id'];
