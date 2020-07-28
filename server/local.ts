@@ -8,7 +8,7 @@ const getLocalConfig = (): Config => {
   try {
     return parseConfigFromEnv(process.env);
   } catch (error) {
-    console.log('No Env Configured using stub setup');
+    console.log('Env not configured correctly, falling back to stub setup\n' + error.message);
     return {
       advanceBookingDays: 14,
       dataRetentionDays: 30,
@@ -19,7 +19,17 @@ const getLocalConfig = (): Config => {
       authConfig: {
         type: 'test',
         validate: (req) => {
-          return { email: req.get('authorization')?.slice(7) };
+          const bearerPrefix = 'basic ';
+          const authorization = req.get('authorization');
+          if (authorization === undefined) {
+            return {};
+          }
+          if (!authorization.toLowerCase().startsWith(bearerPrefix)) {
+            throw new Error('Malformed bearer prefix');
+          }
+          const token = authorization.slice(bearerPrefix.length);
+          const decoded = Buffer.from(token, 'base64').toString();
+          return { email: decoded.split(':')[0] };
         },
       },
     };
