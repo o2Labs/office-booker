@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect, useCallback, useReducer } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { RouteComponentProps } from '@reach/router';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
@@ -10,9 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import Snackbar from '@material-ui/core/Snackbar';
 import Paper from '@material-ui/core/Paper';
-import Alert, { AlertProps } from '@material-ui/lab/Alert';
 
 import { AppContext } from '../../AppProvider';
 
@@ -27,52 +25,6 @@ import { validateEmail } from '../../../lib/emailValidation';
 
 import CreateBookingStyles from './CreateBooking.styles';
 
-// Reducers
-type Alert = {
-  message: string;
-  severity: AlertProps['severity'];
-  visible: boolean;
-};
-
-type AlertSet = {
-  type: 'set';
-  payload: {
-    message: Alert['message'];
-    severity: Alert['severity'];
-  };
-};
-
-type AlertHide = {
-  type: 'hide';
-};
-
-type AlertActions = AlertSet | AlertHide;
-
-const initialAlert: Alert = {
-  message: '',
-  severity: 'info',
-  visible: false,
-};
-
-const alertReducer = (state: Alert, action: AlertActions) => {
-  switch (action.type) {
-    case 'set':
-      return {
-        ...state,
-        ...action.payload,
-        visible: true,
-      };
-    case 'hide':
-      return {
-        ...state,
-        visible: false,
-      };
-    default:
-      return state;
-  }
-};
-
-// Component
 const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
@@ -86,9 +38,6 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   const [bookingDate, setBookingDate] = useState(addDays(new Date(), +1));
   const [email, setEmail] = useState('');
   const [parking, setParking] = useState(false);
-
-  // Reducers
-  const [alert, alertDispatch] = useReducer(alertReducer, initialAlert);
 
   // Helpers
   const findOffice = useCallback(
@@ -142,51 +91,51 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
 
     // Validation
     if (email === '') {
-      return alertDispatch({
-        type: 'set',
+      return dispatch({
+        type: 'SET_ALERT',
         payload: {
-          severity: 'error',
           message: 'Email address required',
+          color: 'error',
         },
       });
     }
 
     if (!config || !validateEmail(config.emailRegex, email)) {
-      return alertDispatch({
-        type: 'set',
+      return dispatch({
+        type: 'SET_ALERT',
         payload: {
-          severity: 'error',
           message: 'Valid email address required',
+          color: 'error',
         },
       });
     }
 
     if (!office || !officeSlot) {
-      return alertDispatch({
-        type: 'set',
+      return dispatch({
+        type: 'SET_ALERT',
         payload: {
-          severity: 'error',
           message: 'Office required',
+          color: 'error',
         },
       });
     }
 
     if (officeSlot.booked + 1 > office.quota) {
-      return alertDispatch({
-        type: 'set',
+      return dispatch({
+        type: 'SET_ALERT',
         payload: {
-          severity: 'error',
           message: 'No office spaces available',
+          color: 'error',
         },
       });
     }
 
     if (office.parkingQuota > 0 && parking && officeSlot.bookedParking + 1 > office.parkingQuota) {
-      return alertDispatch({
-        type: 'set',
+      return dispatch({
+        type: 'SET_ALERT',
         payload: {
-          severity: 'error',
-          message: 'No parking spaces available',
+          message: 'No office parking spaces available',
+          color: 'error',
         },
       });
     }
@@ -214,11 +163,11 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
         setEmail('');
 
         // Show success alert
-        alertDispatch({
-          type: 'set',
+        dispatch({
+          type: 'SET_ALERT',
           payload: {
-            severity: 'success',
             message: `Booking created for ${email}!`,
+            color: 'success',
           },
         });
       })
@@ -351,16 +300,6 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                 </OurButton>
               </form>
             </Paper>
-
-            <Snackbar open={alert.visible} onClose={() => alertDispatch({ type: 'hide' })}>
-              <Alert
-                variant="filled"
-                severity={alert.severity}
-                onClose={() => alertDispatch({ type: 'hide' })}
-              >
-                {alert.message}
-              </Alert>
-            </Snackbar>
           </>
         )}
       </CreateBookingStyles>
