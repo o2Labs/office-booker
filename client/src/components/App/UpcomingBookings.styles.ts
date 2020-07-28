@@ -17,8 +17,30 @@ export default styled.div`
     font-weight: 400;
   }
 
-  > .previous-bookings .previous-booking-office {
-    margin-left: 0.5em;
+  > p {
+    margin: 1.6rem 0 0;
+
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: ${(props) => props.theme.palette.secondary.main};
+  }
+
+  > h3 {
+    margin: 3rem 0 1.4rem;
+
+    color: ${(props) => props.theme.palette.primary.main};
+    font-size: 1.8rem;
+    font-weight: 500;
+  }
+
+  > ul {
+    margin: 0;
+
+    > li {
+      color: ${(props) => props.theme.palette.secondary.main};
+      font-size: 1.6rem;
+      font-weight: 400;
+    }
   }
 
   > .bookings {
