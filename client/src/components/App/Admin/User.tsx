@@ -84,33 +84,52 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   }, [selectedUser, offices]);
 
   // Handlers
-  const saveChange = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate
     if (selectedUser === undefined) {
       return;
     }
-    try {
-      const role = selectedUser.role.name === 'System Admin' ? undefined : selectedUser.role;
-      const updatedUser = await putUser({
-        email: selectedUser.email,
-        quota: selectedUser.quota,
-        role,
-      });
-      setSelectedUser(updatedUser);
-      dispatch({
+
+    if (selectedUser.role.name === 'Office Admin' && selectedUser.role.offices.length === 0) {
+      return dispatch({
         type: 'SET_ALERT',
         payload: {
-          message: `Quota for ${updatedUser.email} is now ${updatedUser.quota}`,
-          color: 'success',
+          message: 'Please select at least one office',
+          color: 'error',
         },
       });
-    } catch (error) {
-      dispatch({
-        type: 'SET_ERROR',
-        payload: formatError(error),
-        color: 'success',
-      });
     }
+
+    // Create/update user
+    const role = selectedUser.role.name === 'System Admin' ? undefined : selectedUser.role;
+
+    putUser({
+      email: selectedUser.email,
+      quota: selectedUser.quota,
+      role,
+    })
+      .then((updatedUser) => {
+        // Update local state
+        setSelectedUser(updatedUser);
+
+        // Confirmation alert
+        dispatch({
+          type: 'SET_ALERT',
+          payload: {
+            message: `${updatedUser.email} updated`,
+            color: 'success',
+          },
+        });
+      })
+      .catch((err) => {
+        // Handle errors
+        dispatch({
+          type: 'SET_ERROR',
+          payload: formatError(err),
+        });
+      });
   };
 
   // Render
@@ -132,7 +151,7 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
                 <h4>Edit user</h4>
                 <h5>{selectedUser.email}</h5>
 
-                <form onSubmit={saveChange}>
+                <form onSubmit={handleFormSubmit}>
                   <div className="field">
                     <FormControl variant="outlined" className="input">
                       <InputLabel id="role-label" shrink>
