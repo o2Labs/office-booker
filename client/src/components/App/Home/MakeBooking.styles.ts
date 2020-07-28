@@ -9,10 +9,13 @@ export default styled.div`
     padding: 3rem 3rem 4rem;
   }
 
-  > .header-area {
+  > .title {
     display: flex;
-    flex-direction: inherit;
+    align-items: flex-end;
+
     > h2 {
+      flex: 0 0 auto;
+
       margin: 0 2rem 0 0;
 
       color: ${(props) => props.theme.palette.primary.main};
@@ -21,8 +24,8 @@ export default styled.div`
       font-weight: 400;
     }
 
-    > .change-office-link {
-      margin-top: 1rem;
+    > button {
+      flex: 0 0 auto;
     }
   }
 

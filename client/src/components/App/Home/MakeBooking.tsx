@@ -328,9 +328,6 @@ const MakeBooking: React.FC = () => {
       type: 'SET_CURRENT_OFFICE',
       payload: undefined,
     });
-
-    // Change page if required
-    navigate('/');
   };
 
   // Render
@@ -340,10 +337,10 @@ const MakeBooking: React.FC = () => {
 
   return (
     <MakeBookingStyles>
-      <div className="header-area">
+      <div className="title">
         <h2>{currentOffice.name}</h2>
+
         <Link
-          className="change-office-link"
           component="button"
           underline="always"
           color="primary"
