@@ -65,9 +65,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const getAllBookings = useCallback(() => {
     if (selectedOffice) {
       getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
-        .then((data) => {
-          setAllBookings(data.filter((booking) => !isPast(endOfDay(new Date(booking.date)))));
-        })
+        .then((data) => setAllBookings(data))
         .catch((err) => {
           // Handle errors
           setLoading(false);
