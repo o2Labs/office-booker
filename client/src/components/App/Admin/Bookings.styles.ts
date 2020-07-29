@@ -23,76 +23,51 @@ export default styled.div`
     > .filter {
       display: flex;
 
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        flex-wrap: wrap;
+      }
+
       padding: 3rem 3rem 2rem;
 
       > .filter-office {
-        flex: 0 0 auto;
+        ${(props) => props.theme.breakpoints.only('xs')} {
+          flex: 1 1 auto;
+        }
 
-        margin-right: 4rem;
+        ${(props) => props.theme.breakpoints.up('sm')} {
+          flex: 0 0 auto;
+
+          margin-right: 4rem;
+        }
       }
 
       > .filter-date {
-        flex: 0 0 auto;
+        ${(props) => props.theme.breakpoints.only('xs')} {
+          flex: 1 1 auto;
+          margin-top: 2rem;
+
+          > .date-arrow {
+            display: none;
+          }
+
+          > .date-picker {
+            width: 100%;
+          }
+        }
+
+        ${(props) => props.theme.breakpoints.up('sm')} {
+          flex: 0 0 auto;
+        }
       }
     }
 
     > .table {
       padding: 0 1.6rem 3rem;
+      overflow: scroll;
     }
 
     .table-header {
       font-weight: 700;
     }
   }
-
-  /* ${(props) => props.theme.breakpoints.up('xs')} {
-    margin: 0 2rem 2.4rem;
-    .MuiPaper-root {
-      padding: 2rem 2rem 2.4rem;
-    }
-  }
-
-  ${(props) => props.theme.breakpoints.up('sm')} {
-    margin: 0 3rem 4rem;
-    .MuiPaper-root {
-      padding: 3rem 3rem 4rem;
-    }
-  }
-
-  margin: 0 3rem;
-
-  .MuiPaper-root {
-    padding: 3rem;
-  }
-
-  .select-container {
-    margin-bottom: 3rem;
-    display: flex;
-    justify-content: space-between;
-
-    .MuiSelect-select {
-      min-width: 12rem;
-    }
-  }
-
-  .listing-container {
-    overflow: scroll;
-
-    .MuiToolbar-root {
-      display: flex;
-      justify-content: space-between;
-
-      .filters {
-        display: flex;
-        > :first-child {
-          margin-right: 2rem;
-        }
-
-        .create-btn {
-          margin-left: 2rem;
-          text-transform: inherit;
-        }
-      }
-    }
-  } */
 `;

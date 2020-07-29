@@ -88,20 +88,38 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     DATA_RETENTION_DAYS,
     COGNITO_CLIENT_ID,
   } = env;
+
+  const requiredEnv = {
+    REGION,
+    COGNITO_USER_POOL_ID,
+    SYSTEM_ADMIN_EMAILS,
+    EMAIL_REGEX,
+    OFFICE_QUOTAS,
+    DEFAULT_WEEKLY_QUOTA,
+    ADVANCE_BOOKING_DAYS,
+    DATA_RETENTION_DAYS,
+    COGNITO_CLIENT_ID,
+  };
+
   if (
-    typeof REGION !== 'string' ||
-    typeof COGNITO_USER_POOL_ID !== 'string' ||
-    typeof COGNITO_CLIENT_ID !== 'string' ||
-    typeof SYSTEM_ADMIN_EMAILS !== 'string' ||
-    typeof OFFICE_QUOTAS !== 'string' ||
-    typeof DEFAULT_WEEKLY_QUOTA !== 'string' ||
-    typeof ADVANCE_BOOKING_DAYS !== 'string' ||
-    typeof DATA_RETENTION_DAYS !== 'string'
+    REGION === undefined ||
+    COGNITO_USER_POOL_ID === undefined ||
+    SYSTEM_ADMIN_EMAILS === undefined ||
+    EMAIL_REGEX === undefined ||
+    OFFICE_QUOTAS === undefined ||
+    EMAIL_REGEX === undefined ||
+    DEFAULT_WEEKLY_QUOTA === undefined ||
+    ADVANCE_BOOKING_DAYS === undefined ||
+    DATA_RETENTION_DAYS === undefined ||
+    COGNITO_CLIENT_ID === undefined
   ) {
-    throw new Error(
-      'Missing required env parameters: REGION, COGNITO_USER_POOL_ID, SYSTEM_ADMIN_EMAILS, OFFICE_QUOTAS, DEFAULT_WEEKLY_QUOTA, DATA_RETENTION_DAYS'
-    );
+    const missingEnvVars = Object.entries(requiredEnv)
+      .filter(([, val]) => val === undefined)
+      .map(([envVar]) => envVar);
+
+    throw new Error(`Missing required env parameters: ${missingEnvVars.join(', ')}`);
   }
+
   const systemAdminEmails = SYSTEM_ADMIN_EMAILS.split(';');
   if (!systemAdminEmails.every(isValidEmail)) {
     throw new Error('Invalid email addresses in SYSTEM_ADMIN_EMAILS');

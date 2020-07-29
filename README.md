@@ -25,6 +25,8 @@ The Lab team of 4 developers put together this real-time booking app in just 10 
 1. `./install.sh` - Restore packages
 2. `./start.sh` start API and client application
 
+The default local auth setup allows you to enter any email address and code.
+
 _Note:_ Run `./make-env.sh [STACK]` to use config from the deployed stack for local testing.
 
 ## User Journey
