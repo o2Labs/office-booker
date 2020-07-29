@@ -6,6 +6,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Paper from '@material-ui/core/Paper';
 import InputLabel from '@material-ui/core/InputLabel';
 import Button from '@material-ui/core/Button';
@@ -43,6 +44,8 @@ type UserFilter = {
   email?: string;
 };
 
+type SortOrder = 'asc' | 'desc';
+
 // Helpers
 const userFilterToQuery = (filter: UserFilter): UserQuery => {
   const query: UserQuery = { emailPrefix: filter.email };
@@ -58,6 +61,28 @@ const userFilterToQuery = (filter: UserFilter): UserQuery => {
   return query;
 };
 
+const sortData = (data: User[], key: keyof User, order: SortOrder): User[] | undefined => {
+  if (key === 'email') {
+    return order === 'desc'
+      ? data.sort((a, b) => b.email.localeCompare(a.email))
+      : data.sort((a, b) => a.email.localeCompare(b.email));
+  }
+
+  if (key === 'quota') {
+    return order === 'desc'
+      ? data.sort((a, b) => a.quota - b.quota)
+      : data.sort((a, b) => b.quota - a.quota);
+  }
+
+  if (key === 'role') {
+    return order === 'desc'
+      ? data.sort((a, b) => b.role.name.localeCompare(a.role.name))
+      : data.sort((a, b) => a.role.name.localeCompare(b.role.name));
+  }
+
+  return data;
+};
+
 // Component
 const Users: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -67,11 +92,15 @@ const Users: React.FC<RouteComponentProps> = () => {
   // Local state
   const [loading, setLoading] = useState(true);
   const [queryResult, setQueryResult] = useState<User[] | undefined>(undefined);
+  const [sortedResult, setSortedResult] = useState<User[] | undefined>(undefined);
   const [paginationToken, setPaginationToken] = useState<string | undefined>();
   const [selectedFilter, setSelectedFilter] = useState<UserFilter>({
     user: 'active',
   });
   const [email, setEmail] = useState<string>('');
+
+  const [sortBy, setSortBy] = useState<keyof User>('email');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const [showAddUser, setShowAddUser] = useState(false);
   const [addUserEmail, setAddUserEmail] = useState('');
@@ -98,10 +127,17 @@ const Users: React.FC<RouteComponentProps> = () => {
 
   useEffect(() => {
     if (queryResult) {
+      // Sort it!
+      setSortedResult(sortData([...queryResult], sortBy, sortOrder));
+    }
+  }, [queryResult, sortBy, sortOrder]);
+
+  useEffect(() => {
+    if (loading && sortedResult) {
       // Wait for local state to be ready
       setLoading(false);
     }
-  }, [queryResult]);
+  }, [loading, sortedResult]);
 
   useEffect(() => {
     // Only allow the following
@@ -140,6 +176,14 @@ const Users: React.FC<RouteComponentProps> = () => {
       user === 'custom'
     ) {
       setSelectedFilter((filter) => ({ ...filter, user }));
+    }
+  };
+
+  const handleSort = (key: keyof User) => {
+    if (key === sortBy) {
+      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortBy(key);
     }
   };
 
@@ -241,15 +285,39 @@ const Users: React.FC<RouteComponentProps> = () => {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell className="table-header">User Email</TableCell>
-                      <TableCell className="table-header">Quota</TableCell>
-                      <TableCell className="table-header">Role</TableCell>
+                      <TableCell className="table-header">
+                        <TableSortLabel
+                          active={sortBy === 'email'}
+                          direction={sortOrder}
+                          onClick={() => handleSort('email')}
+                        >
+                          User Email
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell className="table-header">
+                        <TableSortLabel
+                          active={sortBy === 'quota'}
+                          direction={sortOrder}
+                          onClick={() => handleSort('quota')}
+                        >
+                          Quota
+                        </TableSortLabel>
+                      </TableCell>
+                      <TableCell className="table-header">
+                        <TableSortLabel
+                          active={sortBy === 'role'}
+                          direction={sortOrder}
+                          onClick={() => handleSort('role')}
+                        >
+                          Role
+                        </TableSortLabel>
+                      </TableCell>
                       <TableCell className="table-header" />
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {queryResult && queryResult.length > 0 ? (
-                      queryResult.map((user) => (
+                    {sortedResult && sortedResult.length > 0 ? (
+                      sortedResult.map((user) => (
                         <TableRow key={user.email}>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.quota}</TableCell>
