@@ -159,7 +159,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
           <>
             <h3>Bookings</h3>
 
-            <Button
+            <OurButton
               startIcon={<AddCircleIcon />}
               type="submit"
               color="secondary"
@@ -168,7 +168,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
               size="small"
             >
               New Booking
-            </Button>
+            </OurButton>
 
             {selectedOffice && (
               <Paper square className="table-container">

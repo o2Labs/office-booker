@@ -63,6 +63,7 @@ export default styled.div`
 
     > .table {
       padding: 0 1.6rem 3rem;
+      overflow: scroll;
     }
 
     .table-header {
