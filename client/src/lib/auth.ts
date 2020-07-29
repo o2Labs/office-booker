@@ -93,9 +93,10 @@ export const verifyCode = async (
 };
 
 export const signIn = async (email: string): Promise<CognitoUser> => {
+  const emailLowered = email.toLowerCase();
   if (mockSetup !== undefined) {
     return new CognitoUser({
-      Username: email,
+      Username: emailLowered,
       Pool: new CognitoUserPool({ ClientId: 'client-id', UserPoolId: 'us-east-1_user-pool-id' }),
     });
   }
@@ -103,13 +104,13 @@ export const signIn = async (email: string): Promise<CognitoUser> => {
   // already exists, so we want to continue regardless
   try {
     await Auth.signUp({
-      username: email,
+      username: emailLowered,
       password: getRandomString(20),
     });
     // eslint-disable-next-line no-empty
   } catch {}
 
-  const cognitoUser: CognitoUser = await Auth.signIn(email);
+  const cognitoUser: CognitoUser = await Auth.signIn(emailLowered);
 
   return cognitoUser;
 };
