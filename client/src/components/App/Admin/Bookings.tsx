@@ -1,8 +1,6 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 import parse from 'date-fns/parse';
-import isPast from 'date-fns/isPast';
-import endOfDay from 'date-fns/endOfDay';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
 import useTheme from '@material-ui/core/styles/useTheme';
@@ -62,25 +60,21 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Helpers
-  const getAllOffices = useCallback(() => {
-    getOffices()
-      .then((data) =>
-        // Store in global state
-        dispatch({
-          type: 'SET_OFFICES',
-          payload: data,
-        })
-      )
-      .catch((err) => {
-        // Handle errors
-        setLoading(false);
+  const getAllBookings = useCallback(() => {
+    if (selectedOffice) {
+      getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
+        .then((data) => setAllBookings(data))
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
 
-        dispatch({
-          type: 'SET_ERROR',
-          payload: formatError(err),
+          dispatch({
+            type: 'SET_ERROR',
+            payload: formatError(err),
+          });
         });
-      });
-  }, [dispatch]);
+    }
+  }, [selectedOffice, selectedDate, dispatch]);
 
   const findOffice = useCallback((name: Office['name']) => offices.find((o) => o.name === name), [
     offices,
@@ -90,9 +84,25 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (user) {
       // Get all offices
-      getAllOffices();
+      getOffices()
+        .then((data) =>
+          // Store in global state
+          dispatch({
+            type: 'SET_OFFICES',
+            payload: data,
+          })
+        )
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
+
+          dispatch({
+            type: 'SET_ERROR',
+            payload: formatError(err),
+          });
+        });
     }
-  }, [user, getAllOffices]);
+  }, [user, dispatch]);
 
   useEffect(() => {
     if (user && offices.length > 0 && !selectedOffice) {
@@ -104,21 +114,9 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (selectedOffice) {
       // Retrieve bookings
-      getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
-        .then((data) => {
-          setAllBookings(data.filter((booking) => !isPast(endOfDay(new Date(booking.date)))));
-        })
-        .catch((err) => {
-          // Handle errors
-          setLoading(false);
-
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
-          });
-        });
+      getAllBookings();
     }
-  }, [dispatch, selectedOffice, selectedDate]);
+  }, [dispatch, selectedOffice, selectedDate, getAllBookings]);
 
   useEffect(() => {
     if (allBookings) {
@@ -135,8 +133,16 @@ const Bookings: React.FC<RouteComponentProps> = () => {
           // Clear selected booking
           setDeleteBooking(undefined);
 
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: 'Booking cancelled',
+              color: 'success',
+            },
+          });
+
           // Retrieve updated bookings
-          getAllOffices();
+          getAllBookings();
         })
         .catch((err) => {
           // Handle error
@@ -245,7 +251,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                                   size="small"
                                   onClick={() => setDeleteBooking(data)}
                                 >
-                                  Cancel Booking
+                                  Cancel
                                 </OurButton>
                               </div>
                             </TableCell>
@@ -273,7 +279,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
               <DialogContentText>
                 Booking for <strong>{deleteBooking.user}</strong> on{' '}
                 <strong>
-                  {format(parse(deleteBooking.date, 'yyyy-MM-dd', new Date()), 'do MMM')}
+                  {format(parse(deleteBooking.date, 'yyyy-MM-dd', new Date()), 'do LLLL')}
                 </strong>{' '}
                 for <strong>{deleteBooking.office}</strong>
               </DialogContentText>

@@ -9,10 +9,13 @@ export default styled.div`
     padding: 3rem 3rem 4rem;
   }
 
-  > .header-area {
+  > .title {
     display: flex;
-    flex-direction: inherit;
+    align-items: flex-end;
+
     > h2 {
+      flex: 0 0 auto;
+
       margin: 0 2rem 0 0;
 
       color: ${(props) => props.theme.palette.primary.main};
@@ -21,8 +24,8 @@ export default styled.div`
       font-weight: 400;
     }
 
-    > .change-office-link {
-      margin-top: 1rem;
+    > button {
+      flex: 0 0 auto;
     }
   }
 
@@ -185,7 +188,7 @@ export default styled.div`
         }
 
         > .left {
-          flex: 1 1 30%;
+          flex: 1 1 auto;
 
           > .date {
             margin: 0;
@@ -193,7 +196,7 @@ export default styled.div`
         }
 
         > .right {
-          flex: 1 1 70%;
+          flex: 0 0 auto;
 
           text-align: right;
 
@@ -202,32 +205,16 @@ export default styled.div`
             justify-content: flex-end;
 
             > .availability {
+              flex: 0 0 auto;
+
               display: flex;
               align-items: center;
-              justify-content: flex-end;
+            }
 
-              margin-right: 1rem;
+            > .book {
+              flex: 0 0 auto;
 
-              > .status {
-                flex: 0 0 auto;
-
-                display: flex;
-
-                > svg {
-                  flex: 0 0 auto;
-                  font-size: 2rem;
-                }
-
-                > p {
-                  flex: 1 1 auto;
-
-                  margin: 0 0 0 0.4rem;
-                }
-
-                &:not(:first-of-type) {
-                  padding-left: 1rem;
-                }
-              }
+              padding-left: 1.6rem;
             }
           }
 

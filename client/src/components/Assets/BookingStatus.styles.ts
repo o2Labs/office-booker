@@ -10,24 +10,28 @@ type BookingStatusStylesProps = {
 
 export default styled.div<BookingStatusStylesProps>`
   display: flex;
-  box-sizing: border-box;
+
   height: 100%;
 
-  section {
+  > section {
+    flex: 0 0 auto;
+
     display: flex;
     align-items: center;
 
-    margin: 0 0.2rem 0 0.5rem;
+    &:not(:first-of-type) {
+      margin-left: 1rem;
+    }
 
     > svg {
         margin-right: 0.2rem;
         font-size: 2rem;
-        
+
         color: #5f5f5f;
     }
 
     > .bars {
-        height: 85%;
+        height: 2rem;
         width: 0.8rem;
 
         display: flex;
@@ -39,41 +43,40 @@ export default styled.div<BookingStatusStylesProps>`
         padding: 2px;
 
       > .bar {
-        flex: 0 0 100%; /* Default */
+        flex: 0 0 100%;
       }
     }
 
-    .bars .office{
-        flex: 0 0 ${(props) => props.officeLeft}%;
+    .bars .office {
+      flex: 0 0 ${(props) => props.officeLeft}%;
 
-        ${(props) =>
-          props.officeStatus === 'h' &&
-          css`
-            background-color: #59efb0;
-          `}
+      ${(props) =>
+        props.officeStatus === 'h' &&
+        css`
+          background-color: #59efb0;
+        `}
 
-        ${(props) =>
-          props.officeStatus === 'm' &&
-          css`
-            background-color: #fff942;
-          `}
+      ${(props) =>
+        props.officeStatus === 'm' &&
+        css`
+          background-color: #fff942;
+        `}
 
-        ${(props) =>
-          props.officeStatus === 'l' &&
-          css`
-            background-color: #ff7790;
-          `}
-
+      ${(props) =>
+        props.officeStatus === 'l' &&
+        css`
+          background-color: #ff7790;
+        `}
     }
 
     .bars .parking{
      flex: 0 0 ${(props) => props.parkingLeft}%;
 
-    ${(props) =>
-      props.parkingStatus === 'h' &&
-      css`
-        background-color: #59efb0;
-      `}
+      ${(props) =>
+        props.parkingStatus === 'h' &&
+        css`
+          background-color: #59efb0;
+        `}
 
       ${(props) =>
         props.parkingStatus === 'm' &&
@@ -86,7 +89,6 @@ export default styled.div<BookingStatusStylesProps>`
         css`
           background-color: #ff7790;
         `}
-
     }
   }
 `;
