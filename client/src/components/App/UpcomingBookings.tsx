@@ -58,6 +58,11 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   const upcomingBookings = bookings?.filter((b) => b.date >= today);
   const previousBookings = bookings?.filter((b) => b.date < today);
 
+  // Handlers
+  const determinePreviousBookingParking = (parking: boolean): string => {
+    return parking ? 'with Parking' : 'without Parking';
+  };
+
   // Render
   return (
     <Layout>
@@ -116,31 +121,14 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
                     )}
                     {` `}
                     <span>at {row.office}</span>
+                    {` `}
+                    <span>{determinePreviousBookingParking(row.parking)}</span>
                   </li>
                 ))}
               </ul>
             </>
           )}
-          {previousBookings && previousBookings.length > 0 && (
-            <>
-              <h3>Previous Bookings</h3>
 
-              <ul className="previous-bookings">
-                {previousBookings.map((row, index) => (
-                  <li key={row.id} className="previous-bookings-list">
-                    <p className="previous-booking-item">
-                      {format(
-                        parse(row.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS),
-                        'do LLL',
-                        DATE_FNS_OPTIONS
-                      )}
-                      <span className="previous-booking-office">at {row.office}</span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
           <div className="button">
             <OurButton
               type="button"
