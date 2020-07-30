@@ -13,8 +13,10 @@ import Layout from '../Layout/Layout';
 import { getBookings } from '../../lib/api';
 import { formatError } from '../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../constants/dates';
+import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 
 import UpcomingBookingsStyles from './UpcomingBookings.styles';
+import BusinessIcon from '@material-ui/icons/Business';
 
 const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -87,6 +89,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
                         onClick={() => {
                           navigate(`./booking/${row?.id}`);
                         }}
+                        endIcon={row.parking ? <EmojiTransportationIcon /> : <BusinessIcon />}
                       >
                         View Pass
                       </OurButton>
