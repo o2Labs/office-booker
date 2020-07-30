@@ -7,6 +7,7 @@ import useTheme from '@material-ui/core/styles/useTheme';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Table from '@material-ui/core/Table';
 import TableHead from '@material-ui/core/TableHead';
+import TableSortLabel from '@material-ui/core/TableSortLabel';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
@@ -41,6 +42,28 @@ import { Booking, Office } from '../../../types/api';
 
 import BookingStyles from './Bookings.styles';
 
+// Types
+
+type SortOrder = 'asc' | 'desc';
+
+// Helpers
+const sortData = (data: Booking[], key: keyof Booking, order: SortOrder): Booking[] | undefined => {
+  if (key === 'user') {
+    return order === 'desc'
+      ? data.sort((a, b) => b.user.localeCompare(a.user))
+      : data.sort((a, b) => a.user.localeCompare(b.user));
+  }
+
+  if (key === 'parking') {
+    return order === 'desc'
+      ? data.sort((a, b) => Number(a.parking) - Number(b.parking))
+      : data.sort((a, b) => Number(b.parking) - Number(a.parking));
+  }
+
+  return data;
+};
+
+// Component
 const Bookings: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
@@ -51,7 +74,11 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const [selectedOffice, setSelectedOffice] = useState<Office | undefined>();
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const [allBookings, setAllBookings] = useState<Booking[] | undefined>();
+  const [queryResult, setQueryResult] = useState<Booking[] | undefined>(undefined);
+  const [sortedResult, setSortedResult] = useState<Booking[] | undefined>(undefined);
+
+  const [sortBy, setSortBy] = useState<keyof Booking>('user');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   const [deleteBooking, setDeleteBooking] = useState<undefined | Booking>();
 
@@ -63,7 +90,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const getAllBookings = useCallback(() => {
     if (selectedOffice) {
       getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
-        .then((data) => setAllBookings(data))
+        .then((data) => setQueryResult(data))
         .catch((err) => {
           // Handle errors
           setLoading(false);
@@ -119,13 +146,28 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   }, [dispatch, selectedOffice, selectedDate, getAllBookings]);
 
   useEffect(() => {
-    if (allBookings) {
+    if (queryResult) {
+      // Sort it!
+      setSortedResult(sortData([...queryResult], sortBy, sortOrder));
+    }
+  }, [queryResult, sortBy, sortOrder]);
+
+  useEffect(() => {
+    if (loading && sortedResult) {
       // Wait for local state to be ready
       setLoading(false);
     }
-  }, [allBookings]);
+  }, [loading, sortedResult]);
 
   // Handlers
+  const handleSort = (key: keyof Booking) => {
+    if (key === sortBy) {
+      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortBy(key);
+    }
+  };
+
   const handleCancelBooking = () => {
     if (deleteBooking) {
       cancelBooking(deleteBooking.id, deleteBooking.user)
@@ -227,16 +269,32 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell className="table-header">User</TableCell>
+                        <TableCell className="table-header">
+                          <TableSortLabel
+                            active={sortBy === 'user'}
+                            direction={sortOrder}
+                            onClick={() => handleSort('user')}
+                          >
+                            User
+                          </TableSortLabel>
+                        </TableCell>
                         {selectedOffice.parkingQuota > 0 && (
-                          <TableCell className="table-header">Parking</TableCell>
+                          <TableCell className="table-header">
+                            <TableSortLabel
+                              active={sortBy === 'parking'}
+                              direction={sortOrder}
+                              onClick={() => handleSort('parking')}
+                            >
+                              Parking
+                            </TableSortLabel>
+                          </TableCell>
                         )}
                         <TableCell></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {allBookings && allBookings.length > 0 ? (
-                        allBookings.map((data, index) => (
+                      {sortedResult && sortedResult.length > 0 ? (
+                        sortedResult.map((data, index) => (
                           <TableRow key={index}>
                             <TableCell>{data.user}</TableCell>
                             {selectedOffice.parkingQuota > 0 && (
