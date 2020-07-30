@@ -289,12 +289,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                   type="submit"
                   variant="contained"
                   color="primary"
-                  disabled={
-                    !office ||
-                    !officeSlot ||
-                    office.quota - officeSlot.booked <= 0 ||
-                    (office.parkingQuota > 0 && office.parkingQuota - officeSlot.bookedParking <= 0)
-                  }
+                  disabled={!office || !officeSlot || office.quota - officeSlot.booked <= 0}
                 >
                   Create booking
                 </OurButton>
