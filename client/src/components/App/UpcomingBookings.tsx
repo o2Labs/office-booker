@@ -64,7 +64,6 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
       ) : (
         <UpcomingBookingsStyles>
           <h2>Upcoming Bookings</h2>
-
           {upcomingBookings && upcomingBookings.length > 0 ? (
             <Paper square className="bookings">
               {upcomingBookings.map((row, index) => (
@@ -119,7 +118,26 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
               </ul>
             </>
           )}
+          {previousBookings && previousBookings.length > 0 && (
+            <>
+              <h3>Previous Bookings</h3>
 
+              <ul className="previous-bookings">
+                {previousBookings.map((row, index) => (
+                  <li key={row.id} className="previous-bookings-list">
+                    <p className="previous-booking-item">
+                      {format(
+                        parse(row.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS),
+                        'do LLL',
+                        DATE_FNS_OPTIONS
+                      )}
+                      <span className="previous-booking-office">at {row.office}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
           <div className="button">
             <OurButton
               type="button"
