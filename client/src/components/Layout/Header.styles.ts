@@ -32,13 +32,13 @@ export default styled.header`
     > button > img {
       ${(props) => props.theme.breakpoints.up('xs')} {
         width: 2.4rem;
+        height: 2.4rem;
       }
 
       ${(props) => props.theme.breakpoints.up('sm')} {
         width: 3rem;
+        height: 3rem;
       }
-
-      height: auto;
     }
   }
 
@@ -69,13 +69,13 @@ export default styled.header`
     > a > img {
       ${(props) => props.theme.breakpoints.up('xs')} {
         width: 2.6rem;
+        height: 2.6rem;
       }
 
       ${(props) => props.theme.breakpoints.up('sm')} {
         width: 3.2rem;
+        height: 3.2rem;
       }
-
-      height: auto;
     }
   }
 `;

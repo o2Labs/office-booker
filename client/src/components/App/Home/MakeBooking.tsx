@@ -277,12 +277,15 @@ const MakeBooking: React.FC = () => {
             },
           });
         })
-        .catch((err) =>
+        .catch((err) => {
+          // Handle errors
+          setButtonsLoading(false);
+
           dispatch({
             type: 'SET_ERROR',
             payload: formatError(err),
-          })
-        );
+          });
+        });
     }
   };
 
@@ -310,12 +313,14 @@ const MakeBooking: React.FC = () => {
             },
           });
         })
-        .catch((err) =>
+        .catch((err) => {
+          // Handle errors
+          setButtonsLoading(false);
           dispatch({
             type: 'SET_ERROR',
             payload: formatError(err),
-          })
-        );
+          });
+        });
     }
   };
 
@@ -328,9 +333,6 @@ const MakeBooking: React.FC = () => {
       type: 'SET_CURRENT_OFFICE',
       payload: undefined,
     });
-
-    // Change page if required
-    navigate('/');
   };
 
   // Render
@@ -340,10 +342,10 @@ const MakeBooking: React.FC = () => {
 
   return (
     <MakeBookingStyles>
-      <div className="header-area">
+      <div className="title">
         <h2>{currentOffice.name}</h2>
+
         <Link
-          className="change-office-link"
           component="button"
           underline="always"
           color="primary"
@@ -455,13 +457,11 @@ const MakeBooking: React.FC = () => {
                             onClick={() => {
                               navigate(`./booking/${day.booking?.id}`);
                             }}
+                            endIcon={
+                              day.booking?.parking ? <EmojiTransportationIcon /> : <BusinessIcon />
+                            }
                           >
                             View Pass
-                            {day.booking?.parking ? (
-                              <EmojiTransportationIcon style={{ marginLeft: '0.8rem' }} />
-                            ) : (
-                              <BusinessIcon style={{ marginLeft: '0.8rem' }} />
-                            )}
                           </OurButton>
                         </>
                       ) : (
@@ -476,11 +476,16 @@ const MakeBooking: React.FC = () => {
                           </div>
 
                           {day.userCanBook && (
-                            <BookButton
-                              onClick={(e) => handleCreateBooking(day.date, e.withParking)}
-                              availableCarPark={day.availableCarPark}
-                              buttonsLoading={buttonsLoading}
-                            />
+                            <div className="book">
+                              <BookButton
+                                onClick={(withParking) =>
+                                  handleCreateBooking(day.date, withParking)
+                                }
+                                parkingQuota={currentOffice.parkingQuota}
+                                parkingAvailable={day.availableCarPark}
+                                buttonsLoading={buttonsLoading}
+                              />
+                            </div>
                           )}
                         </div>
                       )}

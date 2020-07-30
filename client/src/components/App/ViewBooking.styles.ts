@@ -29,13 +29,27 @@ export default styled.div`
     > h2,
     > h3,
     > h4,
-    > h5,
     > p {
       margin: 0;
     }
 
+    > p.day {
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        font-size: 2.4rem;
+        line-height: 3rem;
+      }
+
+      ${(props) => props.theme.breakpoints.up('sm')} {
+        font-size: 4rem;
+        line-height: 5rem;
+      }
+
+      font-weight: 700;
+      color: ${(props) => props.theme.palette.primary.main};
+    }
+
     > h2 {
-      ${(props) => props.theme.breakpoints.up('xs')} {
+      ${(props) => props.theme.breakpoints.only('xs')} {
         font-size: 3.6rem;
         line-height: 4.6rem;
       }
@@ -49,7 +63,7 @@ export default styled.div`
     }
 
     > h3 {
-      ${(props) => props.theme.breakpoints.up('xs')} {
+      ${(props) => props.theme.breakpoints.only('xs')} {
         margin-top: 1.4rem;
 
         font-size: 2.6rem;
@@ -57,15 +71,30 @@ export default styled.div`
       }
 
       ${(props) => props.theme.breakpoints.up('sm')} {
-        margin-top: 2rem;
+        margin-top: 3rem;
 
         font-size: 5rem;
-        line-height: 6rem;
+        line-height: 5.4rem;
       }
     }
 
+    > .parking {
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        font-size: 2rem;
+        line-height: 2.2rem;
+      }
+
+      ${(props) => props.theme.breakpoints.up('sm')} {
+        font-size: 3.4rem;
+        line-height: 4.6rem;
+      }
+
+      color: ${(props) => props.theme.palette.secondary.main};
+      font-weight: 700;
+    }
+
     > .breaker {
-      ${(props) => props.theme.breakpoints.up('xs')} {
+      ${(props) => props.theme.breakpoints.only('xs')} {
         width: 10rem;
 
         margin: 2rem auto;
@@ -83,7 +112,7 @@ export default styled.div`
     }
 
     > h4 {
-      ${(props) => props.theme.breakpoints.up('xs')} {
+      ${(props) => props.theme.breakpoints.only('xs')} {
         font-size: 2.6rem;
         line-height: 3.6rem;
       }
@@ -96,8 +125,10 @@ export default styled.div`
       word-wrap: break-word;
     }
 
-    > h5 {
-      ${(props) => props.theme.breakpoints.up('xs')} {
+    > p.domain {
+      margin-top: 1rem;
+
+      ${(props) => props.theme.breakpoints.only('xs')} {
         font-size: 1.8rem;
         line-height: 2.8rem;
       }
@@ -110,23 +141,14 @@ export default styled.div`
       color: #a0a0a0;
       font-style: italic;
     }
-
-    > .parking {
-      color: ${(props) => props.theme.palette.secondary.main};
-
-      font-size: 3.4rem;
-      svg {
-        font-size: 3.4rem;
-      }
-    }
   }
 
-  > .message {
+  > .not-found {
     font-size: 2.5rem;
   }
 
   > .button {
-    ${(props) => props.theme.breakpoints.up('xs')} {
+    ${(props) => props.theme.breakpoints.only('xs')} {
       margin-top: 3rem;
     }
 
