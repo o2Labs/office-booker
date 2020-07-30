@@ -1,8 +1,6 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 import parse from 'date-fns/parse';
-import isPast from 'date-fns/isPast';
-import endOfDay from 'date-fns/endOfDay';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
 import useTheme from '@material-ui/core/styles/useTheme';
