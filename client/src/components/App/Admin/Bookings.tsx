@@ -90,7 +90,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const getAllBookings = useCallback(() => {
     if (selectedOffice) {
       getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
-        .then((data) => setAllBookings(data))
+        .then((data) => setQueryResult(data))
         .catch((err) => {
           // Handle errors
           setLoading(false);
