@@ -277,12 +277,15 @@ const MakeBooking: React.FC = () => {
             },
           });
         })
-        .catch((err) =>
+        .catch((err) => {
+          // Handle errors
+          setButtonsLoading(false);
+
           dispatch({
             type: 'SET_ERROR',
             payload: formatError(err),
-          })
-        );
+          });
+        });
     }
   };
 
@@ -310,12 +313,14 @@ const MakeBooking: React.FC = () => {
             },
           });
         })
-        .catch((err) =>
+        .catch((err) => {
+          // Handle errors
+          setButtonsLoading(false);
           dispatch({
             type: 'SET_ERROR',
             payload: formatError(err),
-          })
-        );
+          });
+        });
     }
   };
 
@@ -452,13 +457,11 @@ const MakeBooking: React.FC = () => {
                             onClick={() => {
                               navigate(`./booking/${day.booking?.id}`);
                             }}
+                            endIcon={
+                              day.booking?.parking ? <EmojiTransportationIcon /> : <BusinessIcon />
+                            }
                           >
                             View Pass
-                            {day.booking?.parking ? (
-                              <EmojiTransportationIcon style={{ marginLeft: '0.8rem' }} />
-                            ) : (
-                              <BusinessIcon style={{ marginLeft: '0.8rem' }} />
-                            )}
                           </OurButton>
                         </>
                       ) : (
@@ -475,8 +478,11 @@ const MakeBooking: React.FC = () => {
                           {day.userCanBook && (
                             <div className="book">
                               <BookButton
-                                onClick={(e) => handleCreateBooking(day.date, e.withParking)}
-                                availableCarPark={day.availableCarPark}
+                                onClick={(withParking) =>
+                                  handleCreateBooking(day.date, withParking)
+                                }
+                                parkingQuota={currentOffice.parkingQuota}
+                                parkingAvailable={day.availableCarPark}
                                 buttonsLoading={buttonsLoading}
                               />
                             </div>

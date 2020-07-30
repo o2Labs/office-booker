@@ -1,41 +1,35 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import Grow from '@material-ui/core/Grow';
 import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
 import MenuItem from '@material-ui/core/MenuItem';
 import MenuList from '@material-ui/core/MenuList';
-import { ArrowDropDown } from '@material-ui/icons';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 import BusinessIcon from '@material-ui/icons/Business';
 
 import { OurButton } from '../../styles/MaterialComponents';
 
+import BookButtonStyles from './BookButton.styles';
+
+// Types
 type Props = {
-  onClick: (args: { withParking: boolean }) => void;
-  availableCarPark: number;
+  onClick: (withParking: boolean) => void;
+  parkingQuota: number;
+  parkingAvailable: number;
   buttonsLoading: boolean;
 };
 
+// Component
 const BookButton: React.FC<Props> = (props) => {
-  const [open, setOpen] = React.useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  // Local state
+  const [open, setOpen] = useState(false);
 
-  const handleMenuItemClick = (
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    index: number
-  ) => {
-    setSelectedIndex(index);
-    setOpen(false);
-    props.onClick({ withParking: index === 1 });
-  };
+  // Refs
+  const anchorRef = useRef<HTMLDivElement>(null);
 
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
+  // Handlers
   const handleClose = (event: React.MouseEvent<Document, MouseEvent>) => {
     if (anchorRef.current && anchorRef.current.contains(event.target as HTMLElement)) {
       return;
@@ -44,75 +38,57 @@ const BookButton: React.FC<Props> = (props) => {
     setOpen(false);
   };
 
+  // Render
   return (
     <>
-      {props.availableCarPark ? (
-        <>
-          <ButtonGroup
-            variant="contained"
-            color="primary"
-            ref={anchorRef}
-            aria-label="split button"
-          >
+      {props.parkingQuota > 0 ? (
+        <BookButtonStyles>
+          <ButtonGroup variant="contained" color="primary" ref={anchorRef}>
             <OurButton
-              onClick={handleToggle}
-              aria-controls={open ? 'split-button-menu' : undefined}
-              aria-expanded={open ? 'true' : undefined}
-              aria-label="select merge strategy"
-              aria-haspopup="menu"
+              onClick={() => setOpen((prevOpen) => !prevOpen)}
               size="small"
               variant="contained"
               color="secondary"
               disabled={props.buttonsLoading}
+              endIcon={<ArrowDropDownIcon />}
             >
               Book
-              <ArrowDropDown />
             </OurButton>
           </ButtonGroup>
-          <Popper
-            style={{ zIndex: 1 }}
-            open={open}
-            anchorEl={anchorRef.current}
-            role={undefined}
-            transition
-            disablePortal
-          >
-            {({ TransitionProps, placement }) => (
-              <Grow
-                {...TransitionProps}
-                style={{
-                  transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
-                }}
-              >
-                <Paper elevation={5}>
-                  <ClickAwayListener onClickAway={handleClose}>
-                    <MenuList id="split-button-menu" disablePadding>
-                      <MenuItem
-                        selected={0 === selectedIndex}
-                        onClick={(event) => handleMenuItemClick(event, 0)}
-                      >
-                        <BusinessIcon style={{ marginRight: '1rem' }} /> Office only
-                      </MenuItem>
-                      <MenuItem
-                        selected={1 === selectedIndex}
-                        onClick={(event) => handleMenuItemClick(event, 1)}
-                      >
-                        <EmojiTransportationIcon style={{ marginRight: '1rem' }} /> + Parking
-                      </MenuItem>
-                    </MenuList>
-                  </ClickAwayListener>
-                </Paper>
-              </Grow>
-            )}
+
+          <Popper open={open} anchorEl={anchorRef.current} disablePortal className="popper">
+            <Paper square elevation={2}>
+              <ClickAwayListener onClickAway={handleClose}>
+                <MenuList disablePadding>
+                  <MenuItem
+                    onClick={() => {
+                      setOpen(false);
+                      props.onClick(false);
+                    }}
+                  >
+                    <BusinessIcon className="icon" /> Office only
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setOpen(false);
+                      props.onClick(true);
+                    }}
+                    disabled={props.parkingAvailable <= 0}
+                  >
+                    <EmojiTransportationIcon className="icon" /> + Parking
+                  </MenuItem>
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
           </Popper>
-        </>
+        </BookButtonStyles>
       ) : (
         <OurButton
           size="small"
           variant="contained"
           color="secondary"
           disabled={props.buttonsLoading}
-          onClick={() => props.onClick({ withParking: false })}
+          onClick={() => props.onClick(false)}
         >
           Book
         </OurButton>
