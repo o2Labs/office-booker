@@ -4,7 +4,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 
 import { AppContext } from './AppProvider';
-import { AppState } from '../context/stores';
 
 import RequireLogin from './Auth/RequireLogin';
 import Layout from './Layout/Layout';
@@ -32,8 +31,9 @@ const Structure: React.FC = () => {
   const { state, dispatch } = useContext(AppContext);
 
   // Local state
-  const [currentAlert, setCurrentAlert] = useState<AppState['alert']>(undefined);
+  const [showAlert, setShowAlert] = useState(false);
 
+  // Effects
   useEffect(() => {
     if (!state.config) {
       fetch('/api/config')
@@ -56,28 +56,26 @@ const Structure: React.FC = () => {
     }
   }, [state.config, dispatch]);
 
-  // Effects
   useEffect(() => {
-    // Set local error
     if (state.alert) {
-      setCurrentAlert(state.alert);
+      setShowAlert(true);
     }
   }, [state.alert]);
 
-  useEffect(() => {
-    // Clear Global error
-    if (!currentAlert) {
-      // Wait for transition to finish before clearing
-      setCurrentAlert(undefined);
-    }
-  }, [currentAlert]);
-
   // Handlers
-  const handleCloseError = () =>
-    dispatch({
-      type: 'SET_ALERT',
-      payload: undefined,
-    });
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+
+    // Clear global state after animation
+    setTimeout(
+      () =>
+        dispatch({
+          type: 'SET_ALERT',
+          payload: undefined,
+        }),
+      TRANSITION_DURATION
+    );
+  };
 
   // Render
   return (
@@ -109,16 +107,16 @@ const Structure: React.FC = () => {
           </Router>
 
           <Snackbar
-            open={!!currentAlert}
-            onClose={handleCloseError}
+            open={showAlert}
+            onClose={() => handleCloseAlert()}
             transitionDuration={TRANSITION_DURATION}
           >
             <Alert
               variant="filled"
-              severity={currentAlert?.color || 'info'}
-              onClose={handleCloseError}
+              severity={state.alert?.color || 'info'}
+              onClose={() => handleCloseAlert()}
             >
-              {currentAlert?.message || ''}
+              {state.alert?.message || ''}
             </Alert>
           </Snackbar>
         </>
