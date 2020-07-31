@@ -32,21 +32,25 @@ const Structure: React.FC = () => {
   const { state, dispatch } = useContext(AppContext);
 
   // Local state
-  const [currentError, setCurrentError] = useState<AppState['error']>(undefined);
+  const [currentAlert, setCurrentAlert] = useState<AppState['alert']>(undefined);
 
   useEffect(() => {
-    if (state.config === undefined) {
+    if (!state.config) {
       fetch('/api/config')
         .then((res) => res.json())
         .then((config) => {
           configureAuth(config);
 
+          // Update global state
           dispatch({ type: 'SET_CONFIG', payload: config });
         })
         .catch((err) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: err,
+            type: 'SET_ALERT',
+            payload: {
+              message: err,
+              color: 'error',
+            },
           })
         );
     }
@@ -55,23 +59,23 @@ const Structure: React.FC = () => {
   // Effects
   useEffect(() => {
     // Set local error
-    if (state.error) {
-      setCurrentError(state.error);
+    if (state.alert) {
+      setCurrentAlert(state.alert);
     }
-  }, [state.error]);
+  }, [state.alert]);
 
   useEffect(() => {
     // Clear Global error
-    if (!currentError) {
+    if (!currentAlert) {
       // Wait for transition to finish before clearing
-      setCurrentError(undefined);
+      setCurrentAlert(undefined);
     }
-  }, [dispatch, currentError]);
+  }, [currentAlert]);
 
   // Handlers
   const handleCloseError = () =>
     dispatch({
-      type: 'SET_ERROR',
+      type: 'SET_ALERT',
       payload: undefined,
     });
 
@@ -104,17 +108,19 @@ const Structure: React.FC = () => {
             <Help path="/help" />
           </Router>
 
-          {currentError !== undefined ? (
-            <Snackbar
-              open={state.error !== undefined}
+          <Snackbar
+            open={!!currentAlert}
+            onClose={handleCloseError}
+            transitionDuration={TRANSITION_DURATION}
+          >
+            <Alert
+              variant="filled"
+              severity={currentAlert?.color || 'info'}
               onClose={handleCloseError}
-              transitionDuration={TRANSITION_DURATION}
             >
-              <Alert variant="filled" severity={currentError.color} onClose={handleCloseError}>
-                {currentError.message}
-              </Alert>
-            </Snackbar>
-          ) : null}
+              {currentAlert?.message || ''}
+            </Alert>
+          </Snackbar>
         </>
       )}
     </StructureStyles>
