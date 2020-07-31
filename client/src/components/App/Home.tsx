@@ -9,7 +9,7 @@ import WhichOffice from './Home/WhichOffice';
 import NextBooking from './Home/NextBooking';
 import MakeBooking from './Home/MakeBooking';
 
-import { getOffices, getBookings } from '../../lib/api';
+import { getOffices } from '../../lib/api';
 import { formatError } from '../../lib/app';
 
 import HomeStyles from './Home.styles';
@@ -18,80 +18,40 @@ import HomeStyles from './Home.styles';
 const Home: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { offices, currentOffice, user, bookings } = state;
+  const { office } = state;
 
   // Local state
   const [loading, setLoading] = useState(true);
 
   // Effects
   useEffect(() => {
-    // Get all offices
-    getOffices()
-      .then((data) =>
-        // Store in global state
-        dispatch({
-          type: 'SET_OFFICES',
-          payload: data,
-        })
-      )
-      .catch((err) =>
-        dispatch({
-          type: 'SET_ERROR',
-          payload: formatError(err),
-        })
-      );
-  }, [dispatch]);
+    // Restore selected office from local storage
+    const localOffice = localStorage.getItem('office');
 
-  useEffect(() => {
-    if (offices.length > 0 && !currentOffice) {
-      // Restore selected office from local storage
-      const localOffice = localStorage.getItem('office');
+    if (!office && localOffice) {
+      getOffices()
+        .then((data) => {
+          // Validate local storage and set global state
+          const findOffice = data.find((o) => o.name === localOffice);
 
-      if (!localOffice) {
-        return setLoading(false);
-      }
-
-      // Validate local storage value
-      const office = offices.find((o) => o.name === localOffice);
-
-      if (!office) {
-        return setLoading(false);
-      }
-
-      // Store in global state
-      dispatch({
-        type: 'SET_CURRENT_OFFICE',
-        payload: office,
-      });
-    }
-  }, [dispatch, offices, currentOffice]);
-
-  useEffect(() => {
-    // Only retrieve bookings if a current office is found
-    if (currentOffice && user) {
-      getBookings({ user: user.email })
-        .then((data) =>
-          // Store in global state
           dispatch({
-            type: 'SET_BOOKINGS',
-            payload: data,
-          })
-        )
+            type: 'SET_OFFICE',
+            payload: findOffice && findOffice.name,
+          });
+        })
         .catch((err) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           })
         );
-    }
-  }, [dispatch, currentOffice, user]);
-
-  useEffect(() => {
-    // Clear loading once global state is updated
-    if (currentOffice && bookings) {
+    } else {
       setLoading(false);
     }
-  }, [currentOffice, bookings]);
+  }, [dispatch, office]);
 
   // Render
   return (
@@ -99,7 +59,7 @@ const Home: React.FC<RouteComponentProps> = () => {
       <HomeStyles>
         {loading ? (
           <Loading />
-        ) : currentOffice ? (
+        ) : office ? (
           <>
             <NextBooking />
             <MakeBooking />
