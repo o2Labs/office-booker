@@ -28,12 +28,12 @@ import CreateBookingStyles from './CreateBooking.styles';
 const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { config, user, offices } = state;
+  const { config, user } = state;
 
   // Local state
   const [loading, setLoading] = useState(false);
-
-  const [office, setOffice] = useState<Office | undefined>();
+  const [offices, setOffices] = useState<Office[] | undefined>();
+  const [selectedOffice, setSelectedOffice] = useState<Office | undefined>();
   const [officeSlot, setOfficeSlot] = useState<OfficeSlot | undefined>();
   const [bookingDate, setBookingDate] = useState(addDays(new Date(), +1));
   const [email, setEmail] = useState('');
@@ -48,42 +48,49 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   // Effects
   useEffect(() => {
     if (user) {
-      // Get all offices
+      // Get all offices user can manage
       getOffices()
         .then((data) =>
-          // Store in global state
-          dispatch({
-            type: 'SET_OFFICES',
-            payload: data,
-          })
+          setOffices(
+            data.filter((office) =>
+              user.permissions.officesCanManageBookingsFor.includes(office.name)
+            )
+          )
         )
         .catch((err) => {
           // Handle errors
           setLoading(false);
 
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           });
         });
     }
   }, [dispatch, user]);
 
   useEffect(() => {
-    if (user && offices) {
+    if (user && offices && offices.length > 0 && !selectedOffice) {
       // Retrieve first office user can manage bookings for
-      setOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
-
-      // Wait for global state to be ready
-      setLoading(false);
+      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
     }
-  }, [user, offices, findOffice]);
+  }, [user, offices, selectedOffice, findOffice]);
 
   useEffect(() => {
-    if (office) {
-      setOfficeSlot(office.slots.find((s) => s.date === format(bookingDate, 'yyyy-MM-dd')));
+    if (selectedOffice) {
+      setOfficeSlot(selectedOffice.slots.find((s) => s.date === format(bookingDate, 'yyyy-MM-dd')));
     }
-  }, [office, bookingDate]);
+  }, [selectedOffice, bookingDate]);
+
+  useEffect(() => {
+    if (officeSlot) {
+      // Wait for everything to be ready
+      setLoading(false);
+    }
+  }, [officeSlot]);
 
   // Handlers
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -110,7 +117,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
       });
     }
 
-    if (!office || !officeSlot) {
+    if (!selectedOffice || !officeSlot) {
       return dispatch({
         type: 'SET_ALERT',
         payload: {
@@ -120,7 +127,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
       });
     }
 
-    if (officeSlot.booked + 1 > office.quota) {
+    if (officeSlot.booked + 1 > selectedOffice.quota) {
       return dispatch({
         type: 'SET_ALERT',
         payload: {
@@ -130,7 +137,11 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
       });
     }
 
-    if (office.parkingQuota > 0 && parking && officeSlot.bookedParking + 1 > office.parkingQuota) {
+    if (
+      selectedOffice.parkingQuota > 0 &&
+      parking &&
+      officeSlot.bookedParking + 1 > selectedOffice.parkingQuota
+    ) {
       return dispatch({
         type: 'SET_ALERT',
         payload: {
@@ -143,24 +154,11 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
     // Submit
     const formattedDate = format(bookingDate, 'yyyy-MM-dd');
 
-    createBooking(email, formattedDate, office.name, parking)
-      .then((data) => {
-        // Update global state
-        dispatch({
-          type: 'ADD_BOOKING',
-          payload: data,
-        });
-
-        dispatch({
-          type: 'INCREASE_OFFICE_SLOT',
-          payload: {
-            office: office.name,
-            date: formattedDate,
-          },
-        });
-
+    createBooking(email, formattedDate, selectedOffice.name, parking)
+      .then(() => {
         // Clear form
         setEmail('');
+        setParking(false);
 
         // Show success alert
         dispatch({
@@ -174,8 +172,11 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
       .catch((err) =>
         // Handle error
         dispatch({
-          type: 'SET_ERROR',
-          payload: formatError(err),
+          type: 'SET_ALERT',
+          payload: {
+            message: formatError(err),
+            color: 'error',
+          },
         })
       );
   };
@@ -188,11 +189,12 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   return (
     <AdminLayout currentRoute="bookings">
       <CreateBookingStyles>
-        {loading ? (
+        {loading || !offices ? (
           <Loading />
         ) : (
           <>
             <h3>Bookings</h3>
+
             <Paper square className="form-container">
               <h4>New Booking</h4>
 
@@ -218,28 +220,30 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                     <Select
                       labelId="office-label"
                       id="office"
-                      value={office?.name || ''}
-                      onChange={(e) => setOffice(offices.find((o) => o.name === e.target.value))}
+                      value={selectedOffice?.name || ''}
+                      onChange={(e) =>
+                        setSelectedOffice(offices.find((o) => o.name === e.target.value))
+                      }
                       label="Office"
                       required
                     >
-                      {user.permissions.officesCanManageBookingsFor.map((o, i) => (
-                        <MenuItem value={o} key={i}>
-                          {o}
+                      {offices.map((office, index) => (
+                        <MenuItem value={office.name} key={index}>
+                          {office.name}
                         </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
                 </div>
 
-                {office && (
+                {selectedOffice && (
                   <>
                     <div className="field">
                       <DatePicker
                         autoOk
                         disableToolbar
-                        minDate={office.slots[0].date}
-                        maxDate={office.slots[office.slots.length - 1].date}
+                        minDate={selectedOffice.slots[0].date}
+                        maxDate={selectedOffice.slots[selectedOffice.slots.length - 1].date}
                         inputVariant="outlined"
                         variant="inline"
                         label="Date"
@@ -254,19 +258,21 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                       <>
                         <div className="field bump short">
                           <p>
-                            <strong>{office.quota - officeSlot.booked}</strong> office spaces
-                            available
+                            <strong>{selectedOffice.quota - officeSlot.booked}</strong> office
+                            spaces available
                           </p>
 
-                          {office.parkingQuota > 0 && (
+                          {selectedOffice.parkingQuota > 0 && (
                             <p>
-                              <strong>{office.parkingQuota - officeSlot.bookedParking}</strong>{' '}
+                              <strong>
+                                {selectedOffice.parkingQuota - officeSlot.bookedParking}
+                              </strong>{' '}
                               parking spaces available
                             </p>
                           )}
                         </div>
 
-                        {office.parkingQuota > 0 && (
+                        {selectedOffice.parkingQuota > 0 && (
                           <div className="field bump">
                             <FormControlLabel
                               control={
@@ -276,7 +282,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                                 />
                               }
                               label="Include parking"
-                              disabled={office.parkingQuota - officeSlot.bookedParking <= 0}
+                              disabled={selectedOffice.parkingQuota - officeSlot.bookedParking <= 0}
                             />
                           </div>
                         )}
@@ -289,7 +295,9 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                   type="submit"
                   variant="contained"
                   color="primary"
-                  disabled={!office || !officeSlot || office.quota - officeSlot.booked <= 0}
+                  disabled={
+                    !selectedOffice || !officeSlot || selectedOffice.quota - officeSlot.booked <= 0
+                  }
                 >
                   Create booking
                 </OurButton>

@@ -17,7 +17,7 @@ import Loading from '../../Assets/LoadingSpinner';
 
 import { getUser, putUser, getOffices } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { User } from '../../../types/api';
+import { User, Office } from '../../../types/api';
 
 import UserStyles from './User.styles';
 
@@ -25,11 +25,12 @@ import UserStyles from './User.styles';
 const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user, offices } = state;
+  const { user } = state;
   const canEdit = user?.permissions.canEditUsers === true;
 
   // Local state
   const [loading, setLoading] = useState(true);
+  const [offices, setOffices] = useState<Office[] | undefined>();
   const [selectedUser, setSelectedUser] = useState<User | undefined>();
 
   // Effects
@@ -50,38 +51,48 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
           setLoading(false);
 
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
-          });
-        });
-
-      // Get all offices
-      getOffices()
-        .then((data) =>
-          // Store in global state
-          dispatch({
-            type: 'SET_OFFICES',
-            payload: data,
-          })
-        )
-        .catch((err) => {
-          // Handle errors
-          setLoading(false);
-
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           });
         });
     }
   }, [user, props.email, dispatch]);
 
   useEffect(() => {
-    if (selectedUser && offices.length > 0) {
+    if (user && selectedUser) {
+      // Get all offices admin can manage
+      getOffices()
+        .then((data) =>
+          setOffices(
+            data.filter((office) =>
+              user.permissions.officesCanManageBookingsFor.includes(office.name)
+            )
+          )
+        )
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
+
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          });
+        });
+    }
+  }, [user, selectedUser]);
+
+  useEffect(() => {
+    if (offices) {
       // Wait for global state to be ready
       setLoading(false);
     }
-  }, [selectedUser, offices]);
+  }, [offices]);
 
   // Handlers
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -126,8 +137,11 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
       .catch((err) => {
         // Handle errors
         dispatch({
-          type: 'SET_ERROR',
-          payload: formatError(err),
+          type: 'SET_ALERT',
+          payload: {
+            message: formatError(err),
+            color: 'error',
+          },
         });
       });
   };
@@ -140,138 +154,136 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   return (
     <AdminLayout currentRoute="users">
       <UserStyles>
-        {loading ? (
+        {loading || !selectedUser || !offices ? (
           <Loading />
         ) : (
           <>
             <h3>Users</h3>
 
-            {selectedUser && (
-              <Paper square className="form-container">
-                <h4>Edit user</h4>
-                <h5>{selectedUser.email}</h5>
+            <Paper square className="form-container">
+              <h4>Edit user</h4>
+              <h5>{selectedUser.email}</h5>
 
-                <form onSubmit={handleFormSubmit}>
-                  <div className="field">
-                    <FormControl variant="outlined" className="input">
-                      <InputLabel id="role-label" shrink>
-                        Role
-                      </InputLabel>
-                      <Select
-                        labelId="role-label"
-                        id="role"
-                        value={selectedUser.role.name}
-                        disabled={selectedUser.role.name === 'System Admin' || !canEdit}
-                        onChange={(e) => {
-                          const { value } = e.target;
+              <form onSubmit={handleFormSubmit}>
+                <div className="field">
+                  <FormControl variant="outlined" className="input">
+                    <InputLabel id="role-label" shrink>
+                      Role
+                    </InputLabel>
+                    <Select
+                      labelId="role-label"
+                      id="role"
+                      value={selectedUser.role.name}
+                      disabled={selectedUser.role.name === 'System Admin' || !canEdit}
+                      onChange={(e) => {
+                        const { value } = e.target;
 
-                          setSelectedUser((selectedUser) => {
-                            if (selectedUser === undefined) {
-                              return;
-                            }
+                        setSelectedUser((selectedUser) => {
+                          if (selectedUser === undefined) {
+                            return;
+                          }
 
-                            if (value === 'Default') {
-                              return { ...selectedUser, role: { name: 'Default' } };
-                            }
+                          if (value === 'Default') {
+                            return { ...selectedUser, role: { name: 'Default' } };
+                          }
 
-                            if (value === 'Office Admin') {
-                              return {
-                                ...selectedUser,
-                                role: { name: 'Office Admin', offices: [] },
-                              };
-                            }
-
-                            return selectedUser;
-                          });
-                        }}
-                        label="Role"
-                      >
-                        <MenuItem value={'Default'}>Default</MenuItem>
-                        <MenuItem value={'Office Admin'}>Office Admin</MenuItem>
-                        <MenuItem value={'System Admin'} disabled>
-                          System Admin
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </div>
-
-                  {selectedUser.role.name === 'Office Admin' && (
-                    <div className="field">
-                      <Autocomplete
-                        multiple
-                        disabled={!canEdit}
-                        options={offices.map((o) => o.name)}
-                        value={
-                          selectedUser.role.name === 'Office Admin' ? selectedUser.role.offices : []
-                        }
-                        onChange={(_e, value) =>
-                          setSelectedUser((selectedUser) => {
-                            if (selectedUser === undefined) {
-                              return;
-                            }
-
+                          if (value === 'Office Admin') {
                             return {
                               ...selectedUser,
-                              role: { name: 'Office Admin', offices: value },
+                              role: { name: 'Office Admin', offices: [] },
                             };
-                          })
-                        }
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            variant="outlined"
-                            label="Offices"
-                            fullWidth={false}
-                            className="input"
-                          />
-                        )}
-                        renderTags={(selectedOffices, tagProps) =>
-                          selectedOffices.map((office, index: number) => (
-                            <Chip variant="outlined" label={office} {...tagProps({ index })} />
-                          ))
-                        }
-                      />
-                    </div>
-                  )}
+                          }
 
-                  <div className="field">
-                    <TextField
-                      type="number"
-                      variant="outlined"
-                      disabled={!canEdit}
-                      label="Weekly quota"
-                      value={selectedUser.quota}
-                      onChange={(e) => {
-                        // Between 0 and 7
-                        const quota = Number.parseInt(e.target.value);
-
-                        setSelectedUser(
-                          (selectedUser) =>
-                            selectedUser && {
-                              ...selectedUser,
-                              quota: quota >= 0 && quota <= 7 ? quota : quota > 7 ? 7 : 0,
-                            }
-                        );
+                          return selectedUser;
+                        });
                       }}
-                      className="input"
+                      label="Role"
+                    >
+                      <MenuItem value={'Default'}>Default</MenuItem>
+                      <MenuItem value={'Office Admin'}>Office Admin</MenuItem>
+                      <MenuItem value={'System Admin'} disabled>
+                        System Admin
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </div>
+
+                {selectedUser.role.name === 'Office Admin' && (
+                  <div className="field">
+                    <Autocomplete
+                      multiple
+                      disabled={!canEdit}
+                      options={offices.map((o) => o.name)}
+                      value={
+                        selectedUser.role.name === 'Office Admin' ? selectedUser.role.offices : []
+                      }
+                      onChange={(_e, value) =>
+                        setSelectedUser((selectedUser) => {
+                          if (selectedUser === undefined) {
+                            return;
+                          }
+
+                          return {
+                            ...selectedUser,
+                            role: { name: 'Office Admin', offices: value },
+                          };
+                        })
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          label="Offices"
+                          fullWidth={false}
+                          className="input"
+                        />
+                      )}
+                      renderTags={(selectedOffices, tagProps) =>
+                        selectedOffices.map((office, index: number) => (
+                          <Chip variant="outlined" label={office} {...tagProps({ index })} />
+                        ))
+                      }
                     />
                   </div>
+                )}
 
-                  {canEdit && (
-                    <div className="buttons">
-                      <OurButton
-                        type="submit"
-                        color="primary"
-                        variant="contained"
-                        disabled={selectedUser.quota < 0}
-                      >
-                        Save
-                      </OurButton>
-                    </div>
-                  )}
-                </form>
-              </Paper>
-            )}
+                <div className="field">
+                  <TextField
+                    type="number"
+                    variant="outlined"
+                    disabled={!canEdit}
+                    label="Weekly quota"
+                    value={selectedUser.quota}
+                    onChange={(e) => {
+                      // Between 0 and 7
+                      const quota = Number.parseInt(e.target.value);
+
+                      setSelectedUser(
+                        (selectedUser) =>
+                          selectedUser && {
+                            ...selectedUser,
+                            quota: quota >= 0 && quota <= 7 ? quota : quota > 7 ? 7 : 0,
+                          }
+                      );
+                    }}
+                    className="input"
+                  />
+                </div>
+
+                {canEdit && (
+                  <div className="buttons">
+                    <OurButton
+                      type="submit"
+                      color="primary"
+                      variant="contained"
+                      disabled={selectedUser.quota < 0}
+                    >
+                      Save
+                    </OurButton>
+                  </div>
+                )}
+              </form>
+            </Paper>
 
             <section className="help">
               <h3>About Roles</h3>
