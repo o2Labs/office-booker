@@ -156,6 +156,17 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
 
     createBooking(email, formattedDate, selectedOffice.name, parking)
       .then(() => {
+        // Increase office quota
+        // This assumes the date and selected office haven't changed
+        setOfficeSlot(
+          (slot) =>
+            slot && {
+              ...slot,
+              booked: slot.booked += 1,
+              bookedParking: parking ? (slot.bookedParking += 1) : slot.bookedParking,
+            }
+        );
+
         // Clear form
         setEmail('');
         setParking(false);
