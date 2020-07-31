@@ -109,13 +109,71 @@ const Home: React.FC<RouteComponentProps> = () => {
   }, [office]);
 
   // Handlers
-  const handleAddBooking = (newBooking: Booking) =>
+  const handleAddBooking = (newBooking: Booking) => {
+    // Update user bookings
     setUserBookings((bookings) => (bookings ? [...bookings, newBooking] : [newBooking]));
 
-  const handleCancelBooking = (bookingId: Booking['id']) =>
-    setUserBookings((bookings) =>
-      bookings ? bookings.filter((booking) => booking.id !== bookingId) : []
+    // Increase office quota
+    setCurrentOffice(
+      (oldOffice) =>
+        oldOffice && {
+          ...oldOffice,
+          slots: oldOffice.slots.map((slot) => {
+            if (slot.date !== newBooking.date) {
+              return slot;
+            }
+
+            return {
+              ...slot,
+              booked: slot.booked += 1,
+              bookedParking: newBooking.parking ? (slot.bookedParking += 1) : slot.bookedParking,
+            };
+          }),
+        }
     );
+  };
+
+  const handleCancelBooking = (bookingId: Booking['id']) => {
+    // Find booking
+    const cancelledBooking =
+      userBookings && userBookings.find((booking) => booking.id === bookingId);
+
+    if (cancelledBooking) {
+      // Update user bookings
+      setUserBookings((bookings) =>
+        bookings ? bookings.filter((booking) => booking.id !== bookingId) : []
+      );
+
+      // Decrease office quota
+      setCurrentOffice(
+        (oldOffice) =>
+          oldOffice && {
+            ...oldOffice,
+            slots: oldOffice.slots.map((slot) => {
+              if (slot.date !== cancelledBooking.date) {
+                return slot;
+              }
+
+              return {
+                ...slot,
+                booked: slot.booked -= 1,
+                bookedParking: cancelledBooking.parking
+                  ? (slot.bookedParking -= 1)
+                  : slot.bookedParking,
+              };
+            }),
+          }
+      );
+    } else {
+      dispatch({
+        type: 'SET_ALERT',
+        payload: {
+          message: 'Booking not found',
+          color: 'error',
+        },
+      });
+    }
+  };
 
   // Render
   return (
