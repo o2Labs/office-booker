@@ -11,7 +11,6 @@ import { getUserCached, getOffices } from '../../lib/api';
 import { formatError } from '../../lib/app';
 
 import HelpStyles from './Help.styles';
-import { Office } from '../../types/api';
 
 const Help: React.FC<RouteComponentProps> = () => {
   // Global state

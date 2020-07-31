@@ -85,7 +85,7 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
           });
         });
     }
-  }, [user, selectedUser]);
+  }, [user, selectedUser, dispatch]);
 
   useEffect(() => {
     if (offices) {

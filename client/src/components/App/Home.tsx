@@ -44,7 +44,7 @@ const Home: React.FC<RouteComponentProps> = () => {
           },
         });
       });
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (allOffices) {
@@ -72,7 +72,7 @@ const Home: React.FC<RouteComponentProps> = () => {
         setLoading(false);
       }
     }
-  }, [allOffices, office]);
+  }, [allOffices, office, dispatch]);
 
   useEffect(() => {
     if (currentOffice && user) {
@@ -92,7 +92,7 @@ const Home: React.FC<RouteComponentProps> = () => {
           });
         });
     }
-  }, [currentOffice]);
+  }, [currentOffice, user, dispatch]);
 
   useEffect(() => {
     if (userBookings) {

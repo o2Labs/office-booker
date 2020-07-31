@@ -29,10 +29,8 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
 
   // Effects
   useEffect(() => {
-    const { user } = state;
-
-    if (user) {
-      getBookings({ user: user.email })
+    if (state.user) {
+      getBookings({ user: state.user.email })
         .then((data) => {
           // Split for previous and upcoming
           const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
@@ -53,7 +51,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
           });
         });
     }
-  }, [dispatch]);
+  }, [state.user, dispatch]);
 
   useEffect(() => {
     // Find booking

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { navigate } from '@reach/router';
 import parse from 'date-fns/parse';
 import format from 'date-fns/format';
@@ -23,12 +23,10 @@ const NextBooking: React.FC<Props> = (props) => {
 
   // Effects
   useEffect(() => {
-    const { bookings } = props;
-
-    if (bookings.length > 0) {
+    if (props.bookings.length > 0) {
       // Find a booking for today
       setTodaysBooking(
-        bookings.find((b) => isToday(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)))
+        props.bookings.find((b) => isToday(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS)))
       );
     }
   }, [props.bookings]);
