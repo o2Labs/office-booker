@@ -23,50 +23,56 @@ const Home: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [loading, setLoading] = useState(true);
+  const [allOffices, setAllOffices] = useState<Office[] | undefined>();
   const [currentOffice, setCurrentOffice] = useState<Office | undefined>();
   const [userBookings, setUserBookings] = useState<Booking[] | undefined>();
 
   // Effects
   useEffect(() => {
-    // Retrieve current office
-    const selectedOffice = office || localStorage.getItem('office') || undefined;
+    // Get all offices
+    getOffices()
+      .then((data) => setAllOffices(data))
+      .catch((err) => {
+        // Handle errors
+        setLoading(false);
 
-    if (selectedOffice) {
-      getOffices()
-        .then((data) => {
-          // Validate selected office
-          const findOffice = data.find((o) => o.name === selectedOffice);
-
-          if (findOffice) {
-            setCurrentOffice(findOffice);
-
-            // Update global state if coming from local storage
-            if (!office) {
-              dispatch({
-                type: 'SET_OFFICE',
-                payload: findOffice.name,
-              });
-            }
-          } else {
-            setLoading(false);
-          }
-        })
-        .catch((err) => {
-          // Handle errors
-          setLoading(false);
-
-          dispatch({
-            type: 'SET_ALERT',
-            payload: {
-              message: formatError(err),
-              color: 'error',
-            },
-          });
+        dispatch({
+          type: 'SET_ALERT',
+          payload: {
+            message: formatError(err),
+            color: 'error',
+          },
         });
-    } else {
-      setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (allOffices) {
+      // Retrieve selected office
+      const selectedOffice = office || localStorage.getItem('office') || undefined;
+
+      if (selectedOffice) {
+        // Validate
+        const findOffice = allOffices.find((o) => o.name === selectedOffice);
+
+        if (findOffice) {
+          setCurrentOffice(findOffice);
+
+          // Update global state if coming from local storage
+          if (!office) {
+            dispatch({
+              type: 'SET_OFFICE',
+              payload: findOffice.name,
+            });
+          }
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
     }
-  }, [dispatch, office]);
+  }, [allOffices, office]);
 
   useEffect(() => {
     if (currentOffice && user) {
@@ -108,7 +114,7 @@ const Home: React.FC<RouteComponentProps> = () => {
   return (
     <Layout>
       <HomeStyles>
-        {loading ? (
+        {loading || !allOffices ? (
           <Loading />
         ) : currentOffice ? (
           userBookings && (
@@ -123,7 +129,7 @@ const Home: React.FC<RouteComponentProps> = () => {
             </>
           )
         ) : (
-          <WhichOffice />
+          <WhichOffice offices={allOffices} />
         )}
       </HomeStyles>
     </Layout>
