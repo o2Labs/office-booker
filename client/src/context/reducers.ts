@@ -1,12 +1,13 @@
 import { AppState, Config, Alert } from './stores';
-import { User } from '../types/api';
+import { User, Office } from '../types/api';
 
 // Types
 type ActionSetConfig = { type: 'SET_CONFIG'; payload: Config };
 type ActionSetUser = { type: 'SET_USER'; payload: User | undefined };
+type ActionSetOffice = { type: 'SET_OFFICE'; payload: Office['name'] | undefined };
 type ActionSetAlert = { type: 'SET_ALERT'; payload: Alert | undefined };
 
-export type AppAction = ActionSetConfig | ActionSetUser | ActionSetAlert;
+export type AppAction = ActionSetConfig | ActionSetUser | ActionSetOffice | ActionSetAlert;
 
 // Reducers
 export const appReducer = (state: AppState, action: AppAction): AppState => {
@@ -15,6 +16,8 @@ export const appReducer = (state: AppState, action: AppAction): AppState => {
       return { ...state, config: action.payload };
     case 'SET_USER':
       return { ...state, user: action.payload };
+    case 'SET_OFFICE':
+      return { ...state, office: action.payload };
     case 'SET_ALERT':
       return { ...state, alert: action.payload };
     default:
