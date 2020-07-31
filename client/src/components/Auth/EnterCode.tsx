@@ -43,8 +43,11 @@ const EnterCode: React.FC<Props> = (props) => {
         setLoading(false);
 
         return dispatch({
-          type: 'SET_ERROR',
-          payload: 'Invalid verification code, please try again',
+          type: 'SET_ALERT',
+          payload: {
+            message: 'Invalid verification code, please try again',
+            color: 'error',
+          },
         });
       }
 
@@ -54,8 +57,11 @@ const EnterCode: React.FC<Props> = (props) => {
         setLoading(false);
 
         return dispatch({
-          type: 'SET_ERROR',
-          payload: 'User not found',
+          type: 'SET_ALERT',
+          payload: {
+            message: 'User not found',
+            color: 'error',
+          },
         });
       }
 
@@ -69,8 +75,11 @@ const EnterCode: React.FC<Props> = (props) => {
         )
         .catch((err) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: err,
+            type: 'SET_ALERT',
+            payload: {
+              message: err,
+              color: 'error',
+            },
           })
         );
     } catch (err) {
@@ -80,24 +89,34 @@ const EnterCode: React.FC<Props> = (props) => {
       // When can no longer try again, it comes through as an object
       if (typeof err === 'string') {
         return dispatch({
-          type: 'SET_ERROR',
-          payload: err,
+          type: 'SET_ALERT',
+          payload: {
+            message: err,
+            color: 'error',
+          },
         });
       }
 
       if (err.code === 'NotAuthorizedException') {
         // Wrong code entered 3 times or expired
         dispatch({
-          type: 'SET_ERROR',
-          payload:
-            'Sending a new code. Previous code has expired or was entered incorrectly too many times.',
+          type: 'SET_ALERT',
+          payload: {
+            message:
+              'Sending a new code. Previous code has expired or was entered incorrectly too many times.',
+            color: 'error',
+          },
         });
+
         return props.onCodeExpired();
       }
 
       dispatch({
-        type: 'SET_ERROR',
-        payload: formatError(err),
+        type: 'SET_ALERT',
+        payload: {
+          message: formatError(err),
+          color: 'error',
+        },
       });
     }
   };
