@@ -11,11 +11,12 @@ import { getUserCached, getOffices } from '../../lib/api';
 import { formatError } from '../../lib/app';
 
 import HelpStyles from './Help.styles';
+import { Office } from '../../types/api';
 
 const Help: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user, offices, currentOffice } = state;
+  const { user, office } = state;
 
   // Effects
   useEffect(() => {
@@ -35,69 +36,53 @@ const Help: React.FC<RouteComponentProps> = () => {
               )
               .catch((err) =>
                 dispatch({
-                  type: 'SET_ERROR',
-                  payload: formatError(err),
+                  type: 'SET_ALERT',
+                  payload: {
+                    message: formatError(err),
+                    color: 'error',
+                  },
                 })
               );
           }
         })
         .catch((err) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           })
         );
     }
   }, [dispatch, user]);
 
   useEffect(() => {
-    if (user) {
-      // Restore selected office from local storage
-      const localOffice = localStorage.getItem('office');
+    // Restore selected office from local storage
+    const localOffice = localStorage.getItem('office');
 
-      // Retrieve offices (to check for a current selected office)
-      if (localOffice) {
-        getOffices()
-          .then((data) =>
-            // Store in global state
-            dispatch({
-              type: 'SET_OFFICES',
-              payload: data,
-            })
-          )
-          .catch((err) =>
-            dispatch({
-              type: 'SET_ERROR',
-              payload: formatError(err),
-            })
-          );
-      }
+    if (user && !office && localOffice) {
+      getOffices()
+        .then((data) => {
+          // Validate local storage and set global state
+          const findOffice = data.find((o) => o.name === localOffice);
+
+          dispatch({
+            type: 'SET_OFFICE',
+            payload: findOffice && findOffice.name,
+          });
+        })
+        .catch((err) =>
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          })
+        );
     }
-  }, [dispatch, user]);
-
-  useEffect(() => {
-    if (offices.length > 0) {
-      // Restore selected office from local storage
-      const localOffice = localStorage.getItem('office');
-
-      if (!localOffice) {
-        return;
-      }
-
-      // Validate local storage value
-      const office = offices.find((o) => o.name === localOffice);
-
-      if (!office) {
-        return;
-      }
-
-      // Store in global state
-      dispatch({
-        type: 'SET_CURRENT_OFFICE',
-        payload: office,
-      });
-    }
-  }, [dispatch, offices]);
+  }, [dispatch, user, office]);
 
   // Handlers
   const handleClearOffice = () => {
@@ -106,7 +91,7 @@ const Help: React.FC<RouteComponentProps> = () => {
 
     // Update global state
     dispatch({
-      type: 'SET_CURRENT_OFFICE',
+      type: 'SET_OFFICE',
       payload: undefined,
     });
 
@@ -132,10 +117,10 @@ const Help: React.FC<RouteComponentProps> = () => {
 
         <p>Bookings can only be made {state.config.advancedBookingDays} days in advance.</p>
 
-        {user && currentOffice && (
+        {user && office && (
           <div className="change-office">
             <p>
-              You are currently booking for <span>{currentOffice.name}</span>.
+              You are currently booking for <span>{office}</span>.
             </p>
             <Link
               component="button"
