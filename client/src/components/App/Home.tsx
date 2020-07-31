@@ -101,6 +101,13 @@ const Home: React.FC<RouteComponentProps> = () => {
     }
   }, [userBookings]);
 
+  useEffect(() => {
+    if (!office) {
+      // Clear everything when the global office is cleared
+      setCurrentOffice(undefined);
+    }
+  }, [office]);
+
   // Handlers
   const handleAddBooking = (newBooking: Booking) =>
     setUserBookings((bookings) => (bookings ? [...bookings, newBooking] : [newBooking]));
