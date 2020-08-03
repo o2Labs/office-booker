@@ -91,8 +91,8 @@ const Users: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [loading, setLoading] = useState(true);
-  const [queryResult, setQueryResult] = useState<User[] | undefined>(undefined);
-  const [sortedResult, setSortedResult] = useState<User[] | undefined>(undefined);
+  const [dbUsers, setDbUsers] = useState<User[] | undefined>(undefined);
+  const [sortedUsers, setSortedUsers] = useState<User[] | undefined>(undefined);
   const [paginationToken, setPaginationToken] = useState<string | undefined>();
   const [selectedFilter, setSelectedFilter] = useState<UserFilter>({
     user: 'active',
@@ -111,7 +111,7 @@ const Users: React.FC<RouteComponentProps> = () => {
     // Retrieve results
     queryUsers(userFilterToQuery(selectedFilter))
       .then((result) => {
-        setQueryResult(result.users);
+        setDbUsers(result.users);
         setPaginationToken(result.paginationToken);
       })
       .catch((err) => {
@@ -119,25 +119,28 @@ const Users: React.FC<RouteComponentProps> = () => {
         setLoading(false);
 
         dispatch({
-          type: 'SET_ERROR',
-          payload: formatError(err),
+          type: 'SET_ALERT',
+          payload: {
+            message: formatError(err),
+            color: 'error',
+          },
         });
       });
   }, [selectedFilter, dispatch]);
 
   useEffect(() => {
-    if (queryResult) {
+    if (dbUsers) {
       // Sort it!
-      setSortedResult(sortData([...queryResult], sortBy, sortOrder));
+      setSortedUsers(sortData([...dbUsers], sortBy, sortOrder));
     }
-  }, [queryResult, sortBy, sortOrder]);
+  }, [dbUsers, sortBy, sortOrder]);
 
   useEffect(() => {
-    if (loading && sortedResult) {
+    if (loading && sortedUsers) {
       // Wait for local state to be ready
       setLoading(false);
     }
-  }, [loading, sortedResult]);
+  }, [loading, sortedUsers]);
 
   useEffect(() => {
     // Only allow the following
@@ -196,14 +199,17 @@ const Users: React.FC<RouteComponentProps> = () => {
       queryUsers({}, paginationToken)
         .then((result) => {
           // Merge new results with existing
-          setQueryResult((previousUsers) => [...(previousUsers ?? []), ...result.users]);
+          setDbUsers((previousUsers) => [...(previousUsers ?? []), ...result.users]);
 
           setPaginationToken(result.paginationToken);
         })
         .catch((error) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(error),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(error),
+              color: 'error',
+            },
           })
         );
     }
@@ -316,8 +322,8 @@ const Users: React.FC<RouteComponentProps> = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {sortedResult && sortedResult.length > 0 ? (
-                      sortedResult.map((user) => (
+                    {sortedUsers && sortedUsers.length > 0 ? (
+                      sortedUsers.map((user) => (
                         <TableRow key={user.email}>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.quota}</TableCell>
@@ -352,7 +358,7 @@ const Users: React.FC<RouteComponentProps> = () => {
               {selectedFilter.user === 'active' &&
                 selectedFilter.email !== undefined &&
                 validateEmail(state.config?.emailRegex, selectedFilter.email) &&
-                queryResult?.length === 0 && (
+                dbUsers?.length === 0 && (
                   <section className="unregistered-user">
                     <div className="link">
                       <p>

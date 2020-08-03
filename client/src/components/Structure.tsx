@@ -4,7 +4,6 @@ import Snackbar from '@material-ui/core/Snackbar';
 import Alert from '@material-ui/lab/Alert';
 
 import { AppContext } from './AppProvider';
-import { AppState } from '../context/stores';
 
 import RequireLogin from './Auth/RequireLogin';
 import Layout from './Layout/Layout';
@@ -32,48 +31,51 @@ const Structure: React.FC = () => {
   const { state, dispatch } = useContext(AppContext);
 
   // Local state
-  const [currentError, setCurrentError] = useState<AppState['error']>(undefined);
+  const [showAlert, setShowAlert] = useState(false);
 
+  // Effects
   useEffect(() => {
-    if (state.config === undefined) {
+    if (!state.config) {
       fetch('/api/config')
         .then((res) => res.json())
         .then((config) => {
           configureAuth(config);
 
+          // Update global state
           dispatch({ type: 'SET_CONFIG', payload: config });
         })
         .catch((err) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: err,
+            type: 'SET_ALERT',
+            payload: {
+              message: err,
+              color: 'error',
+            },
           })
         );
     }
   }, [state.config, dispatch]);
 
-  // Effects
   useEffect(() => {
-    // Set local error
-    if (state.error) {
-      setCurrentError(state.error);
+    if (state.alert) {
+      setShowAlert(true);
     }
-  }, [state.error]);
-
-  useEffect(() => {
-    // Clear Global error
-    if (!currentError) {
-      // Wait for transition to finish before clearing
-      setCurrentError(undefined);
-    }
-  }, [dispatch, currentError]);
+  }, [state.alert]);
 
   // Handlers
-  const handleCloseError = () =>
-    dispatch({
-      type: 'SET_ERROR',
-      payload: undefined,
-    });
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+
+    // Clear global state after animation
+    setTimeout(
+      () =>
+        dispatch({
+          type: 'SET_ALERT',
+          payload: undefined,
+        }),
+      TRANSITION_DURATION
+    );
+  };
 
   // Render
   return (
@@ -104,17 +106,19 @@ const Structure: React.FC = () => {
             <Help path="/help" />
           </Router>
 
-          {currentError !== undefined ? (
-            <Snackbar
-              open={state.error !== undefined}
-              onClose={handleCloseError}
-              transitionDuration={TRANSITION_DURATION}
+          <Snackbar
+            open={showAlert}
+            onClose={() => handleCloseAlert()}
+            transitionDuration={TRANSITION_DURATION}
+          >
+            <Alert
+              variant="filled"
+              severity={state.alert?.color || 'info'}
+              onClose={() => handleCloseAlert()}
             >
-              <Alert variant="filled" severity={currentError.color} onClose={handleCloseError}>
-                {currentError.message}
-              </Alert>
-            </Snackbar>
-          ) : null}
+              {state.alert?.message || ''}
+            </Alert>
+          </Snackbar>
         </>
       )}
     </StructureStyles>

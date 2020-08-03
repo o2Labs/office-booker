@@ -6,9 +6,15 @@ import { Office } from '../../../types/api';
 import { OurButton } from '../../../styles/MaterialComponents';
 import WhichOfficeStyles from './WhichOffice.styles';
 
-const WhichOffice: React.FC = () => {
+// Types
+type Props = {
+  offices: Office[];
+};
+
+// Component
+const WhichOffice: React.FC<Props> = (props) => {
   // Global state
-  const { state, dispatch } = useContext(AppContext);
+  const { dispatch } = useContext(AppContext);
 
   // Handlers
   const selectOffice = (office: Office) => {
@@ -21,8 +27,8 @@ const WhichOffice: React.FC = () => {
 
     // Store in global state
     dispatch({
-      type: 'SET_CURRENT_OFFICE',
-      payload: office,
+      type: 'SET_OFFICE',
+      payload: office.name,
     });
   };
 
@@ -32,7 +38,7 @@ const WhichOffice: React.FC = () => {
       <h2>Select your office</h2>
 
       <div className="buttons">
-        {state.offices.map((o) => (
+        {props.offices.map((o) => (
           <OurButton
             key={o.name}
             variant="outlined"

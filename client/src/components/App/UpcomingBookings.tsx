@@ -4,16 +4,18 @@ import Paper from '@material-ui/core/Paper';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import startOfDay from 'date-fns/startOfDay';
+
 import { AppContext } from '../AppProvider';
 
+import Layout from '../Layout/Layout';
 import LoadingSpinner from '../Assets/LoadingSpinner';
 import { OurButton } from '../../styles/MaterialComponents';
-import Layout from '../Layout/Layout';
 
 import { getBookings } from '../../lib/api';
 import { formatError } from '../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../constants/dates';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
+import { Booking } from '../../types/api';
 
 import UpcomingBookingsStyles from './UpcomingBookings.styles';
 import BusinessIcon from '@material-ui/icons/Business';
@@ -21,42 +23,44 @@ import BusinessIcon from '@material-ui/icons/Business';
 const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user, bookings } = state;
 
   // Local state
   const [loading, setLoading] = useState(true);
+  const [upcomingBookings, setUpcomingBookings] = useState<Booking[] | undefined>();
+  const [previousBookings, setPreviousBookings] = useState<Booking[] | undefined>();
 
+  // Effects
   useEffect(() => {
-    if (user && !bookings) {
-      // If coming direct, retrieve from DB
-      getBookings({ user: user.email })
-        .then((data) =>
-          // Store in global state
+    if (state.user) {
+      getBookings({ user: state.user.email })
+        .then((data) => {
+          // Split for previous and upcoming
+          const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
+
+          setUpcomingBookings(data.filter((b) => b.date >= today));
+          setPreviousBookings(data.filter((b) => b.date < today));
+        })
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
+
           dispatch({
-            type: 'SET_BOOKINGS',
-            payload: data,
-          })
-        )
-        .catch((err) =>
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
-          })
-        );
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          });
+        });
     }
-  }, [dispatch, user, bookings]);
+  }, [state.user, dispatch]);
 
   useEffect(() => {
     // Find booking
-    if (bookings) {
+    if (upcomingBookings && previousBookings) {
       setLoading(false);
     }
-  }, [bookings]);
-
-  const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
-
-  const upcomingBookings = bookings?.filter((b) => b.date >= today);
-  const previousBookings = bookings?.filter((b) => b.date < today);
+  }, [upcomingBookings, previousBookings]);
 
   // Handlers
   const determinePreviousBookingParking = (parking: boolean): string => {
@@ -71,6 +75,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
       ) : (
         <UpcomingBookingsStyles>
           <h2>Upcoming Bookings</h2>
+
           {upcomingBookings && upcomingBookings.length > 0 ? (
             <Paper square className="bookings">
               {upcomingBookings.map((row, index) => (
