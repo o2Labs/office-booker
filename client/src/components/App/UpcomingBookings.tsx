@@ -14,9 +14,11 @@ import { OurButton } from '../../styles/MaterialComponents';
 import { getBookings } from '../../lib/api';
 import { formatError } from '../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../constants/dates';
+import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 import { Booking } from '../../types/api';
 
 import UpcomingBookingsStyles from './UpcomingBookings.styles';
+import BusinessIcon from '@material-ui/icons/Business';
 
 const UpcomingBookings: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -92,6 +94,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
                         onClick={() => {
                           navigate(`./booking/${row?.id}`);
                         }}
+                        endIcon={row.parking ? <EmojiTransportationIcon /> : <BusinessIcon />}
                       >
                         View Pass
                       </OurButton>
@@ -118,27 +121,8 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
                     )}
                     {` `}
                     <span>at {row.office}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          {previousBookings && previousBookings.length > 0 && (
-            <>
-              <h3>Previous Bookings</h3>
-
-              <ul className="previous-bookings">
-                {previousBookings.map((row, index) => (
-                  <li key={row.id} className="previous-bookings-list">
-                    <p className="previous-booking-item">
-                      {format(
-                        parse(row.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS),
-                        'do LLL',
-                        DATE_FNS_OPTIONS
-                      )}
-                      <span className="previous-booking-office">at {row.office}</span>
-                    </p>
+                    {` `}
+                    <span>{row.parking ? '(+ Parking)' : ''}</span>
                   </li>
                 ))}
               </ul>
