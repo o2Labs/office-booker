@@ -62,11 +62,6 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
     }
   }, [upcomingBookings, previousBookings]);
 
-  // Handlers
-  const determinePreviousBookingParking = (parking: boolean): string => {
-    return parking ? '(+ Parking)' : '';
-  };
-
   // Render
   return (
     <Layout>
@@ -127,7 +122,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
                     {` `}
                     <span>at {row.office}</span>
                     {` `}
-                    <span>{determinePreviousBookingParking(row.parking)}</span>
+                    <span>{row.parking ? '(+ Parking)' : ''}</span>
                   </li>
                 ))}
               </ul>
