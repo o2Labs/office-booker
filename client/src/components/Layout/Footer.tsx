@@ -24,6 +24,7 @@ const Footer: React.FC = () => {
         .then((username) => {
           // Retrieve DB user
           if (username) {
+            // Retrieve cached user
             getUserCached(username)
               .then((data) =>
                 dispatch({
@@ -33,16 +34,22 @@ const Footer: React.FC = () => {
               )
               .catch((err) =>
                 dispatch({
-                  type: 'SET_ERROR',
-                  payload: formatError(err),
+                  type: 'SET_ALERT',
+                  payload: {
+                    message: formatError(err),
+                    color: 'error',
+                  },
                 })
               );
           }
         })
         .catch((err) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           })
         );
     }
@@ -59,8 +66,11 @@ const Footer: React.FC = () => {
       })
       .catch((err) =>
         dispatch({
-          type: 'SET_ERROR',
-          payload: formatError(err),
+          type: 'SET_ALERT',
+          payload: {
+            message: formatError(err),
+            color: 'error',
+          },
         })
       );
   };

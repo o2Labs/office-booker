@@ -48,15 +48,21 @@ const RequireLogin: React.FC<RouteComponentProps> = (props) => {
             )
             .catch((err) =>
               dispatch({
-                type: 'SET_ERROR',
-                payload: formatError(err),
+                type: 'SET_ALERT',
+                payload: {
+                  message: formatError(err),
+                  color: 'error',
+                },
               })
             );
         })
         .catch((err) =>
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           })
         );
     } else {

@@ -24,56 +24,42 @@ type Props = {
 const ViewBooking: React.FC<RouteComponentProps<Props>> = (props) => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user, bookings } = state;
+  const { user } = state;
 
   // Local state
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState<Booking | undefined>(undefined);
-  const [emailSplit, setEmailSplit] = useState<string[] | undefined>();
 
   // Effects
   useEffect(() => {
-    // Split user email
     if (user) {
-      setEmailSplit(user.email.split('@'));
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (user && !bookings) {
-      // If coming direct, retrieve from DB
       getBookings({ user: user.email })
-        .then((data) =>
-          // Store in global state
+        .then((data) => {
+          const findBooking = data.find((b) => b.id === props.id);
+
+          if (findBooking) {
+            setBooking(findBooking);
+          } else {
+            setLoading(false);
+
+            // Bounce back to home
+            setTimeout(() => navigate('/'), 2500);
+          }
+        })
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
+
           dispatch({
-            type: 'SET_BOOKINGS',
-            payload: data,
-          })
-        )
-        .catch((err) =>
-          dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
-          })
-        );
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          });
+        });
     }
-  }, [dispatch, user, bookings]);
-
-  useEffect(() => {
-    // Find booking
-    if (bookings) {
-      const booking = bookings.find((b) => b.id === props.id);
-
-      if (booking) {
-        setBooking(bookings.find((b) => b.id === props.id));
-      } else {
-        setLoading(false);
-
-        // Bounce back to home
-        setTimeout(() => navigate('/'), 2500);
-      }
-    }
-  }, [props.id, bookings]);
+  }, [dispatch, user, props.id]);
 
   useEffect(() => {
     // Finished loading
@@ -83,6 +69,12 @@ const ViewBooking: React.FC<RouteComponentProps<Props>> = (props) => {
   }, [booking]);
 
   // Render
+  if (!user) {
+    return null;
+  }
+
+  const emailSplit = user.email.split('@');
+
   return (
     <Layout>
       {loading ? (
@@ -111,8 +103,8 @@ const ViewBooking: React.FC<RouteComponentProps<Props>> = (props) => {
 
               <div className="breaker"></div>
 
-              <h4>{emailSplit && emailSplit[0]}</h4>
-              <p className="domain">@{emailSplit && emailSplit[1]}</p>
+              <h4>{emailSplit[0]}</h4>
+              <p className="domain">@{emailSplit[1]}</p>
             </Paper>
           ) : (
             <p className="not-found">

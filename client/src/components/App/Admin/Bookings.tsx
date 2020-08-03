@@ -67,20 +67,22 @@ const sortData = (data: Booking[], key: keyof Booking, order: SortOrder): Bookin
 const Bookings: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user, offices } = state;
+  const { user } = state;
 
   // Local state
   const [loading, setLoading] = useState(true);
+  const [offices, setOffices] = useState<Office[] | undefined>();
+
   const [selectedOffice, setSelectedOffice] = useState<Office | undefined>();
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const [queryResult, setQueryResult] = useState<Booking[] | undefined>(undefined);
-  const [sortedResult, setSortedResult] = useState<Booking[] | undefined>(undefined);
+  const [dbBookings, setDbBookings] = useState<Booking[] | undefined>();
+  const [sortedBookings, setSortedBookings] = useState<Booking[] | undefined>();
 
   const [sortBy, setSortBy] = useState<keyof Booking>('user');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  const [deleteBooking, setDeleteBooking] = useState<undefined | Booking>();
+  const [bookingToCancel, setBookingToCancel] = useState<undefined | Booking>();
 
   // Theme
   const theme = useTheme();
@@ -90,49 +92,56 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   const getAllBookings = useCallback(() => {
     if (selectedOffice) {
       getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
-        .then((data) => setQueryResult(data))
+        .then((data) => setDbBookings(data))
         .catch((err) => {
           // Handle errors
           setLoading(false);
 
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           });
         });
     }
   }, [selectedOffice, selectedDate, dispatch]);
 
-  const findOffice = useCallback((name: Office['name']) => offices.find((o) => o.name === name), [
-    offices,
-  ]);
+  const findOffice = useCallback(
+    (name: Office['name']) => offices && offices.find((o) => o.name === name),
+    [offices]
+  );
 
   // Effects
   useEffect(() => {
     if (user) {
-      // Get all offices
+      // Get all offices admin can manage
       getOffices()
         .then((data) =>
-          // Store in global state
-          dispatch({
-            type: 'SET_OFFICES',
-            payload: data,
-          })
+          setOffices(
+            data.filter((office) =>
+              user.permissions.officesCanManageBookingsFor.includes(office.name)
+            )
+          )
         )
         .catch((err) => {
           // Handle errors
           setLoading(false);
 
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           });
         });
     }
   }, [user, dispatch]);
 
   useEffect(() => {
-    if (user && offices.length > 0 && !selectedOffice) {
+    if (user && offices && offices.length > 0 && !selectedOffice) {
       // Retrieve first office user can manage bookings for
       setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
     }
@@ -146,18 +155,18 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   }, [dispatch, selectedOffice, selectedDate, getAllBookings]);
 
   useEffect(() => {
-    if (queryResult) {
+    if (dbBookings) {
       // Sort it!
-      setSortedResult(sortData([...queryResult], sortBy, sortOrder));
+      setSortedBookings(sortData([...dbBookings], sortBy, sortOrder));
     }
-  }, [queryResult, sortBy, sortOrder]);
+  }, [dbBookings, sortBy, sortOrder]);
 
   useEffect(() => {
-    if (loading && sortedResult) {
+    if (loading && sortedBookings) {
       // Wait for local state to be ready
       setLoading(false);
     }
-  }, [loading, sortedResult]);
+  }, [loading, sortedBookings]);
 
   // Handlers
   const handleSort = (key: keyof Booking) => {
@@ -168,29 +177,33 @@ const Bookings: React.FC<RouteComponentProps> = () => {
     }
   };
 
-  const handleCancelBooking = () => {
-    if (deleteBooking) {
-      cancelBooking(deleteBooking.id, deleteBooking.user)
-        .then(() => {
-          // Clear selected booking
-          setDeleteBooking(undefined);
+  const handleCancelBooking = (booking: Booking) => {
+    cancelBooking(booking.id, booking.user)
+      .then(() => {
+        // Clear selected booking
+        setBookingToCancel(undefined);
 
-          dispatch({
-            type: 'SET_ALERT',
-            payload: {
-              message: 'Booking cancelled',
-              color: 'success',
-            },
-          });
+        // Retrieve updated bookings
+        getAllBookings();
 
-          // Retrieve updated bookings
-          getAllBookings();
-        })
-        .catch((err) => {
-          // Handle error
-          dispatch({ type: 'SET_ERROR', payload: err });
+        // Show confirmation alert
+        dispatch({
+          type: 'SET_ALERT',
+          payload: {
+            message: 'Booking cancelled',
+            color: 'success',
+          },
         });
-    }
+      })
+      .catch((err) =>
+        dispatch({
+          type: 'SET_ALERT',
+          payload: {
+            message: formatError(err),
+            color: 'error',
+          },
+        })
+      );
   };
 
   // Render
@@ -293,12 +306,12 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {sortedResult && sortedResult.length > 0 ? (
-                        sortedResult.map((data, index) => (
+                      {sortedBookings && sortedBookings.length > 0 ? (
+                        sortedBookings.map((booking, index) => (
                           <TableRow key={index}>
-                            <TableCell>{data.user}</TableCell>
+                            <TableCell>{booking.user}</TableCell>
                             {selectedOffice.parkingQuota > 0 && (
-                              <TableCell>{data.parking ? 'Yes' : 'No'}</TableCell>
+                              <TableCell>{booking.parking ? 'Yes' : 'No'}</TableCell>
                             )}
                             <TableCell align="right">
                               <div className="btn-container">
@@ -307,7 +320,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                                   variant="contained"
                                   color="secondary"
                                   size="small"
-                                  onClick={() => setDeleteBooking(data)}
+                                  onClick={() => setBookingToCancel(booking)}
                                 >
                                   Cancel
                                 </OurButton>
@@ -330,23 +343,27 @@ const Bookings: React.FC<RouteComponentProps> = () => {
           </>
         )}
 
-        {deleteBooking && (
-          <Dialog fullScreen={fullScreen} open={true} onClose={() => setDeleteBooking(undefined)}>
+        {bookingToCancel && (
+          <Dialog fullScreen={fullScreen} open={true} onClose={() => setBookingToCancel(undefined)}>
             <DialogTitle>{'Are you sure you want to cancel this booking?'}</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                Booking for <strong>{deleteBooking.user}</strong> on{' '}
+                Booking for <strong>{bookingToCancel.user}</strong> on{' '}
                 <strong>
-                  {format(parse(deleteBooking.date, 'yyyy-MM-dd', new Date()), 'do LLLL')}
+                  {format(parse(bookingToCancel.date, 'yyyy-MM-dd', new Date()), 'do LLLL')}
                 </strong>{' '}
-                for <strong>{deleteBooking.office}</strong>
+                for <strong>{bookingToCancel.office}</strong>
               </DialogContentText>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setDeleteBooking(undefined)} color="primary" autoFocus>
+              <Button onClick={() => setBookingToCancel(undefined)} color="primary" autoFocus>
                 No
               </Button>
-              <Button autoFocus onClick={() => handleCancelBooking()} color="primary">
+              <Button
+                autoFocus
+                onClick={() => handleCancelBooking(bookingToCancel)}
+                color="primary"
+              >
                 Yes
               </Button>
             </DialogActions>

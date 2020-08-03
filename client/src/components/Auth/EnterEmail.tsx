@@ -43,16 +43,22 @@ const EnterEmail: React.FC<Props> = (props) => {
         })
         .catch((err) => {
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           });
 
           setLoading(false);
         });
     } else {
       dispatch({
-        type: 'SET_ERROR',
-        payload: 'Email address not permitted',
+        type: 'SET_ALERT',
+        payload: {
+          message: 'Email address not permitted',
+          color: 'error',
+        },
       });
 
       setLoading(false);

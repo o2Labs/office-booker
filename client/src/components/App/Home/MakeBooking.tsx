@@ -22,7 +22,7 @@ import { AppContext } from '../../AppProvider';
 import BookButton from '../../Assets/BookButton';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { Booking } from '../../../types/api';
+import { Booking, Office } from '../../../types/api';
 import { createBooking, cancelBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
@@ -32,6 +32,13 @@ import MakeBookingStyles from './MakeBooking.styles';
 import BookingStatus from '../../Assets/BookingStatus';
 
 // Types
+type Props = {
+  office: Office;
+  bookings: Booking[];
+  addBooking: (booking: Booking) => void;
+  cancelBooking: (bookingId: Booking['id']) => void;
+};
+
 type Week = {
   id: number;
   bookings: number;
@@ -61,10 +68,13 @@ type Row = {
   days: Day[];
 };
 
-const MakeBooking: React.FC = () => {
+// Component
+const MakeBooking: React.FC<Props> = (props) => {
+  const { office, bookings } = props;
+
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { currentOffice, bookings, user } = state;
+  const { user } = state;
 
   // Local state
   const [weeks, setWeeks] = useState<Week[]>([]);
@@ -78,35 +88,27 @@ const MakeBooking: React.FC = () => {
     // Set week numbers from available slots
     const weeks: Week[] = [];
 
-    if (currentOffice && bookings) {
-      const { slots } = currentOffice;
+    office.slots.forEach((s) => {
+      // Get week
+      const date = parse(s.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS);
+      const week = parseInt(format(date, 'w', DATE_FNS_OPTIONS));
 
-      slots.forEach((s) => {
-        // Get week
-        const date = parse(s.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS);
-        const week = parseInt(format(date, 'w', DATE_FNS_OPTIONS));
+      // Is it already in the list?
+      if (!weeks.find((w) => w.id === week)) {
+        // Find total user bookings for this week
+        const userBookings = bookings.filter((b) =>
+          isSameWeek(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS), date, DATE_FNS_OPTIONS)
+        );
 
-        // Is it already in the list?
-        if (!weeks.find((w) => w.id === week)) {
-          // Find total user bookings for this week
-          const userBookings = bookings.filter((b) =>
-            isSameWeek(
-              parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS),
-              date,
-              DATE_FNS_OPTIONS
-            )
-          );
-
-          weeks.push({
-            id: week,
-            bookings: userBookings.length,
-          });
-        }
-      });
-    }
+        weeks.push({
+          id: week,
+          bookings: userBookings.length,
+        });
+      }
+    });
 
     setWeeks(weeks);
-  }, [bookings, currentOffice]);
+  }, [bookings, office]);
 
   useEffect(() => {
     if (weeks.length > 0) {
@@ -148,8 +150,8 @@ const MakeBooking: React.FC = () => {
   }, [selectedWeek, weeks]);
 
   useEffect(() => {
-    if (weeks && weeks.length > 0 && currentOffice && user && bookings) {
-      const { name, quota: officeQuota, parkingQuota, slots } = currentOffice;
+    if (user && weeks && weeks.length > 0) {
+      const { name, quota: officeQuota, parkingQuota, slots } = office;
       const { quota: userQuota } = user;
 
       const rows: Row[] = [];
@@ -235,7 +237,7 @@ const MakeBooking: React.FC = () => {
 
       setRows(rows);
     }
-  }, [bookings, currentOffice, user, weeks]);
+  }, [bookings, office, user, weeks]);
 
   // Handlers
   const handleChangeWeek = (direction: 'forward' | 'backward') => {
@@ -252,73 +254,46 @@ const MakeBooking: React.FC = () => {
   };
 
   const handleCreateBooking = (date: Date, withParking: boolean) => {
-    const { user, currentOffice } = state;
-
-    if (user && currentOffice) {
+    if (user) {
       setButtonsLoading(true);
 
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, currentOffice.name, withParking)
-        .then((data) => {
-          // Add booking to global state
-          dispatch({
-            type: 'ADD_BOOKING',
-            payload: data,
-          });
-
-          // Update office counter
-          dispatch({
-            type: 'INCREASE_OFFICE_SLOT',
-            payload: {
-              office: currentOffice.name,
-              date: formattedDate,
-            },
-          });
-        })
+      createBooking(user.email, formattedDate, office.name, withParking)
+        .then((newBooking) => props.addBooking(newBooking))
         .catch((err) => {
           // Handle errors
           setButtonsLoading(false);
 
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           });
         });
     }
   };
 
   const handleCancelBooking = (booking: Booking) => {
-    const { user, currentOffice } = state;
-
-    if (user && currentOffice) {
+    if (user) {
       setButtonsLoading(true);
 
       // Cancel existing booking
       cancelBooking(booking.id, user.email)
-        .then(() => {
-          // Remove booking from global state
-          dispatch({
-            type: 'REMOVE_BOOKING',
-            payload: booking.id,
-          });
-
-          // Update office counter
-          dispatch({
-            type: 'DECREASE_OFFICE_SLOT',
-            payload: {
-              office: currentOffice.name,
-              date: booking.date,
-            },
-          });
-        })
+        .then(() => props.cancelBooking(booking.id))
         .catch((err) => {
           // Handle errors
           setButtonsLoading(false);
+
           dispatch({
-            type: 'SET_ERROR',
-            payload: formatError(err),
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
           });
         });
     }
@@ -330,20 +305,20 @@ const MakeBooking: React.FC = () => {
 
     // Update global state
     dispatch({
-      type: 'SET_CURRENT_OFFICE',
+      type: 'SET_OFFICE',
       payload: undefined,
     });
   };
 
   // Render
-  if (!currentOffice || !user) {
+  if (!user) {
     return null;
   }
 
   return (
     <MakeBookingStyles>
       <div className="title">
-        <h2>{currentOffice.name}</h2>
+        <h2>{office.name}</h2>
 
         <Link
           component="button"
@@ -360,10 +335,10 @@ const MakeBooking: React.FC = () => {
           You can make <span>{user.quota}</span> booking per week.
         </li>
         <li>
-          {currentOffice.name} has a daily capacity of <span>{currentOffice.quota}</span>
-          {currentOffice.parkingQuota > 0 ? (
+          {office.name} has a daily capacity of <span>{office.quota}</span>
+          {office.parkingQuota > 0 ? (
             <>
-              {` `} and car park capacity of <span>{currentOffice.parkingQuota}</span>.
+              {` `} and car park capacity of <span>{office.parkingQuota}</span>.
             </>
           ) : (
             `.`
@@ -468,9 +443,9 @@ const MakeBooking: React.FC = () => {
                         <div className="no-booking">
                           <div className="availability">
                             <BookingStatus
-                              officeQuota={currentOffice.quota}
+                              officeQuota={office.quota}
                               officeAvailable={day.available}
-                              parkingQuota={currentOffice.parkingQuota}
+                              parkingQuota={office.parkingQuota}
                               parkingAvailable={day.availableCarPark}
                             />
                           </div>
@@ -481,7 +456,7 @@ const MakeBooking: React.FC = () => {
                                 onClick={(withParking) =>
                                   handleCreateBooking(day.date, withParking)
                                 }
-                                parkingQuota={currentOffice.parkingQuota}
+                                parkingQuota={office.parkingQuota}
                                 parkingAvailable={day.availableCarPark}
                                 buttonsLoading={buttonsLoading}
                               />
