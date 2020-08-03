@@ -60,7 +60,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
 
   // Handlers
   const determinePreviousBookingParking = (parking: boolean): string => {
-    return parking ? 'with Parking' : 'without Parking';
+    return parking ? '(+ Parking)' : '';
   };
 
   // Render
