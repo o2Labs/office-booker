@@ -262,6 +262,9 @@ const MakeBooking: React.FC<Props> = (props) => {
       createBooking(user.email, formattedDate, office.name, withParking)
         .then(() => props.refreshBookings())
         .catch((err) => {
+          // Refresh DB
+          props.refreshBookings();
+
           // Handle errors
           setButtonsLoading(false);
 
@@ -284,6 +287,9 @@ const MakeBooking: React.FC<Props> = (props) => {
       cancelBooking(booking.id, user.email)
         .then(() => props.refreshBookings())
         .catch((err) => {
+          // Refresh DB
+          props.refreshBookings();
+
           // Handle errors
           setButtonsLoading(false);
 
