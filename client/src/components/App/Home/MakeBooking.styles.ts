@@ -143,6 +143,8 @@ export default styled.div`
       > .upcoming-bookings {
         ${(props) => props.theme.breakpoints.only('xs')} {
           flex: 1 1 100%;
+
+          padding-top: 0.4rem;
         }
 
         ${(props) => props.theme.breakpoints.up('sm')} {
@@ -150,6 +152,8 @@ export default styled.div`
         }
 
         margin: 0;
+
+        text-align: center;
 
         > button {
           color: ${(props) => props.theme.palette.primary.main};
@@ -167,6 +171,9 @@ export default styled.div`
 
         ${(props) => props.theme.breakpoints.up('xs')} {
           padding: 1.2rem 1.8rem;
+
+          flex-wrap: wrap;
+          justify-content: flex-end;
         }
 
         ${(props) => props.theme.breakpoints.up('sm')} {
