@@ -35,8 +35,7 @@ import BookingStatus from '../../Assets/BookingStatus';
 type Props = {
   office: Office;
   bookings: Booking[];
-  addBooking: (booking: Booking) => void;
-  cancelBooking: (bookingId: Booking['id']) => void;
+  refreshBookings: () => void;
 };
 
 type Week = {
@@ -261,7 +260,7 @@ const MakeBooking: React.FC<Props> = (props) => {
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
       createBooking(user.email, formattedDate, office.name, withParking)
-        .then((newBooking) => props.addBooking(newBooking))
+        .then(() => props.refreshBookings())
         .catch((err) => {
           // Handle errors
           setButtonsLoading(false);
@@ -283,7 +282,7 @@ const MakeBooking: React.FC<Props> = (props) => {
 
       // Cancel existing booking
       cancelBooking(booking.id, user.email)
-        .then(() => props.cancelBooking(booking.id))
+        .then(() => props.refreshBookings())
         .catch((err) => {
           // Handle errors
           setButtonsLoading(false);
