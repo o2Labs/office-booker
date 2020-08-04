@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { navigate } from '@reach/router';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
@@ -67,9 +67,12 @@ type Row = {
   days: Day[];
 };
 
+// Constants
+const RELOAD_TIME = 300000;
+
 // Component
 const MakeBooking: React.FC<Props> = (props) => {
-  const { office, bookings } = props;
+  const { office, bookings, refreshBookings } = props;
 
   // Global state
   const { state, dispatch } = useContext(AppContext);
@@ -82,7 +85,34 @@ const MakeBooking: React.FC<Props> = (props) => {
   const [selectedWeekLabel, setSelectedWeekLabel] = useState<string | undefined>();
   const [buttonsLoading, setButtonsLoading] = useState(true);
 
+  // Refs
+  const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
+
+  // Helper
+  const setReloadTimer = useCallback(() => {
+    reloadTimerRef.current = setInterval(() => {
+      setButtonsLoading(true);
+
+      refreshBookings();
+    }, RELOAD_TIME);
+  }, [refreshBookings]);
+
+  const resetReloadTimer = () => {
+    clearInterval(reloadTimerRef.current);
+
+    setReloadTimer();
+  };
+
   // Effects
+  useEffect(() => {
+    // Periodically refresh bookings
+    setReloadTimer();
+
+    return () => {
+      clearInterval(reloadTimerRef.current);
+    };
+  }, [setReloadTimer]);
+
   useEffect(() => {
     // Set week numbers from available slots
     const weeks: Week[] = [];
@@ -256,14 +286,17 @@ const MakeBooking: React.FC<Props> = (props) => {
     if (user) {
       setButtonsLoading(true);
 
+      // Reset auto-reload timer
+      resetReloadTimer();
+
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
       createBooking(user.email, formattedDate, office.name, withParking)
-        .then(() => props.refreshBookings())
+        .then(() => refreshBookings())
         .catch((err) => {
           // Refresh DB
-          props.refreshBookings();
+          refreshBookings();
 
           // Handle errors
           setButtonsLoading(false);
@@ -283,12 +316,15 @@ const MakeBooking: React.FC<Props> = (props) => {
     if (user) {
       setButtonsLoading(true);
 
+      // Reset auto-reload timer
+      resetReloadTimer();
+
       // Cancel existing booking
       cancelBooking(booking.id, user.email)
-        .then(() => props.refreshBookings())
+        .then(() => refreshBookings())
         .catch((err) => {
           // Refresh DB
-          props.refreshBookings();
+          refreshBookings();
 
           // Handle errors
           setButtonsLoading(false);
