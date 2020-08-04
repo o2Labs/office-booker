@@ -1,8 +1,10 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
-import parse from 'date-fns/parse';
+import parseISO from 'date-fns/parseISO';
 import format from 'date-fns/format';
 import addDays from 'date-fns/addDays';
+import isPast from 'date-fns/isPast';
+import isToday from 'date-fns/isToday';
 import useTheme from '@material-ui/core/styles/useTheme';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Table from '@material-ui/core/Table';
@@ -302,32 +304,40 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                             </TableSortLabel>
                           </TableCell>
                         )}
-                        <TableCell></TableCell>
+                        <TableCell />
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {sortedBookings && sortedBookings.length > 0 ? (
-                        sortedBookings.map((booking, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{booking.user}</TableCell>
-                            {selectedOffice.parkingQuota > 0 && (
-                              <TableCell>{booking.parking ? 'Yes' : 'No'}</TableCell>
-                            )}
-                            <TableCell align="right">
-                              <div className="btn-container">
-                                <OurButton
-                                  type="submit"
-                                  variant="contained"
-                                  color="secondary"
-                                  size="small"
-                                  onClick={() => setBookingToCancel(booking)}
-                                >
-                                  Cancel
-                                </OurButton>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
+                        sortedBookings.map((booking, index) => {
+                          const parsedDate = parseISO(booking.date);
+
+                          return (
+                            <TableRow key={index}>
+                              <TableCell>{booking.user}</TableCell>
+                              {selectedOffice.parkingQuota > 0 && (
+                                <TableCell>{booking.parking ? 'Yes' : 'No'}</TableCell>
+                              )}
+                              {isToday(parsedDate) || !isPast(parsedDate) ? (
+                                <TableCell align="right">
+                                  <div className="btn-container">
+                                    <OurButton
+                                      type="submit"
+                                      variant="contained"
+                                      color="secondary"
+                                      size="small"
+                                      onClick={() => setBookingToCancel(booking)}
+                                    >
+                                      Cancel
+                                    </OurButton>
+                                  </div>
+                                </TableCell>
+                              ) : (
+                                <TableCell />
+                              )}
+                            </TableRow>
+                          );
+                        })
                       ) : (
                         <TableRow>
                           <TableCell>No bookings found</TableCell>
@@ -349,10 +359,8 @@ const Bookings: React.FC<RouteComponentProps> = () => {
             <DialogContent>
               <DialogContentText>
                 Booking for <strong>{bookingToCancel.user}</strong> on{' '}
-                <strong>
-                  {format(parse(bookingToCancel.date, 'yyyy-MM-dd', new Date()), 'do LLLL')}
-                </strong>{' '}
-                for <strong>{bookingToCancel.office}</strong>
+                <strong>{format(parseISO(bookingToCancel.date), 'do LLLL')}</strong> for{' '}
+                <strong>{bookingToCancel.office}</strong>
               </DialogContentText>
             </DialogContent>
             <DialogActions>
