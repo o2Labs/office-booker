@@ -73,11 +73,9 @@ const Home: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (allOffices) {
       // Retrieve selected office
-      const selectedOffice = office || localStorage.getItem('office') || undefined;
-
-      if (selectedOffice) {
+      if (office) {
         // Validate
-        const findOffice = allOffices.find((o) => o.name === selectedOffice);
+        const findOffice = allOffices.find((o) => o.name === office);
 
         if (findOffice) {
           setCurrentOffice(findOffice);

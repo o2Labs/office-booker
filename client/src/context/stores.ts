@@ -36,3 +36,8 @@ export type AppState = {
   office?: Office['name'];
   alert?: Alert;
 };
+
+// Initial state
+export const appInitialState: AppState = {
+  office: localStorage.getItem('office') || undefined,
+};

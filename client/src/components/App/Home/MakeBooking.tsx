@@ -305,9 +305,6 @@ const MakeBooking: React.FC<Props> = (props) => {
   };
 
   const handleClearOffice = () => {
-    // Update local storage
-    localStorage.removeItem('office');
-
     // Update global state
     dispatch({
       type: 'SET_OFFICE',
