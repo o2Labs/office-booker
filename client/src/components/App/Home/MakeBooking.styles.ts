@@ -63,7 +63,7 @@ export default styled.div`
   > .bookings {
     max-width: 40rem;
 
-    ${(props) => props.theme.breakpoints.up('xs')} {
+    ${(props) => props.theme.breakpoints.only('xs')} {
       padding: 1.2rem 1.8rem 1.8rem;
       margin-top: 2.4rem;
     }
@@ -78,8 +78,13 @@ export default styled.div`
       align-items: center;
       justify-content: center;
 
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        flex-wrap: wrap;
+      }
+
       > .back,
-      > .forward {
+      > .forward,
+      > .refresh {
         flex: 0 0 auto;
 
         .icon {

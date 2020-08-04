@@ -15,7 +15,9 @@ import Paper from '@material-ui/core/Paper';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import BusinessIcon from '@material-ui/icons/Business';
+import Tooltip from '@material-ui/core/Tooltip';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
+import CachedIcon from '@material-ui/icons/Cached';
 
 import { AppContext } from '../../AppProvider';
 
@@ -376,7 +378,7 @@ const MakeBooking: React.FC<Props> = (props) => {
           {office.name} has a daily capacity of <span>{office.quota}</span>
           {office.parkingQuota > 0 ? (
             <>
-              {` `} and car park capacity of <span>{office.parkingQuota}</span>.
+              {` `}and car park capacity of <span>{office.parkingQuota}</span>.
             </>
           ) : (
             `.`
@@ -417,6 +419,22 @@ const MakeBooking: React.FC<Props> = (props) => {
                   color={selectedWeek.id === weeks[weeks.length - 1].id ? 'disabled' : 'secondary'}
                 />
               </IconButton>
+            </div>
+
+            <div className="refresh">
+              <Tooltip title="Refresh availability">
+                <IconButton
+                  onClick={() => {
+                    setButtonsLoading(true);
+
+                    resetReloadTimer();
+                    refreshBookings();
+                  }}
+                  disabled={buttonsLoading}
+                >
+                  <CachedIcon color="primary" />
+                </IconButton>
+              </Tooltip>
             </div>
           </div>
 
