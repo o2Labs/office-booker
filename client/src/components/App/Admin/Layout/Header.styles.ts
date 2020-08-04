@@ -25,5 +25,25 @@ export default styled.div`
 
   > .btns {
     flex: 0 0 auto;
+
+    > a {
+      font-family: ${(props) => props.theme.typography.fontFamily};
+      font-size: 1.2rem;
+      font-weight: 500;
+      text-decoration: none;
+
+      &:not(:first-of-type) {
+        margin-left: 3rem;
+      }
+
+      &:not(.current) {
+        color: ${(props) => props.theme.palette.text.primary};
+      }
+
+      &.current {
+        color: ${(props) => props.theme.palette.secondary.main};
+        font-weight: 700;
+      }
+    }
   }
 `;
