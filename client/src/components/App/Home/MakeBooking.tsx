@@ -110,10 +110,28 @@ const MakeBooking: React.FC<Props> = (props) => {
     // Periodically refresh bookings
     setReloadTimer();
 
+    // Handle browser visibility
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Clear timer
+        clearInterval(reloadTimerRef.current);
+      } else {
+        // Reload data & restart timer
+        setButtonsLoading(true);
+
+        setReloadTimer();
+        refreshBookings();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       clearInterval(reloadTimerRef.current);
+
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [setReloadTimer]);
+  }, [setReloadTimer, refreshBookings]);
 
   useEffect(() => {
     // Set week numbers from available slots
