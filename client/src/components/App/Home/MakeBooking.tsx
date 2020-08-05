@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { navigate } from '@reach/router';
 import format from 'date-fns/format';
 import parse from 'date-fns/parse';
@@ -15,7 +15,9 @@ import Paper from '@material-ui/core/Paper';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import BusinessIcon from '@material-ui/icons/Business';
+import Tooltip from '@material-ui/core/Tooltip';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
+import CachedIcon from '@material-ui/icons/Cached';
 
 import { AppContext } from '../../AppProvider';
 
@@ -35,8 +37,7 @@ import BookingStatus from '../../Assets/BookingStatus';
 type Props = {
   office: Office;
   bookings: Booking[];
-  addBooking: (booking: Booking) => void;
-  cancelBooking: (bookingId: Booking['id']) => void;
+  refreshBookings: () => void;
 };
 
 type Week = {
@@ -68,9 +69,12 @@ type Row = {
   days: Day[];
 };
 
+// Constants
+const RELOAD_TIME = 300000;
+
 // Component
 const MakeBooking: React.FC<Props> = (props) => {
-  const { office, bookings } = props;
+  const { office, bookings, refreshBookings } = props;
 
   // Global state
   const { state, dispatch } = useContext(AppContext);
@@ -83,7 +87,52 @@ const MakeBooking: React.FC<Props> = (props) => {
   const [selectedWeekLabel, setSelectedWeekLabel] = useState<string | undefined>();
   const [buttonsLoading, setButtonsLoading] = useState(true);
 
+  // Refs
+  const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
+
+  // Helper
+  const setReloadTimer = useCallback(() => {
+    reloadTimerRef.current = setInterval(() => {
+      setButtonsLoading(true);
+
+      refreshBookings();
+    }, RELOAD_TIME);
+  }, [refreshBookings]);
+
+  const resetReloadTimer = () => {
+    clearInterval(reloadTimerRef.current);
+
+    setReloadTimer();
+  };
+
   // Effects
+  useEffect(() => {
+    // Periodically refresh bookings
+    setReloadTimer();
+
+    // Handle browser visibility
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Clear timer
+        clearInterval(reloadTimerRef.current);
+      } else {
+        // Reload data & restart timer
+        setButtonsLoading(true);
+
+        setReloadTimer();
+        refreshBookings();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(reloadTimerRef.current);
+
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [setReloadTimer, refreshBookings]);
+
   useEffect(() => {
     // Set week numbers from available slots
     const weeks: Week[] = [];
@@ -257,12 +306,18 @@ const MakeBooking: React.FC<Props> = (props) => {
     if (user) {
       setButtonsLoading(true);
 
+      // Reset auto-reload timer
+      resetReloadTimer();
+
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
       createBooking(user.email, formattedDate, office.name, withParking)
-        .then((newBooking) => props.addBooking(newBooking))
+        .then(() => refreshBookings())
         .catch((err) => {
+          // Refresh DB
+          refreshBookings();
+
           // Handle errors
           setButtonsLoading(false);
 
@@ -281,10 +336,16 @@ const MakeBooking: React.FC<Props> = (props) => {
     if (user) {
       setButtonsLoading(true);
 
+      // Reset auto-reload timer
+      resetReloadTimer();
+
       // Cancel existing booking
       cancelBooking(booking.id, user.email)
-        .then(() => props.cancelBooking(booking.id))
+        .then(() => refreshBookings())
         .catch((err) => {
+          // Refresh DB
+          refreshBookings();
+
           // Handle errors
           setButtonsLoading(false);
 
@@ -300,9 +361,6 @@ const MakeBooking: React.FC<Props> = (props) => {
   };
 
   const handleClearOffice = () => {
-    // Update local storage
-    localStorage.removeItem('office');
-
     // Update global state
     dispatch({
       type: 'SET_OFFICE',
@@ -338,7 +396,7 @@ const MakeBooking: React.FC<Props> = (props) => {
           {office.name} has a daily capacity of <span>{office.quota}</span>
           {office.parkingQuota > 0 ? (
             <>
-              {` `} and car park capacity of <span>{office.parkingQuota}</span>.
+              {` `}and car park capacity of <span>{office.parkingQuota}</span>.
             </>
           ) : (
             `.`
@@ -379,6 +437,22 @@ const MakeBooking: React.FC<Props> = (props) => {
                   color={selectedWeek.id === weeks[weeks.length - 1].id ? 'disabled' : 'secondary'}
                 />
               </IconButton>
+            </div>
+
+            <div className="refresh">
+              <Tooltip title="Refresh availability">
+                <IconButton
+                  onClick={() => {
+                    setButtonsLoading(true);
+
+                    resetReloadTimer();
+                    refreshBookings();
+                  }}
+                  disabled={buttonsLoading}
+                >
+                  <CachedIcon color="primary" />
+                </IconButton>
+              </Tooltip>
             </div>
           </div>
 

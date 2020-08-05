@@ -63,7 +63,7 @@ export default styled.div`
   > .bookings {
     max-width: 40rem;
 
-    ${(props) => props.theme.breakpoints.up('xs')} {
+    ${(props) => props.theme.breakpoints.only('xs')} {
       padding: 1.2rem 1.8rem 1.8rem;
       margin-top: 2.4rem;
     }
@@ -78,8 +78,13 @@ export default styled.div`
       align-items: center;
       justify-content: center;
 
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        flex-wrap: wrap;
+      }
+
       > .back,
-      > .forward {
+      > .forward,
+      > .refresh {
         flex: 0 0 auto;
 
         .icon {
@@ -143,6 +148,8 @@ export default styled.div`
       > .upcoming-bookings {
         ${(props) => props.theme.breakpoints.only('xs')} {
           flex: 1 1 100%;
+
+          padding-top: 0.4rem;
         }
 
         ${(props) => props.theme.breakpoints.up('sm')} {
@@ -150,6 +157,8 @@ export default styled.div`
         }
 
         margin: 0;
+
+        text-align: center;
 
         > button {
           color: ${(props) => props.theme.palette.primary.main};
@@ -167,6 +176,9 @@ export default styled.div`
 
         ${(props) => props.theme.breakpoints.up('xs')} {
           padding: 1.2rem 1.8rem;
+
+          flex-wrap: wrap;
+          justify-content: flex-end;
         }
 
         ${(props) => props.theme.breakpoints.up('sm')} {

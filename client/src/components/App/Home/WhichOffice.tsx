@@ -18,14 +18,7 @@ const WhichOffice: React.FC<Props> = (props) => {
 
   // Handlers
   const selectOffice = (office: Office) => {
-    // Update local storage
-    if (office) {
-      localStorage.setItem('office', office.name);
-    } else {
-      localStorage.removeItem('office');
-    }
-
-    // Store in global state
+    // Update global state
     dispatch({
       type: 'SET_OFFICE',
       payload: office.name,

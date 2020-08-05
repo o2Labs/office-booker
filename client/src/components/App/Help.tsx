@@ -57,19 +57,19 @@ const Help: React.FC<RouteComponentProps> = () => {
   }, [dispatch, user]);
 
   useEffect(() => {
-    // Restore selected office from local storage
-    const localOffice = localStorage.getItem('office');
-
-    if (user && !office && localOffice) {
+    // Validate global office
+    if (user && office) {
       getOffices()
         .then((data) => {
-          // Validate local storage and set global state
-          const findOffice = data.find((o) => o.name === localOffice);
+          // Validate and update local storage if not
+          const findOffice = data.find((o) => o.name === office);
 
-          dispatch({
-            type: 'SET_OFFICE',
-            payload: findOffice && findOffice.name,
-          });
+          if (!findOffice) {
+            dispatch({
+              type: 'SET_OFFICE',
+              payload: undefined,
+            });
+          }
         })
         .catch((err) =>
           dispatch({
@@ -85,9 +85,6 @@ const Help: React.FC<RouteComponentProps> = () => {
 
   // Handlers
   const handleClearOffice = () => {
-    // Update local storage
-    localStorage.removeItem('office');
-
     // Update global state
     dispatch({
       type: 'SET_OFFICE',

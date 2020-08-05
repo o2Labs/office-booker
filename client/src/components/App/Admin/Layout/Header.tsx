@@ -1,7 +1,5 @@
 import React from 'react';
-import { navigate } from '@reach/router';
-
-import { TabButton } from '../../../../styles/MaterialComponents';
+import { Link } from '@reach/router';
 
 import AdminHeaderStyles from './Header.styles';
 
@@ -18,23 +16,12 @@ const AdminHeader: React.FC<Props> = ({ currentRoute }) => (
     <h2>Admin</h2>
 
     <div className="btns">
-      <TabButton
-        className={currentRoute === 'bookings' ? 'current' : ''}
-        color={currentRoute === 'bookings' ? 'secondary' : 'default'}
-        size="small"
-        onClick={() => navigate(`/admin/`)}
-      >
+      <Link to="/admin" className={currentRoute === 'bookings' ? 'current' : ''}>
         Bookings
-      </TabButton>
-
-      <TabButton
-        className={currentRoute === 'users' ? 'current' : ''}
-        color={currentRoute === 'users' ? 'secondary' : 'default'}
-        size="small"
-        onClick={() => navigate(`/admin/users`)}
-      >
+      </Link>
+      <Link to="/admin/users" className={currentRoute === 'users' ? 'current' : ''}>
         Users
-      </TabButton>
+      </Link>
     </div>
   </AdminHeaderStyles>
 );

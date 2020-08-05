@@ -26,20 +26,6 @@ export const OurButton = styled(Button)<ButtonProps>`
   }
 `;
 
-export const TabButton = styled(Button)<ButtonProps>`
-  text-transform: initial;
-
-  &:not(:first-of-type) {
-    margin-left: 1.6rem;
-  }
-
-  border-radius: 0;
-
-  &.current {
-    font-weight: 700;
-  }
-`;
-
 export const SubButton = styled(Button)`
   min-width: inherit;
 

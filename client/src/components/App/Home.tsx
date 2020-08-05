@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { RouteComponentProps } from '@reach/router';
 
 import { AppContext } from '../AppProvider';
@@ -27,9 +27,8 @@ const Home: React.FC<RouteComponentProps> = () => {
   const [currentOffice, setCurrentOffice] = useState<Office | undefined>();
   const [userBookings, setUserBookings] = useState<Booking[] | undefined>();
 
-  // Effects
-  useEffect(() => {
-    // Get all offices
+  // Helpers
+  const getAllOffices = useCallback(() => {
     getOffices()
       .then((data) => setAllOffices(data))
       .catch((err) => {
@@ -46,14 +45,37 @@ const Home: React.FC<RouteComponentProps> = () => {
       });
   }, [dispatch]);
 
+  const getAllBookings = useCallback(() => {
+    if (user) {
+      getBookings({ user: user.email })
+        .then((data) => setUserBookings(data))
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
+
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          });
+        });
+    }
+  }, [user, dispatch]);
+
+  // Effects
+  useEffect(() => {
+    // Get all offices
+    getAllOffices();
+  }, [getAllOffices]);
+
   useEffect(() => {
     if (allOffices) {
       // Retrieve selected office
-      const selectedOffice = office || localStorage.getItem('office') || undefined;
-
-      if (selectedOffice) {
+      if (office) {
         // Validate
-        const findOffice = allOffices.find((o) => o.name === selectedOffice);
+        const findOffice = allOffices.find((o) => o.name === office);
 
         if (findOffice) {
           setCurrentOffice(findOffice);
@@ -77,22 +99,9 @@ const Home: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (currentOffice && user) {
       // Get users bookings
-      getBookings({ user: user.email })
-        .then((data) => setUserBookings(data))
-        .catch((err) => {
-          // Handle errors
-          setLoading(false);
-
-          dispatch({
-            type: 'SET_ALERT',
-            payload: {
-              message: formatError(err),
-              color: 'error',
-            },
-          });
-        });
+      getAllBookings();
     }
-  }, [currentOffice, user, dispatch]);
+  }, [currentOffice, user, getAllBookings]);
 
   useEffect(() => {
     if (userBookings) {
@@ -109,70 +118,9 @@ const Home: React.FC<RouteComponentProps> = () => {
   }, [office]);
 
   // Handlers
-  const handleAddBooking = (newBooking: Booking) => {
-    // Update user bookings
-    setUserBookings((bookings) => (bookings ? [...bookings, newBooking] : [newBooking]));
-
-    // Increase office quota
-    setCurrentOffice(
-      (oldOffice) =>
-        oldOffice && {
-          ...oldOffice,
-          slots: oldOffice.slots.map((slot) => {
-            if (slot.date !== newBooking.date) {
-              return slot;
-            }
-
-            return {
-              ...slot,
-              booked: slot.booked += 1,
-              bookedParking: newBooking.parking ? (slot.bookedParking += 1) : slot.bookedParking,
-            };
-          }),
-        }
-    );
-  };
-
-  const handleCancelBooking = (bookingId: Booking['id']) => {
-    // Find booking
-    const cancelledBooking =
-      userBookings && userBookings.find((booking) => booking.id === bookingId);
-
-    if (cancelledBooking) {
-      // Update user bookings
-      setUserBookings((bookings) =>
-        bookings ? bookings.filter((booking) => booking.id !== bookingId) : []
-      );
-
-      // Decrease office quota
-      setCurrentOffice(
-        (oldOffice) =>
-          oldOffice && {
-            ...oldOffice,
-            slots: oldOffice.slots.map((slot) => {
-              if (slot.date !== cancelledBooking.date) {
-                return slot;
-              }
-
-              return {
-                ...slot,
-                booked: slot.booked -= 1,
-                bookedParking: cancelledBooking.parking
-                  ? (slot.bookedParking -= 1)
-                  : slot.bookedParking,
-              };
-            }),
-          }
-      );
-    } else {
-      dispatch({
-        type: 'SET_ALERT',
-        payload: {
-          message: 'Booking not found',
-          color: 'error',
-        },
-      });
-    }
+  const handleRefreshBookings = () => {
+    // Re-retrieve offices (and subsequently bookings) from the DB
+    getAllOffices();
   };
 
   // Render
@@ -188,8 +136,7 @@ const Home: React.FC<RouteComponentProps> = () => {
               <MakeBooking
                 office={currentOffice}
                 bookings={userBookings}
-                addBooking={handleAddBooking}
-                cancelBooking={handleCancelBooking}
+                refreshBookings={handleRefreshBookings}
               />
             </>
           )
