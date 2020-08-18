@@ -341,7 +341,7 @@ export const verifyHTML = (
                         "
                         class="rwd-padding"
                       >
-                        Verify your email address by entering the folllowing code on the app prompt:
+                        Verify your email address by entering the following code on the app prompt:
                       </td>
                     </tr>
                     <tr>
