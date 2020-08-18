@@ -3,7 +3,7 @@
   "private": true,
   "main": "index.ts",
   "dependencies": {
-    "@pulumi/aws": "^2.0.0",
+    "@pulumi/aws": "^3.0.0",
     "@pulumi/pulumi": "^2.0.0",
     "@types/aws-lambda": "^8.10.51",
     "@types/node": "^13.13.4",
