@@ -152,6 +152,9 @@ const userPool = new aws.cognito.UserPool(`${serviceName}-users`, {
     requireUppercase: false,
   },
   usernameAttributes: ['email'],
+  usernameConfiguration: {
+    caseSensitive: caseSensitiveEmail,
+  },
   mfaConfiguration: 'OFF',
   lambdaConfig: {
     createAuthChallenge: createAuthChallenge.arn,
