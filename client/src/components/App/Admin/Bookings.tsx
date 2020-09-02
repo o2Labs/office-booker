@@ -278,11 +278,11 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                       <KeyboardArrowRightIcon />
                     </IconButton>
                   </div>
+                </div>
 
-                  <div className="total-bookings">
-                      <InputLabel className="bookings-count-label">Bookings made on this day:</InputLabel>
-                    <span>{sortedBookings && sortedBookings.length}</span>
-                  </div>
+                <div className="total-bookings">
+                  <InputLabel className="bookings-count-label">Bookings:</InputLabel>
+                  <span>{sortedBookings && sortedBookings.length}</span>
                 </div>
 
                 <TableContainer className="table">

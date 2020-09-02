@@ -24,6 +24,7 @@ export default styled.div`
       display: flex;
       ${(props) => props.theme.breakpoints.only('xs')} {
         flex-wrap: wrap;
+        flex-direction: column;
       }
 
       padding: 3rem 3rem 2rem;
@@ -58,53 +59,34 @@ export default styled.div`
           flex: 0 0 auto;
         }
       }
+    }
 
-     > .total-bookings {
+    .total-bookings {
       > .bookings-count-label {
-        transform: translate(0, 1.5px) scale(0.75);
-        transform-origin: top left;
         font-size: 1.6rem;
       }
 
       > span {
         font-size: 1.6rem;
+        margin-left: 0.5rem;
       }
 
       ${(props) => props.theme.breakpoints.only('xs')} {
         flex: 1 1 auto;
-        margin-top: 2rem;
+        margin: 3rem 3rem 0;
+        float: initial;
       }
 
       ${(props) => props.theme.breakpoints.up('sm')} {
         flex: 0 0 auto;
 
-        margin: 0 4rem 0 3rem;
+        margin: 3rem 4rem 0 3rem;
       }
+
+      float: right;
+      display: flex;
+      align-items: baseline;
     }
-    }
-
-    /* .total-bookings {
-      > .bookings-count-label {
-        transform: translate(0, 1.5px) scale(0.75);
-        transform-origin: top left;
-        font-size: 1.6rem;
-      }
-
-      > span {
-        font-size: 1.6rem;
-      }
-
-      ${(props) => props.theme.breakpoints.only('xs')} {
-        flex: 1 1 auto;
-        margin-top: 2rem;
-      }
-
-      ${(props) => props.theme.breakpoints.up('sm')} {
-        flex: 0 0 auto;
-
-        margin: 0 4rem 0 2rem;
-      }
-    } */
 
     > .table {
       padding: 0 1.6rem 3rem;
