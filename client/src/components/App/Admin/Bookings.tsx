@@ -367,7 +367,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
               <DialogContentText>
                 Booking for <strong>{bookingToCancel.user}</strong> on{' '}
                 <strong>{format(parseISO(bookingToCancel.date), 'do LLLL')}</strong> for{' '}
-                <strong>{bookingToCancel.office}</strong>
+                <strong>{bookingToCancel.office.name}</strong>
               </DialogContentText>
             </DialogContent>
             <DialogActions>

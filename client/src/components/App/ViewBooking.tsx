@@ -98,7 +98,7 @@ const ViewBooking: React.FC<RouteComponentProps<Props>> = (props) => {
                 )}
               </h2>
 
-              <h3>{booking.office}</h3>
+              <h3>{booking.office.name}</h3>
               {booking.parking && <p className="parking">+ parking</p>}
 
               <div className="breaker"></div>

@@ -156,7 +156,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
     // Submit
     const formattedDate = format(bookingDate, 'yyyy-MM-dd');
 
-    createBooking(email, formattedDate, selectedOffice.name, parking)
+    createBooking(email, formattedDate, selectedOffice, parking)
       .then(() => {
         // Increase office quota
         // This assumes the date and selected office haven't changed

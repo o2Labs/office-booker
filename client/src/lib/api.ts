@@ -7,6 +7,7 @@ import {
   DefaultRole,
   OfficeAdminRole,
   UserQueryResponse,
+  Office,
 } from '../types/api';
 
 // Constants
@@ -183,7 +184,7 @@ export const getBookings = async ({
 export const createBooking = async (
   user: User['email'],
   date: string,
-  office: OfficeWithSlots['name'],
+  office: Pick<Office, 'id'>,
   parking?: boolean
 ): Promise<Booking> => {
   const url = new URL('bookings', BASE_URL);
