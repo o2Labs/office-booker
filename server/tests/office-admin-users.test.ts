@@ -10,7 +10,6 @@ const otherUser = getNormalUser();
 const officeAdminEmail = 'office-a.admin@office-booker.test';
 
 const office = officeQuotas[0];
-const officeNameEncoded = encodeURIComponent(office.name);
 beforeEach(async () => {
   await resetDb();
   await setUser(config, {
@@ -66,7 +65,7 @@ test(`can't set user quotas`, async () => {
 
 test(`can see office bookings`, async () => {
   const response = await app
-    .get('/api/bookings?office=' + officeNameEncoded)
+    .get('/api/bookings?office=' + office.id)
     .set('bearer', officeAdminEmail);
   expect(response.ok).toBe(true);
 });
@@ -101,7 +100,7 @@ test('can create and delete bookings for other people for their office', async (
   expect(createResponse.body).toMatchObject(createBookingBody);
 
   const getCreatedBookingResponse = await app
-    .get(`/api/bookings?user=${otherUser}&office=${officeNameEncoded}`)
+    .get(`/api/bookings?user=${otherUser}&office=${office.id}`)
     .set('bearer', officeAdminEmail);
   expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
 

@@ -1,6 +1,6 @@
 import express, { Response, Request, NextFunction } from 'express';
 import morgan from 'morgan';
-import { Config } from './app-config';
+import { Config, OfficeQuota } from './app-config';
 
 import { configureAuth, getAuthUserEmail } from './auth';
 import { getUser, isPutUserBody, isValidEmail } from './users/model';
@@ -177,7 +177,7 @@ export const configureApp = (config: Config) => {
         return { email };
       };
 
-      const parseOffice = (): { office?: string } => {
+      const parseOffice = (): { office?: OfficeQuota } => {
         const officeQuery = req.query.office as unknown;
         if (typeof officeQuery === 'undefined') {
           return {};
@@ -185,7 +185,11 @@ export const configureApp = (config: Config) => {
         if (typeof officeQuery !== 'string') {
           throw new HttpError({ httpMessage: 'Invalid office type', status: 400 });
         }
-        return { office: officeQuery };
+        const office = config.officeQuotas.find((o) => o.id === officeQuery);
+        if (office === undefined) {
+          throw new HttpError({ httpMessage: 'Unknown office query', status: 400 });
+        }
+        return { office };
       };
 
       const parseDate = (): { date?: string } => {

@@ -93,7 +93,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   // Helpers
   const getAllBookings = useCallback(() => {
     if (selectedOffice) {
-      getBookings({ office: selectedOffice.name, date: format(selectedDate, 'yyyy-MM-dd') })
+      getBookings({ office: selectedOffice, date: format(selectedDate, 'yyyy-MM-dd') })
         .then((data) => setDbBookings(data))
         .catch((err) => {
           // Handle errors

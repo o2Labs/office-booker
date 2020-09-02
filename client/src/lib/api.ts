@@ -154,13 +154,13 @@ export const getBookings = async ({
   user,
   office,
   date,
-}: { user?: string; office?: string; date?: string } = {}): Promise<Booking[]> => {
+}: { user?: string; office?: { id: string }; date?: string } = {}): Promise<Booking[]> => {
   const params = new URLSearchParams();
   if (user !== undefined) {
     params.set('user', user);
   }
   if (office !== undefined) {
-    params.set('office', office);
+    params.set('office', office.id);
   }
   if (date !== undefined) {
     params.set('date', date);
