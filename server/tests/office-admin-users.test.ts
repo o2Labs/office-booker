@@ -79,7 +79,7 @@ test(`can't see all bookings`, async () => {
 test('can create and delete bookings for other people for their office', async () => {
   const createBookingBody = {
     user: otherUser,
-    office: office.name,
+    office: { id: office.id },
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };
@@ -119,7 +119,7 @@ test('can create and delete bookings for other people for their office', async (
 test(`can't create and delete bookings for other people for other offices`, async () => {
   const createBookingBody = {
     user: otherUser,
-    office: officeQuotas[1].name,
+    office: { id: officeQuotas[1].id },
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };

@@ -78,7 +78,7 @@ export const configureApp = (config: Config) => {
       const testUserEmail = normaliseEmail(config.selfTestUser);
       const offices = await getOffices(config);
       const user = await getUser(config, testUserEmail);
-      const bookings = mapBookings(await getUserBookings(config, testUserEmail));
+      const bookings = mapBookings(config, await getUserBookings(config, testUserEmail));
       return res.json({ offices, user, bookings });
     } catch (error) {
       return next(error);

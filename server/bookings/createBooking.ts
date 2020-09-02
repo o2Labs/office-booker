@@ -31,7 +31,7 @@ export const createBooking = async (
     request.user === currentUser.email ||
     currentUser.permissions.canManageAllBookings ||
     currentUser.permissions.officesCanManageBookingsFor.find(
-      (office) => office.name === request.office
+      (office) => office.id === request.office.id
     ) !== undefined;
 
   if (!isAuthorised) {
@@ -55,7 +55,7 @@ export const createBooking = async (
     });
   }
 
-  const requestedOffice = config.officeQuotas.find((office) => office.name === request.office);
+  const requestedOffice = config.officeQuotas.find((office) => office.id === request.office.id);
   if (!requestedOffice) {
     throw new HttpError({
       internalMessage: `Office not found: ${request.office}`,
@@ -70,6 +70,7 @@ export const createBooking = async (
     ...request,
     id,
     parking: request.parking ?? false,
+    office: requestedOffice.name,
   };
 
   const userEmail = newBooking.user.toLocaleLowerCase();
@@ -171,5 +172,5 @@ export const createBooking = async (
   }
 
   audit('4:Completed');
-  return mapBooking(createdBooking);
+  return mapBooking(config, createdBooking);
 };

@@ -49,7 +49,7 @@ test('can query custom quota users', async () => {
 test('can create and delete bookings for other people', async () => {
   const createBookingBody = {
     user: otherUser,
-    office: officeQuotas[0].name,
+    office: { id: officeQuotas[0].id },
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };

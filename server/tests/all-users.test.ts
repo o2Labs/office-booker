@@ -50,7 +50,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
     test('can create and delete own booking', async () => {
       const createBookingBody = {
         user: email,
-        office: officeQuotas[0].name,
+        office: { id: officeQuotas[0].id },
         date: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
         parking: true,
       };
