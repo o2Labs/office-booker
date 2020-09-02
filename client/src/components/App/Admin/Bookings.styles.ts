@@ -22,7 +22,6 @@ export default styled.div`
 
     > .filter {
       display: flex;
-
       ${(props) => props.theme.breakpoints.only('xs')} {
         flex-wrap: wrap;
       }
@@ -62,15 +61,25 @@ export default styled.div`
     }
 
     .total-bookings {
-      ${(props) => props.theme.breakpoints.up('sm')} {
-
-      display: flex;
-      align-items: baseline;
-      margin-left: 5rem;
+      > .bookings-count-label {
+        transform: translate(0, 1.5px) scale(0.75);
+        transform-origin: top left;
+        font-size: 1.6rem;
+      }
 
       > span {
-        margin-left: 1rem;
+        font-size: 1.6rem;
       }
+
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        flex: 1 1 auto;
+        margin-top: 2rem;
+      }
+
+      ${(props) => props.theme.breakpoints.up('sm')} {
+        flex: 0 0 auto;
+
+        margin: 0 4rem 0 2rem;
       }
     }
 
