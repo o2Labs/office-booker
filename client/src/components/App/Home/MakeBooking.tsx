@@ -373,14 +373,8 @@ const MakeBooking: React.FC<Props> = (props) => {
               handleCreateBooking(new Date(), todayWithParking);
             }}
           >
-            Confirm Booking
-            {todayWithParking ? (
-              <>
-                <EmojiTransportationIcon /> + Parking
-              </>
-            ) : (
-              <BusinessIcon />
-            )}
+            Confirm
+            {todayWithParking ? ' + Parking' : null}
           </button>
         </div>
       </div>
