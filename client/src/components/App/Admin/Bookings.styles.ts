@@ -22,9 +22,9 @@ export default styled.div`
 
     > .filter {
       display: flex;
-
       ${(props) => props.theme.breakpoints.only('xs')} {
         flex-wrap: wrap;
+        flex-direction: column;
       }
 
       padding: 3rem 3rem 2rem;
@@ -59,6 +59,33 @@ export default styled.div`
           flex: 0 0 auto;
         }
       }
+    }
+
+    .total-bookings {
+      > .bookings-count-label {
+        font-size: 1.6rem;
+      }
+
+      > span {
+        font-size: 1.6rem;
+        margin-left: 0.5rem;
+      }
+
+      ${(props) => props.theme.breakpoints.only('xs')} {
+        flex: 1 1 auto;
+        margin: 3rem 3rem 0;
+        float: initial;
+      }
+
+      ${(props) => props.theme.breakpoints.up('sm')} {
+        flex: 0 0 auto;
+
+        margin: 3rem 4rem 0 3rem;
+      }
+
+      float: right;
+      display: flex;
+      align-items: baseline;
     }
 
     > .table {
