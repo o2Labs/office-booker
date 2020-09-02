@@ -314,9 +314,9 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
                   <>
                     <h4>Bookings</h4>
 
-                    <ul>
+                      <ul className="bookings-list">
                       {bookings.map((row) => (
-                        <li key={row.id}>
+                        <li key={row.id} className="booking-list-item">
                           {format(
                             parse(row.date, 'yyyy-MM-dd', new Date(), DATE_FNS_OPTIONS),
                             'do LLLL',

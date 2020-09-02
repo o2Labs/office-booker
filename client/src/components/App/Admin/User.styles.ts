@@ -36,6 +36,26 @@ export default styled.div`
       font-weight: 500;
     }
 
+
+    > .user-bookings {
+      margin-top: 3rem;
+      color: ${(props) => props.theme.palette.primary.main};
+
+      > .bookings-list {
+        margin: 0;
+
+        &:not(:last-child) {
+          margin-bottom: 2.2rem;
+        }
+
+        > .booking-list-item {
+          color: ${(props) => props.theme.palette.secondary.main};
+          font-size: 1.4rem;
+          font-weight: 400;
+        }
+      }
+    }
+
     > form {
       > .field {
         margin-bottom: 2.4rem;
@@ -48,25 +68,6 @@ export default styled.div`
           ${(props) => props.theme.breakpoints.up('sm')} {
             min-width: 25rem;
           }
-        }
-      }
-    }
-
-    > .user-bookings {
-      margin-top: 3rem;
-      color: ${(props) => props.theme.palette.primary.main};
-
-      > ul {
-        margin: 0;
-
-        &:not(:last-child) {
-          margin-bottom: 2.2rem;
-        }
-
-        > li {
-          color: ${(props) => props.theme.palette.secondary.main};
-          font-size: 1.4rem;
-          font-weight: 400;
         }
       }
     }
