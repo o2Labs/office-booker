@@ -294,11 +294,11 @@ const MakeBooking: React.FC<Props> = (props) => {
 
   useEffect(() => {
     // Close today booking confirmation slide
-    function handleClickOutside(event: Event) {
+    const handleClickOutside = (event: Event) => {
       if (sliderRef.current && !sliderRef.current.contains(event.target as Node)) {
         setSlideConfirm(false);
       }
-    }
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
