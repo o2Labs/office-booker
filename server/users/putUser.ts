@@ -1,6 +1,7 @@
 import { Config } from '../app-config';
 import { getUserDb, setUser } from '../db/users';
 import { User, PutUserBody, getUser } from './model';
+import { Arrays } from 'collection-fns';
 
 export const putUser = async (
   config: Config,
@@ -17,7 +18,10 @@ export const putUser = async (
       return user.adminOffices;
     }
     if (putBody.role.name === 'Office Admin') {
-      return putBody.role.offices;
+      return Arrays.choose(putBody.role.offices, (office) => {
+        const officeQuota = config.officeQuotas.find((officeQuota) => officeQuota.id === office.id);
+        return officeQuota?.id;
+      });
     }
 
     return [];

@@ -15,7 +15,10 @@ export const queryBookings = async (config: Config, currentUser: User, query: Bo
   const isQueryingSelf = query.email && query.email === currentUser.email;
   const isOfficeAdmin =
     query.office !== undefined &&
-    currentUser.permissions.officesCanManageBookingsFor.includes(query.office);
+    currentUser.permissions.officesCanManageBookingsFor.find(
+      (office) => office.name === query.office
+    ) !== undefined;
+
   const isAuthorised =
     isQueryingSelf || isOfficeAdmin || currentUser.permissions.canManageAllBookings;
   if (!isAuthorised) {

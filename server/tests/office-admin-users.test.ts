@@ -9,13 +9,13 @@ const otherUser = getNormalUser();
 
 const officeAdminEmail = 'office-a.admin@office-booker.test';
 
-const officeName = officeQuotas[0].name;
-const officeNameEncoded = encodeURIComponent(officeName);
+const office = officeQuotas[0];
+const officeNameEncoded = encodeURIComponent(office.name);
 beforeEach(async () => {
   await resetDb();
   await setUser(config, {
     email: officeAdminEmail,
-    adminOffices: [officeName],
+    adminOffices: [office.name],
     quota: 1,
   });
 });
@@ -27,13 +27,13 @@ test(`can get self`, async () => {
     email: officeAdminEmail,
     quota: 1,
     admin: false,
-    role: { name: 'Office Admin', offices: [officeName] },
+    role: { name: 'Office Admin', offices: [office] },
     permissions: {
       canEditUsers: false,
       canManageAllBookings: false,
       canViewAdminPanel: true,
       canViewUsers: true,
-      officesCanManageBookingsFor: [officeName],
+      officesCanManageBookingsFor: [office],
     },
   });
 });
@@ -79,7 +79,7 @@ test(`can't see all bookings`, async () => {
 test('can create and delete bookings for other people for their office', async () => {
   const createBookingBody = {
     user: otherUser,
-    office: officeName,
+    office: office.name,
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };

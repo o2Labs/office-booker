@@ -34,7 +34,7 @@ test('can query admin users', async () => {
           canManageAllBookings: true,
           canViewAdminPanel: true,
           canViewUsers: true,
-          officesCanManageBookingsFor: ['Office A', 'Office B'],
+          officesCanManageBookingsFor: officeQuotas,
         },
       },
     ],
@@ -117,7 +117,7 @@ test('can set user role', async () => {
   expect(getInitialUserResponse.body).toMatchObject({ role: { name: 'Default' } });
 
   const putUserBody = {
-    role: { name: 'Office Admin', offices: [officeQuotas[0].name] },
+    role: { name: 'Office Admin', offices: [{ id: officeQuotas[0].id }] },
   };
   const putResponse = await app
     .put(`/api/users/${otherUser}`)

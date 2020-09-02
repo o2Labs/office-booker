@@ -30,7 +30,9 @@ export const createBooking = async (
   const isAuthorised =
     request.user === currentUser.email ||
     currentUser.permissions.canManageAllBookings ||
-    currentUser.permissions.officesCanManageBookingsFor.includes(request.office);
+    currentUser.permissions.officesCanManageBookingsFor.find(
+      (office) => office.name === request.office
+    ) !== undefined;
 
   if (!isAuthorised) {
     throw new Forbidden();

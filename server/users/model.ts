@@ -1,5 +1,6 @@
-import { Config } from '../app-config';
+import { Config, OfficeQuota } from '../app-config';
 import { getUserDb, User as DbUser } from '../db/users';
+import { Arrays } from 'collection-fns';
 
 export type UserProfile = {
   email: string;
@@ -7,7 +8,7 @@ export type UserProfile = {
 
 export type DefaultRole = { name: 'Default' };
 export type SystemAdminRole = { name: 'System Admin' };
-export type OfficeAdminRole = { name: 'Office Admin'; offices: string[] };
+export type OfficeAdminRole = { name: 'Office Admin'; offices: OfficeQuota[] };
 export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole;
 
 export type UserRoleName = UserRole['name'];
@@ -23,19 +24,23 @@ export type User = UserProfile & {
     canViewUsers: boolean;
     canEditUsers: boolean;
     canManageAllBookings: boolean;
-    officesCanManageBookingsFor: string[];
+    officesCanManageBookingsFor: OfficeQuota[];
   };
 };
 
-export type PutUserBody = { quota?: number | null; role?: DefaultRole | OfficeAdminRole };
+type PutOfficeAdminRole = Pick<OfficeAdminRole, 'name'> & {
+  offices: { id: string }[];
+};
 
-export const isOfficeAdminRole = (arg: any): arg is OfficeAdminRole => {
+export type PutUserBody = { quota?: number | null; role?: DefaultRole | PutOfficeAdminRole };
+
+export const isOfficeAdminRole = (arg: any): arg is PutOfficeAdminRole => {
   if (typeof arg !== 'object') return false;
   const offices = arg.offices;
   return (
     arg.name === 'Office Admin' &&
     Array.isArray(offices) &&
-    offices.every((o) => typeof o === 'string')
+    offices.every((o) => typeof o === 'object' && 'id' in o && typeof o.id === 'string')
   );
 };
 
@@ -51,6 +56,27 @@ export const isPutUserBody = (arg: any): arg is PutUserBody =>
 const isAdmin = (config: Config, email: string): boolean =>
   config.systemAdminEmails.includes(email);
 
+const getOfficesFromNames = (
+  dbUser: DbUser,
+  config: Config
+): Required<{
+  id?: string | undefined;
+  name: string;
+  quota: number;
+  parkingQuota?: number | undefined;
+}>[] =>
+  Arrays.choose(dbUser.adminOffices, (name) => {
+    const office = config.officeQuotas.find((officeQuota) => officeQuota.name === name);
+    return office;
+  });
+
+const makeOfficeAdmin = (config: Config, dbUser: DbUser): OfficeAdminRole => {
+  return {
+    name: 'Office Admin',
+    offices: getOfficesFromNames(dbUser, config),
+  };
+};
+
 export const makeUser = (config: Config, dbUser: DbUser): User => {
   const admin = isAdmin(config, dbUser.email);
   const isOfficeAdmin = dbUser.adminOffices.length > 0;
@@ -61,7 +87,7 @@ export const makeUser = (config: Config, dbUser: DbUser): User => {
     role: admin
       ? { name: 'System Admin' }
       : isOfficeAdmin
-      ? { name: 'Office Admin', offices: dbUser.adminOffices }
+      ? makeOfficeAdmin(config, dbUser)
       : { name: 'Default' },
     permissions: {
       canViewAdminPanel: admin || isOfficeAdmin,
@@ -69,8 +95,8 @@ export const makeUser = (config: Config, dbUser: DbUser): User => {
       canEditUsers: admin,
       canManageAllBookings: admin,
       officesCanManageBookingsFor: admin
-        ? config.officeQuotas.map((o) => o.name)
-        : dbUser.adminOffices,
+        ? config.officeQuotas
+        : getOfficesFromNames(dbUser, config),
     },
   };
 };
