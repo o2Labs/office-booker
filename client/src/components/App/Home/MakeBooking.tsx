@@ -15,6 +15,7 @@ import Paper from '@material-ui/core/Paper';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import BusinessIcon from '@material-ui/icons/Business';
+import Warning from '@material-ui/icons/Warning';
 import Tooltip from '@material-ui/core/Tooltip';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 import CachedIcon from '@material-ui/icons/Cached';
@@ -86,9 +87,12 @@ const MakeBooking: React.FC<Props> = (props) => {
   const [selectedWeek, setSelectedWeek] = useState<Week | undefined>();
   const [selectedWeekLabel, setSelectedWeekLabel] = useState<string | undefined>();
   const [buttonsLoading, setButtonsLoading] = useState(true);
+  const [slideConfirm, setSlideConfirm] = useState(false);
+  const [todayWithParking, setTodayWithParking] = useState(false);
 
   // Refs
   const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   // Helper
   const setReloadTimer = useCallback(() => {
@@ -288,6 +292,20 @@ const MakeBooking: React.FC<Props> = (props) => {
     }
   }, [bookings, office, user, weeks]);
 
+  useEffect(() => {
+    // Close today booking confirmation slide
+    function handleClickOutside(event: Event) {
+      if (sliderRef.current && !sliderRef.current.contains(event.target as Node)) {
+        setSlideConfirm(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [sliderRef]);
+
   // Handlers
   const handleChangeWeek = (direction: 'forward' | 'backward') => {
     // Find index of current selected
@@ -329,6 +347,56 @@ const MakeBooking: React.FC<Props> = (props) => {
             },
           });
         });
+    }
+  };
+
+  const renderBookingConfirmSlide = () => {
+    return (
+      <div className="slide" ref={sliderRef}>
+        <p>
+          <Warning />
+          You will not be able to cancel today's booking.
+        </p>
+        <div className="slide-btns">
+          <button
+            className="cancel-btn"
+            onClick={() => {
+              setSlideConfirm(false);
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className="confirm-btn"
+            onClick={() => {
+              setSlideConfirm(false);
+              handleCreateBooking(new Date(), todayWithParking);
+            }}
+          >
+            Confirm Booking
+            {todayWithParking ? (
+              <>
+                <EmojiTransportationIcon /> + Parking
+              </>
+            ) : (
+              <BusinessIcon />
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const confirmTodayBooking = (
+    handleCreateBooking: (date: Date, withParking: boolean) => void,
+    date: Date,
+    withParking: boolean
+  ) => {
+    if (isToday(date)) {
+      setSlideConfirm(true);
+      setTodayWithParking(withParking);
+    } else {
+      handleCreateBooking(date, withParking);
     }
   };
 
@@ -484,6 +552,8 @@ const MakeBooking: React.FC<Props> = (props) => {
 
                   {day.isBookable && (
                     <div className="right">
+                      {isToday(day.date) && slideConfirm ? renderBookingConfirmSlide() : null}
+
                       {day.booking ? (
                         <>
                           {!isToday(day.date) && (
@@ -528,7 +598,7 @@ const MakeBooking: React.FC<Props> = (props) => {
                             <div className="book">
                               <BookButton
                                 onClick={(withParking) =>
-                                  handleCreateBooking(day.date, withParking)
+                                  confirmTodayBooking(handleCreateBooking, day.date, withParking)
                                 }
                                 parkingQuota={office.parkingQuota}
                                 parkingAvailable={day.availableCarPark}
