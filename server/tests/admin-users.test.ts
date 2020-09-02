@@ -124,6 +124,7 @@ test('can set user role', async () => {
     .send(putUserBody)
     .set('bearer', adminUserEmail);
   expect(putResponse.status).toBe(200);
+  expect(putResponse.body).toMatchObject(putUserBody);
 
   const queryResponse = await app.get(`/api/users?role=Office Admin`).set('bearer', adminUserEmail);
   expect(queryResponse.body.users).toContainEqual(putResponse.body);
