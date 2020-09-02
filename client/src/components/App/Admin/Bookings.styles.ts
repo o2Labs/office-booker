@@ -61,6 +61,19 @@ export default styled.div`
       }
     }
 
+    .total-bookings {
+      ${(props) => props.theme.breakpoints.up('sm')} {
+
+      display: flex;
+      align-items: baseline;
+      margin-left: 5rem;
+
+      > span {
+        margin-left: 1rem;
+      }
+      }
+    }
+
     > .table {
       padding: 0 1.6rem 3rem;
       overflow: scroll;
