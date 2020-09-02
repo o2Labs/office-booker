@@ -51,6 +51,25 @@ export default styled.div`
         }
       }
     }
+
+    > .user-bookings {
+      margin-top: 3rem;
+      color: ${(props) => props.theme.palette.primary.main};
+
+      > ul {
+        margin: 0;
+
+        &:not(:last-child) {
+          margin-bottom: 2.2rem;
+        }
+
+        > li {
+          color: ${(props) => props.theme.palette.secondary.main};
+          font-size: 1.4rem;
+          font-weight: 400;
+        }
+      }
+    }
   }
 
   > .help {
