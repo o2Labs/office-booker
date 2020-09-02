@@ -25,7 +25,7 @@ import { AppContext } from '../../AppProvider';
 import BookButton from '../../Assets/BookButton';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { Booking, Office } from '../../../types/api';
+import { Booking, OfficeWithSlots } from '../../../types/api';
 import { createBooking, cancelBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
@@ -36,7 +36,7 @@ import BookingStatus from '../../Assets/BookingStatus';
 
 // Types
 type Props = {
-  office: Office;
+  office: OfficeWithSlots;
   bookings: Booking[];
   refreshBookings: () => void;
 };

@@ -20,7 +20,7 @@ import { OurButton } from '../../../styles/MaterialComponents';
 
 import { getOffices, createBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { OfficeSlot, Office } from '../../../types/api';
+import { OfficeSlot, OfficeWithSlots } from '../../../types/api';
 import { validateEmail } from '../../../lib/emailValidation';
 
 import CreateBookingStyles from './CreateBooking.styles';
@@ -32,8 +32,8 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [loading, setLoading] = useState(false);
-  const [offices, setOffices] = useState<Office[] | undefined>();
-  const [selectedOffice, setSelectedOffice] = useState<Office | undefined>();
+  const [offices, setOffices] = useState<OfficeWithSlots[] | undefined>();
+  const [selectedOffice, setSelectedOffice] = useState<OfficeWithSlots | undefined>();
   const [officeSlot, setOfficeSlot] = useState<OfficeSlot | undefined>();
   const [bookingDate, setBookingDate] = useState(addDays(new Date(), +1));
   const [email, setEmail] = useState('');
@@ -41,7 +41,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
 
   // Helpers
   const findOffice = useCallback(
-    (name: Office['name']) => offices && offices.find((o) => o.name === name),
+    (name: OfficeWithSlots['name']) => offices && offices.find((o) => o.name === name),
     [offices]
   );
 
@@ -53,7 +53,9 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
         .then((data) =>
           setOffices(
             data.filter((office) =>
-              user.permissions.officesCanManageBookingsFor.includes(office.name)
+              user.permissions.officesCanManageBookingsFor.find(
+                (userOffice) => userOffice.name === office.name
+              )
             )
           )
         )
@@ -75,7 +77,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (user && offices && offices.length > 0 && !selectedOffice) {
       // Retrieve first office user can manage bookings for
-      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
+      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0].name));
     }
   }, [user, offices, selectedOffice, findOffice]);
 

@@ -11,7 +11,7 @@ import MakeBooking from './Home/MakeBooking';
 
 import { getOffices, getBookings } from '../../lib/api';
 import { formatError } from '../../lib/app';
-import { Office, Booking } from '../../types/api';
+import { OfficeWithSlots, Booking } from '../../types/api';
 
 import HomeStyles from './Home.styles';
 
@@ -23,8 +23,8 @@ const Home: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [loading, setLoading] = useState(true);
-  const [allOffices, setAllOffices] = useState<Office[] | undefined>();
-  const [currentOffice, setCurrentOffice] = useState<Office | undefined>();
+  const [allOffices, setAllOffices] = useState<OfficeWithSlots[] | undefined>();
+  const [currentOffice, setCurrentOffice] = useState<OfficeWithSlots | undefined>();
   const [userBookings, setUserBookings] = useState<Booking[] | undefined>();
 
   // Helpers

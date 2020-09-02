@@ -40,7 +40,7 @@ import { OurButton } from '../../../styles/MaterialComponents';
 
 import { getBookings, cancelBooking, getOffices } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { Booking, Office } from '../../../types/api';
+import { Booking, OfficeWithSlots, Office } from '../../../types/api';
 
 import BookingStyles from './Bookings.styles';
 
@@ -111,7 +111,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   }, [selectedOffice, selectedDate, dispatch]);
 
   const findOffice = useCallback(
-    (name: Office['name']) => offices && offices.find((o) => o.name === name),
+    (name: OfficeWithSlots['name']) => offices && offices.find((o) => o.name === name),
     [offices]
   );
 
@@ -123,7 +123,9 @@ const Bookings: React.FC<RouteComponentProps> = () => {
         .then((data) =>
           setOffices(
             data.filter((office) =>
-              user.permissions.officesCanManageBookingsFor.includes(office.name)
+              user.permissions.officesCanManageBookingsFor.find(
+                (userOffice) => userOffice.name === office.name
+              )
             )
           )
         )
@@ -145,7 +147,7 @@ const Bookings: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (user && offices && offices.length > 0 && !selectedOffice) {
       // Retrieve first office user can manage bookings for
-      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
+      setSelectedOffice(user.permissions.officesCanManageBookingsFor[0]);
     }
   }, [user, offices, selectedOffice, findOffice]);
 
@@ -245,8 +247,8 @@ const Bookings: React.FC<RouteComponentProps> = () => {
                       onChange={(e) => setSelectedOffice(findOffice(e.target.value as string))}
                     >
                       {user.permissions.officesCanManageBookingsFor.map((office, index) => (
-                        <MenuItem value={office} key={index}>
-                          {office}
+                        <MenuItem value={office.name} key={index}>
+                          {office.name}
                         </MenuItem>
                       ))}
                     </Select>

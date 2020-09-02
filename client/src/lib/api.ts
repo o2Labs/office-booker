@@ -1,7 +1,7 @@
 import { getAuthorization } from './auth';
 import {
   User,
-  Office,
+  OfficeWithSlots,
   Booking,
   UserQuery,
   DefaultRole,
@@ -132,7 +132,7 @@ export const getUserCached = async (email: string): Promise<User> => {
   }
 };
 
-export const getOffices = async (): Promise<Office[]> => {
+export const getOffices = async (): Promise<OfficeWithSlots[]> => {
   const url = new URL('offices', BASE_URL);
 
   const headers = await buildHeaders();
@@ -183,7 +183,7 @@ export const getBookings = async ({
 export const createBooking = async (
   user: User['email'],
   date: string,
-  office: Office['name'],
+  office: OfficeWithSlots['name'],
   parking?: boolean
 ): Promise<Booking> => {
   const url = new URL('bookings', BASE_URL);

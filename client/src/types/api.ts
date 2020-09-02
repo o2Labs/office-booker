@@ -3,9 +3,16 @@ export type UserWeeklyBooking = {
   booked: number;
 };
 
+export type Office = {
+  id: string;
+  name: string;
+  quota: number;
+  parkingQuota: number;
+};
+
 export type DefaultRole = { name: 'Default' };
 export type SystemAdminRole = { name: 'System Admin' };
-export type OfficeAdminRole = { name: 'Office Admin'; offices: string[] };
+export type OfficeAdminRole = { name: 'Office Admin'; offices: Office[] };
 export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole;
 
 export type UserQuery = { quota?: 'custom'; role?: UserRole['name']; emailPrefix?: string };
@@ -21,7 +28,7 @@ export type User = {
     canViewUsers: boolean;
     canEditUsers: boolean;
     canManageAllBookings: boolean;
-    officesCanManageBookingsFor: string[];
+    officesCanManageBookingsFor: Office[];
   };
 };
 
@@ -31,10 +38,7 @@ export type OfficeSlot = {
   bookedParking: number;
 };
 
-export type Office = {
-  name: string;
-  quota: number;
-  parkingQuota: number;
+export type OfficeWithSlots = Office & {
   slots: OfficeSlot[];
 };
 
@@ -42,6 +46,6 @@ export type Booking = {
   id: string;
   user: User['email'];
   date: string;
-  office: Office['name'];
+  office: OfficeWithSlots['name'];
   parking: boolean;
 };

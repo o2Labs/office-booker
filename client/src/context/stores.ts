@@ -3,7 +3,7 @@ import { Color } from '@material-ui/lab/Alert';
 
 import { AppAction } from './reducers';
 
-import { User, Office } from '../types/api';
+import { User, OfficeWithSlots } from '../types/api';
 
 // Types
 export type Alert = {
@@ -33,7 +33,7 @@ export type Config = {
 export type AppState = {
   config?: Config;
   user?: User;
-  office?: Office['name'];
+  office?: OfficeWithSlots['name'];
   alert?: Alert;
 };
 

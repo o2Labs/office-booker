@@ -1,10 +1,10 @@
 import { AppState, Config, Alert } from './stores';
-import { User, Office } from '../types/api';
+import { User, OfficeWithSlots } from '../types/api';
 
 // Types
 type ActionSetConfig = { type: 'SET_CONFIG'; payload: Config };
 type ActionSetUser = { type: 'SET_USER'; payload: User | undefined };
-type ActionSetOffice = { type: 'SET_OFFICE'; payload: Office['name'] | undefined };
+type ActionSetOffice = { type: 'SET_OFFICE'; payload: OfficeWithSlots['name'] | undefined };
 type ActionSetAlert = { type: 'SET_ALERT'; payload: Alert | undefined };
 
 export type AppAction = ActionSetConfig | ActionSetUser | ActionSetOffice | ActionSetAlert;
