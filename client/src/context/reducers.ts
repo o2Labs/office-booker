@@ -27,7 +27,7 @@ export const appReducer = (state: AppState, action: AppAction): AppState => {
       }
       localStorage.removeItem('office');
 
-      return { ...state, office };
+      return { ...state, office: office ? { id: office.id } : undefined };
     case 'SET_ALERT':
       return { ...state, alert: action.payload };
     default:

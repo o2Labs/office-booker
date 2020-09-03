@@ -150,7 +150,7 @@ export const getOffice = async (officeId: string): Promise<OfficeWithSlots> => {
   return await response.json();
 };
 
-export const getOffices = async (): Promise<OfficeWithSlots[]> => {
+export const getOffices = async (): Promise<Office[]> => {
   const url = new URL('offices', BASE_URL);
 
   const headers = await buildHeaders();

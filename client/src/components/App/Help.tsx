@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 import Link from '@material-ui/core/Link';
 
@@ -7,15 +7,52 @@ import { AppContext } from '../AppProvider';
 import Layout from '../Layout/Layout';
 
 import { getAuthState } from '../../lib/auth';
-import { getUserCached, getOffices } from '../../lib/api';
+import { getUserCached, getOffices, getOffice } from '../../lib/api';
 import { formatError } from '../../lib/app';
 
 import HelpStyles from './Help.styles';
+import { OfficeWithSlots } from '../../types/api';
 
 const Help: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
   const { user, office } = state;
+
+  const [currentOffice, setCurrentOffice] = useState<OfficeWithSlots | undefined>();
+
+  useEffect(() => {
+    if (office && 'id' in office) {
+      getOffice(office.id)
+        .then(setCurrentOffice)
+        .catch((err) =>
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          })
+        );
+    }
+    if (office && 'name' in office) {
+      getOffices()
+        .then((offices) =>
+          dispatch({
+            type: 'SET_OFFICE',
+            payload: offices.find((o) => o.name === office.name),
+          })
+        )
+        .catch((err) =>
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          })
+        );
+    }
+  }, [office, dispatch]);
 
   // Effects
   useEffect(() => {
@@ -116,10 +153,10 @@ const Help: React.FC<RouteComponentProps> = () => {
 
         <p>Bookings can only be made {state.config.advancedBookingDays} days in advance.</p>
 
-        {user && office && (
+        {user && currentOffice && (
           <div className="change-office">
             <p>
-              You are currently booking for <span>{office}</span>.
+              You are currently booking for <span>{currentOffice.name}</span>.
             </p>
             <Link
               component="button"

@@ -1,14 +1,14 @@
 import React, { useContext } from 'react';
 
 import { AppContext } from '../../AppProvider';
-import { OfficeWithSlots } from '../../../types/api';
+import { Office } from '../../../types/api';
 
 import { OurButton } from '../../../styles/MaterialComponents';
 import WhichOfficeStyles from './WhichOffice.styles';
 
 // Types
 type Props = {
-  offices: OfficeWithSlots[];
+  offices: Office[];
 };
 
 // Component
@@ -17,7 +17,7 @@ const WhichOffice: React.FC<Props> = (props) => {
   const { dispatch } = useContext(AppContext);
 
   // Handlers
-  const selectOffice = (office: OfficeWithSlots) => {
+  const selectOffice = (office: Office) => {
     // Update global state
     dispatch({
       type: 'SET_OFFICE',
