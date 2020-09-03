@@ -1,4 +1,4 @@
-import { getOfficeBookings } from './db/officeBookings';
+import { getOfficesBookings } from './db/officeBookings';
 import { getAvailableDates } from './availableDates';
 import { Config } from './app-config';
 
@@ -12,7 +12,7 @@ export const isValidOfficeId = (officeId: string): boolean => officeIdPattern.te
 
 export const getOffices = async (config: Config) => {
   const availableDates = getAvailableDates(config);
-  const officeBookings = await getOfficeBookings(
+  const officeBookings = await getOfficesBookings(
     config,
     availableDates,
     config.officeQuotas.map((office) => office.name)

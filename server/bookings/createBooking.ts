@@ -6,7 +6,7 @@ import { getAvailableDates, dateStartOfWeek } from '../availableDates';
 import {
   incrementOfficeBookingCount,
   decrementOfficeBookingCount,
-  getOfficeBookings,
+  getOfficesBookings,
 } from '../db/officeBookings';
 import { incrementUserBookingCount, decrementUserBookingCount } from '../db/userBookings';
 import { Forbidden, HttpError } from '../errors';
@@ -76,7 +76,11 @@ export const createBooking = async (
   const userEmail = newBooking.user.toLocaleLowerCase();
   const startOfWeek = dateStartOfWeek(newBooking.date);
 
-  const officeBookings = await getOfficeBookings(config, [newBooking.date], [requestedOffice.name]);
+  const officeBookings = await getOfficesBookings(
+    config,
+    [newBooking.date],
+    [requestedOffice.name]
+  );
   const isQuotaExceeded = officeBookings[0]?.bookingCount >= requestedOffice.quota;
   const isParkingExceeded =
     newBooking.parking && officeBookings[0]?.parkingCount >= requestedOffice.parkingQuota;

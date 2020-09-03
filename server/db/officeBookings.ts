@@ -146,7 +146,7 @@ export const decrementOfficeBookingCount = async (
     .promise();
 };
 
-export const getOfficeBookings = async (
+export const getOfficesBookings = async (
   config: Config,
   dates: string[],
   offices: string[]
