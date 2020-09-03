@@ -133,6 +133,23 @@ export const getUserCached = async (email: string): Promise<User> => {
   }
 };
 
+export const getOffice = async (officeId: string): Promise<OfficeWithSlots> => {
+  const url = new URL(`offices/${officeId}`, BASE_URL);
+
+  const headers = await buildHeaders();
+
+  const response = await fetch(url.href, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw await buildHttpError(response);
+  }
+
+  return await response.json();
+};
+
 export const getOffices = async (): Promise<OfficeWithSlots[]> => {
   const url = new URL('offices', BASE_URL);
 

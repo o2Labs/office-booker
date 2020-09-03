@@ -62,7 +62,10 @@ const Help: React.FC<RouteComponentProps> = () => {
       getOffices()
         .then((data) => {
           // Validate and update local storage if not
-          const findOffice = data.find((o) => o.name === office);
+          const findOffice =
+            'id' in office
+              ? data.find((o) => o.id === office.id)
+              : data.find((o) => o.name === office.name);
 
           if (!findOffice) {
             dispatch({

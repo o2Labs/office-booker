@@ -75,7 +75,10 @@ const Home: React.FC<RouteComponentProps> = () => {
       // Retrieve selected office
       if (office) {
         // Validate
-        const findOffice = allOffices.find((o) => o.name === office);
+        const findOffice =
+          'id' in office
+            ? allOffices.find((o) => o.id === office.id)
+            : allOffices.find((o) => o.name === office.name);
 
         if (findOffice) {
           setCurrentOffice(findOffice);
@@ -84,7 +87,7 @@ const Home: React.FC<RouteComponentProps> = () => {
           if (!office) {
             dispatch({
               type: 'SET_OFFICE',
-              payload: findOffice.name,
+              payload: findOffice,
             });
           }
         } else {

@@ -3,7 +3,7 @@ import { Color } from '@material-ui/lab/Alert';
 
 import { AppAction } from './reducers';
 
-import { User, OfficeWithSlots } from '../types/api';
+import { User } from '../types/api';
 
 // Types
 export type Alert = {
@@ -33,11 +33,21 @@ export type Config = {
 export type AppState = {
   config?: Config;
   user?: User;
-  office?: OfficeWithSlots['name'];
+  office?: { name: string } | { id: string };
   alert?: Alert;
 };
 
 // Initial state
 export const appInitialState: AppState = {
-  office: localStorage.getItem('office') || undefined,
+  office: (() => {
+    const officeId = localStorage.getItem('officeId');
+    const officeName = localStorage.getItem('office');
+    if (officeId !== null) {
+      return { id: officeId };
+    }
+    if (officeName !== null) {
+      return { name: officeName };
+    }
+    return undefined;
+  })(),
 };

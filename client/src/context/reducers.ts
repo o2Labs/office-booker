@@ -1,10 +1,10 @@
 import { AppState, Config, Alert } from './stores';
-import { User, OfficeWithSlots } from '../types/api';
+import { User } from '../types/api';
 
 // Types
 type ActionSetConfig = { type: 'SET_CONFIG'; payload: Config };
 type ActionSetUser = { type: 'SET_USER'; payload: User | undefined };
-type ActionSetOffice = { type: 'SET_OFFICE'; payload: OfficeWithSlots['name'] | undefined };
+type ActionSetOffice = { type: 'SET_OFFICE'; payload: { id: string } | undefined };
 type ActionSetAlert = { type: 'SET_ALERT'; payload: Alert | undefined };
 
 export type AppAction = ActionSetConfig | ActionSetUser | ActionSetOffice | ActionSetAlert;
@@ -21,10 +21,11 @@ export const appReducer = (state: AppState, action: AppAction): AppState => {
 
       // Update local storage
       if (office) {
-        localStorage.setItem('office', office);
+        localStorage.setItem('officeId', office.id);
       } else {
-        localStorage.removeItem('office');
+        localStorage.removeItem('officeId');
       }
+      localStorage.removeItem('office');
 
       return { ...state, office };
     case 'SET_ALERT':

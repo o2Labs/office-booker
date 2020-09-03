@@ -21,7 +21,7 @@ const WhichOffice: React.FC<Props> = (props) => {
     // Update global state
     dispatch({
       type: 'SET_OFFICE',
-      payload: office.name,
+      payload: office,
     });
   };
 
