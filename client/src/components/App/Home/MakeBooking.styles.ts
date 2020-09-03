@@ -174,6 +174,8 @@ export default styled.div`
         display: flex;
         align-items: center;
 
+        position: relative;
+
         ${(props) => props.theme.breakpoints.up('xs')} {
           padding: 1.2rem 1.8rem;
 
@@ -211,6 +213,64 @@ export default styled.div`
           flex: 0 0 auto;
 
           text-align: right;
+
+          > .slide {
+            height: fit-content;
+            width: 100%;
+            z-index: 1;
+
+            position: absolute;
+            right: 0;
+            top: -9rem;
+
+            display: flex;
+            flex-direction: column;
+
+            background-color: ${(props) => props.theme.palette.secondary.main};
+            color: #f5f5f5;
+            box-shadow: 0rem 0.4rem 0.3rem #0000004d;
+            text-align: left;
+            padding: 1.4rem 1rem;
+
+            p {
+              margin: 0 0 1rem;
+
+              > svg {
+                margin-right: 0.6rem;
+                font-size: 1.8rem;
+                font-weight: 600;
+              }
+            }
+
+            .slide-btns {
+              display: flex;
+              justify-content: flex-end;
+
+              button {
+                border: none;
+              }
+
+              .cancel-btn {
+                background: none;
+                text-decoration: underline;
+                color: #f5f5f5;
+              }
+
+              .confirm-btn {
+                width: fit-content;
+                display: flex;
+                align-items: center;
+
+                margin-left: 1.2rem;
+                padding: 0.8rem;
+                color: ${(props) => props.theme.palette.primary.main};
+
+                svg {
+                  margin-left: 0.2rem;
+                }
+              }
+            }
+          }
 
           > .no-booking {
             display: flex;
