@@ -15,7 +15,7 @@ import AdminLayout from './Layout/Layout';
 import { OurButton } from '../../../styles/MaterialComponents';
 import Loading from '../../Assets/LoadingSpinner';
 
-import { getUser, putUser, getOffices } from '../../../lib/api';
+import { getUser, putUser } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { User, Office } from '../../../types/api';
 
@@ -64,26 +64,7 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   useEffect(() => {
     if (user && selectedUser) {
       // Get all offices admin can manage
-      getOffices()
-        .then((data) =>
-          setOffices(
-            data.filter((office) =>
-              user.permissions.officesCanManageBookingsFor.includes(office.name)
-            )
-          )
-        )
-        .catch((err) => {
-          // Handle errors
-          setLoading(false);
-
-          dispatch({
-            type: 'SET_ALERT',
-            payload: {
-              message: formatError(err),
-              color: 'error',
-            },
-          });
-        });
+      setOffices(user.permissions.officesCanManageBookingsFor);
     }
   }, [user, selectedUser, dispatch]);
 
@@ -215,7 +196,9 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
                       disabled={!canEdit}
                       options={offices.map((o) => o.name)}
                       value={
-                        selectedUser.role.name === 'Office Admin' ? selectedUser.role.offices : []
+                        selectedUser.role.name === 'Office Admin'
+                          ? selectedUser.role.offices.map((office) => office.name)
+                          : []
                       }
                       onChange={(_e, value) =>
                         setSelectedUser((selectedUser) => {
@@ -225,7 +208,10 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
 
                           return {
                             ...selectedUser,
-                            role: { name: 'Office Admin', offices: value },
+                            role: {
+                              name: 'Office Admin',
+                              offices: offices.filter((office) => value.includes(office.name)),
+                            },
                           };
                         })
                       }

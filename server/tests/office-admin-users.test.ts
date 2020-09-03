@@ -9,13 +9,12 @@ const otherUser = getNormalUser();
 
 const officeAdminEmail = 'office-a.admin@office-booker.test';
 
-const officeName = officeQuotas[0].name;
-const officeNameEncoded = encodeURIComponent(officeName);
+const office = officeQuotas[0];
 beforeEach(async () => {
   await resetDb();
   await setUser(config, {
     email: officeAdminEmail,
-    adminOffices: [officeName],
+    adminOffices: [office.name],
     quota: 1,
   });
 });
@@ -27,13 +26,13 @@ test(`can get self`, async () => {
     email: officeAdminEmail,
     quota: 1,
     admin: false,
-    role: { name: 'Office Admin', offices: [officeName] },
+    role: { name: 'Office Admin', offices: [office] },
     permissions: {
       canEditUsers: false,
       canManageAllBookings: false,
       canViewAdminPanel: true,
       canViewUsers: true,
-      officesCanManageBookingsFor: [officeName],
+      officesCanManageBookingsFor: [office],
     },
   });
 });
@@ -66,7 +65,7 @@ test(`can't set user quotas`, async () => {
 
 test(`can see office bookings`, async () => {
   const response = await app
-    .get('/api/bookings?office=' + officeNameEncoded)
+    .get('/api/bookings?office=' + office.id)
     .set('bearer', officeAdminEmail);
   expect(response.ok).toBe(true);
 });
@@ -79,7 +78,7 @@ test(`can't see all bookings`, async () => {
 test('can create and delete bookings for other people for their office', async () => {
   const createBookingBody = {
     user: otherUser,
-    office: officeName,
+    office: { id: office.id },
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };
@@ -101,7 +100,7 @@ test('can create and delete bookings for other people for their office', async (
   expect(createResponse.body).toMatchObject(createBookingBody);
 
   const getCreatedBookingResponse = await app
-    .get(`/api/bookings?user=${otherUser}&office=${officeNameEncoded}`)
+    .get(`/api/bookings?user=${otherUser}&office=${office.id}`)
     .set('bearer', officeAdminEmail);
   expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
 
@@ -119,7 +118,7 @@ test('can create and delete bookings for other people for their office', async (
 test(`can't create and delete bookings for other people for other offices`, async () => {
   const createBookingBody = {
     user: otherUser,
-    office: officeQuotas[1].name,
+    office: { id: officeQuotas[1].id },
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };

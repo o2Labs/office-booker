@@ -34,7 +34,7 @@ test('can query admin users', async () => {
           canManageAllBookings: true,
           canViewAdminPanel: true,
           canViewUsers: true,
-          officesCanManageBookingsFor: ['Office A', 'Office B'],
+          officesCanManageBookingsFor: officeQuotas,
         },
       },
     ],
@@ -49,7 +49,7 @@ test('can query custom quota users', async () => {
 test('can create and delete bookings for other people', async () => {
   const createBookingBody = {
     user: otherUser,
-    office: officeQuotas[0].name,
+    office: { id: officeQuotas[0].id },
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };
@@ -117,13 +117,14 @@ test('can set user role', async () => {
   expect(getInitialUserResponse.body).toMatchObject({ role: { name: 'Default' } });
 
   const putUserBody = {
-    role: { name: 'Office Admin', offices: [officeQuotas[0].name] },
+    role: { name: 'Office Admin', offices: [{ id: officeQuotas[0].id }] },
   };
   const putResponse = await app
     .put(`/api/users/${otherUser}`)
     .send(putUserBody)
     .set('bearer', adminUserEmail);
   expect(putResponse.status).toBe(200);
+  expect(putResponse.body).toMatchObject(putUserBody);
 
   const queryResponse = await app.get(`/api/users?role=Office Admin`).set('bearer', adminUserEmail);
   expect(queryResponse.body.users).toContainEqual(putResponse.body);

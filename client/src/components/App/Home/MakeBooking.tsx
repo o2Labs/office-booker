@@ -25,7 +25,7 @@ import { AppContext } from '../../AppProvider';
 import BookButton from '../../Assets/BookButton';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { Booking, Office } from '../../../types/api';
+import { Booking, OfficeWithSlots } from '../../../types/api';
 import { createBooking, cancelBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
@@ -36,7 +36,7 @@ import BookingStatus from '../../Assets/BookingStatus';
 
 // Types
 type Props = {
-  office: Office;
+  office: OfficeWithSlots;
   bookings: Booking[];
   refreshBookings: () => void;
 };
@@ -204,7 +204,7 @@ const MakeBooking: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (user && weeks && weeks.length > 0) {
-      const { name, quota: officeQuota, parkingQuota, slots } = office;
+      const { id, quota: officeQuota, parkingQuota, slots } = office;
       const { quota: userQuota } = user;
 
       const rows: Row[] = [];
@@ -239,7 +239,7 @@ const MakeBooking: React.FC<Props> = (props) => {
             const availableCarPark = parkingQuota - slot.bookedParking;
 
             // Find any user booking for this office/slot
-            const booking = bookings.find((b) => b.office === name && b.date === slot.date);
+            const booking = bookings.find((b) => b.office.id === id && b.date === slot.date);
 
             // Total user bookings for this week
             const userWeekBookings = bookings.filter((b) =>
@@ -267,7 +267,7 @@ const MakeBooking: React.FC<Props> = (props) => {
           } else {
             // Did we have a booking on this day?
             const booking = bookings.find(
-              (b) => b.office === name && b.date === format(d, 'y-MM-dd', DATE_FNS_OPTIONS)
+              (b) => b.office.id === id && b.date === format(d, 'y-MM-dd', DATE_FNS_OPTIONS)
             );
 
             // Not in range
@@ -330,7 +330,7 @@ const MakeBooking: React.FC<Props> = (props) => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, office.name, withParking)
+      createBooking(user.email, formattedDate, office, withParking)
         .then(() => refreshBookings())
         .catch((err) => {
           // Refresh DB

@@ -13,11 +13,11 @@ beforeEach(resetDb);
 describe('Testing DB logic', async () => {
   test('can create booking and successfully increase booking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = config.officeQuotas[0].name;
+    const office = config.officeQuotas[0];
     const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
-      office,
+      office: { id: office.id },
       date,
       parking: false,
     };
@@ -33,8 +33,10 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find((item: any) => item.name === office);
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(1);
     expect(slot.bookedParking).toEqual(0);
@@ -42,11 +44,11 @@ describe('Testing DB logic', async () => {
 
   test('can delete booking and successfully decrease booking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = config.officeQuotas[0].name;
+    const office = config.officeQuotas[0];
     const date = format(nextMonday, 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
-      office,
+      office: { id: office.id },
       date,
       parking: false,
     };
@@ -65,19 +67,21 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(deleteResponse.status).toBe(204);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find((item: any) => item.name === office);
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(0);
   });
 
   test('can create booking with parking and successfully increase booking count and parking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = config.officeQuotas[0].name;
+    const office = config.officeQuotas[0];
     const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
-      office,
+      office: { id: office.id },
       date,
       parking: true,
     };
@@ -93,8 +97,10 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find((item: any) => item.name === office);
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(1);
     expect(slot.bookedParking).toEqual(1);
@@ -102,11 +108,11 @@ describe('Testing DB logic', async () => {
 
   test('can delete booking with parking and successfully decrease booking count and parking count', async () => {
     const normalUserEmail = getNormalUser();
-    const office = config.officeQuotas[0].name;
+    const office = config.officeQuotas[0];
     const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
-      office,
+      office: { id: office.id },
       date,
       parking: true,
     };
@@ -127,8 +133,10 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(deleteResponse.status).toBe(204);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find((item: any) => item.name === office);
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(0);
     expect(slot.bookedParking).toEqual(0);
@@ -136,11 +144,10 @@ describe('Testing DB logic', async () => {
 
   test('cannot have multiple bookings on the same day', async () => {
     const normalUserEmail = getNormalUser();
-    const office = config.officeQuotas[0].name;
     const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
     const createBookingBody = {
       user: normalUserEmail,
-      office,
+      office: { id: config.officeQuotas[0].id },
       date,
       parking: true,
     };
@@ -161,10 +168,9 @@ describe('Testing DB logic', async () => {
 
   test('cannot exceed weekly quota', async () => {
     const normalUserEmail = getNormalUser();
-    const office = config.officeQuotas[0].name;
     const createBookingBody = {
       user: normalUserEmail,
-      office,
+      office: { id: config.officeQuotas[0].id },
       parking: true,
     };
 
@@ -192,10 +198,9 @@ describe('Testing DB logic', async () => {
 
   test('booking failing due to lack of parking', async () => {
     const normalUserEmail = getNormalUser();
-    const office = config.officeQuotas[1].name;
     const createBookingBody = {
       user: normalUserEmail,
-      office,
+      office: { id: config.officeQuotas[1].id },
       parking: true,
     };
 

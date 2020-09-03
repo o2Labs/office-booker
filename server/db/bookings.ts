@@ -72,7 +72,7 @@ export const queryBookings = async (
 export const getAllBookings = async (config: Config): Promise<BookingsModel[]> => {
   const mapper = buildMapper(config);
   const rows: BookingsModel[] = [];
-  for await (const item of mapper.scan(BookingsModel, { limit: 500 })) {
+  for await (const item of mapper.scan(BookingsModel)) {
     rows.push(item);
   }
   return rows;

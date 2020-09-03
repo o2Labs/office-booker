@@ -18,9 +18,9 @@ import AdminLayout from './Layout/Layout';
 import Loading from '../../Assets/LoadingSpinner';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { getOffices, createBooking } from '../../../lib/api';
+import { getOffices, createBooking, getOffice } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { OfficeSlot, Office } from '../../../types/api';
+import { OfficeSlot, OfficeWithSlots, Office } from '../../../types/api';
 import { validateEmail } from '../../../lib/emailValidation';
 
 import CreateBookingStyles from './CreateBooking.styles';
@@ -34,6 +34,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   const [loading, setLoading] = useState(false);
   const [offices, setOffices] = useState<Office[] | undefined>();
   const [selectedOffice, setSelectedOffice] = useState<Office | undefined>();
+  const [selectedOfficeWithSlots, setSelectedWithSlots] = useState<OfficeWithSlots | undefined>();
   const [officeSlot, setOfficeSlot] = useState<OfficeSlot | undefined>();
   const [bookingDate, setBookingDate] = useState(addDays(new Date(), +1));
   const [email, setEmail] = useState('');
@@ -41,7 +42,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
 
   // Helpers
   const findOffice = useCallback(
-    (name: Office['name']) => offices && offices.find((o) => o.name === name),
+    (name: OfficeWithSlots['name']) => offices && offices.find((o) => o.name === name),
     [offices]
   );
 
@@ -53,7 +54,9 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
         .then((data) =>
           setOffices(
             data.filter((office) =>
-              user.permissions.officesCanManageBookingsFor.includes(office.name)
+              user.permissions.officesCanManageBookingsFor.find(
+                (userOffice) => userOffice.name === office.name
+              )
             )
           )
         )
@@ -75,15 +78,29 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   useEffect(() => {
     if (user && offices && offices.length > 0 && !selectedOffice) {
       // Retrieve first office user can manage bookings for
-      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0]));
+      setSelectedOffice(findOffice(user.permissions.officesCanManageBookingsFor[0].name));
     }
   }, [user, offices, selectedOffice, findOffice]);
 
   useEffect(() => {
-    if (selectedOffice) {
-      setOfficeSlot(selectedOffice.slots.find((s) => s.date === format(bookingDate, 'yyyy-MM-dd')));
+    if (selectedOffice === undefined) {
+      setSelectedWithSlots(undefined);
+    } else {
+      setLoading(true);
+      getOffice(selectedOffice.id).then((result) => {
+        setLoading(false);
+        setSelectedWithSlots(result);
+      });
     }
-  }, [selectedOffice, bookingDate]);
+  }, [selectedOffice]);
+
+  useEffect(() => {
+    if (selectedOfficeWithSlots) {
+      setOfficeSlot(
+        selectedOfficeWithSlots.slots.find((s) => s.date === format(bookingDate, 'yyyy-MM-dd'))
+      );
+    }
+  }, [selectedOfficeWithSlots, bookingDate]);
 
   useEffect(() => {
     if (officeSlot) {
@@ -154,7 +171,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
     // Submit
     const formattedDate = format(bookingDate, 'yyyy-MM-dd');
 
-    createBooking(email, formattedDate, selectedOffice.name, parking)
+    createBooking(email, formattedDate, selectedOffice, parking)
       .then(() => {
         // Increase office quota
         // This assumes the date and selected office haven't changed
@@ -247,14 +264,17 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                   </FormControl>
                 </div>
 
-                {selectedOffice && (
+                {selectedOfficeWithSlots && (
                   <>
                     <div className="field">
                       <DatePicker
                         autoOk
                         disableToolbar
-                        minDate={selectedOffice.slots[0].date}
-                        maxDate={selectedOffice.slots[selectedOffice.slots.length - 1].date}
+                        minDate={selectedOfficeWithSlots.slots[0].date}
+                        maxDate={
+                          selectedOfficeWithSlots.slots[selectedOfficeWithSlots.slots.length - 1]
+                            .date
+                        }
                         inputVariant="outlined"
                         variant="inline"
                         label="Date"
@@ -269,21 +289,21 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                       <>
                         <div className="field bump short">
                           <p>
-                            <strong>{selectedOffice.quota - officeSlot.booked}</strong> office
-                            spaces available
+                            <strong>{selectedOfficeWithSlots.quota - officeSlot.booked}</strong>{' '}
+                            office spaces available
                           </p>
 
-                          {selectedOffice.parkingQuota > 0 && (
+                          {selectedOfficeWithSlots.parkingQuota > 0 && (
                             <p>
                               <strong>
-                                {selectedOffice.parkingQuota - officeSlot.bookedParking}
+                                {selectedOfficeWithSlots.parkingQuota - officeSlot.bookedParking}
                               </strong>{' '}
                               parking spaces available
                             </p>
                           )}
                         </div>
 
-                        {selectedOffice.parkingQuota > 0 && (
+                        {selectedOfficeWithSlots.parkingQuota > 0 && (
                           <div className="field bump">
                             <FormControlLabel
                               control={
@@ -293,7 +313,9 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                                 />
                               }
                               label="Include parking"
-                              disabled={selectedOffice.parkingQuota - officeSlot.bookedParking <= 0}
+                              disabled={
+                                selectedOfficeWithSlots.parkingQuota - officeSlot.bookedParking <= 0
+                              }
                             />
                           </div>
                         )}

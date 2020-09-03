@@ -1,14 +1,25 @@
 import { format, addDays } from 'date-fns';
 import { configureServer, getNormalUser, adminUserEmail, officeQuotas } from './test-utils';
+import { setUser } from '../db/users';
 
-const { app, resetDb } = configureServer('all-users');
+const { app, resetDb, config } = configureServer('all-users');
 const normalUserEmail = getNormalUser();
+const officeAdminEmail = 'office-a.admin@office-booker.test';
 
-beforeEach(resetDb);
+const office = officeQuotas[0];
+beforeEach(async () => {
+  await resetDb();
+  await setUser(config, {
+    email: officeAdminEmail,
+    adminOffices: [office.name],
+    quota: 1,
+  });
+});
 
 const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,
   admin: adminUserEmail,
+  officeAdmin: officeAdminEmail,
 };
 
 describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) => {
@@ -28,12 +39,18 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
       expect(response.body?.quota).toBeGreaterThanOrEqual(0);
     });
 
-    test(`can get list of offices `, async () => {
+    test(`can get list of offices`, async () => {
       const response = await app.get(`/api/offices`).set('bearer', email);
       expect(response.ok).toBe(true);
       expect(response.body).toHaveLength(officeQuotas.length);
-      expect(Object.keys(response.body[0])).toEqual(['name', 'quota', 'parkingQuota', 'slots']);
-      expect(Object.keys(response.body[0].slots[0])).toEqual(['date', 'booked', 'bookedParking']);
+      expect(Object.keys(response.body[0])).toEqual(['id', 'name', 'quota', 'parkingQuota']);
+    });
+
+    test(`can get single office`, async () => {
+      const response = await app.get(`/api/offices/${officeQuotas[0].id}`).set('bearer', email);
+      expect(response.ok).toBe(true);
+      expect(Object.keys(response.body)).toEqual(['id', 'name', 'quota', 'parkingQuota', 'slots']);
+      expect(Object.keys(response.body.slots[0])).toEqual(['date', 'booked', 'bookedParking']);
     });
 
     test('can get own bookings', async () => {
@@ -44,7 +61,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
     test('can create and delete own booking', async () => {
       const createBookingBody = {
         user: email,
-        office: officeQuotas[0].name,
+        office: { id: officeQuotas[0].id },
         date: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
         parking: true,
       };

@@ -46,7 +46,7 @@ const NextBooking: React.FC<Props> = (props) => {
           'do LLL',
           DATE_FNS_OPTIONS
         )}{' '}
-        <span>@</span> {todaysBooking.office}
+        <span>@</span> {todaysBooking.office.name}
       </h3>
 
       <OurButton
