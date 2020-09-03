@@ -1,4 +1,4 @@
-import { getOfficesBookings, getOfficeBookings } from './db/officeBookings';
+import { getOfficeBookings } from './db/officeBookings';
 import { getAvailableDates } from './availableDates';
 import { Config } from './app-config';
 import { NotFound } from './errors';
@@ -35,32 +35,5 @@ export const getOffice = async (config: Config, officeId: string) => {
       };
     }),
   };
-  return combined;
-};
-
-export const getOffices = async (config: Config) => {
-  const availableDates = getAvailableDates(config);
-  const officeBookings = await getOfficesBookings(
-    config,
-    availableDates,
-    config.officeQuotas.map((office) => office.name)
-  );
-  const indexedBookings = new Map(
-    officeBookings.map((officeBooking) => [officeBooking.name + officeBooking.date, officeBooking])
-  );
-  const combined = config.officeQuotas.map((office) => ({
-    id: office.id,
-    name: office.name,
-    quota: office.quota,
-    parkingQuota: office.parkingQuota,
-    slots: availableDates.map((date) => {
-      const booking = indexedBookings.get(office.name + date);
-      return {
-        date,
-        booked: booking?.bookingCount ?? 0,
-        bookedParking: booking?.parkingCount ?? 0,
-      };
-    }),
-  }));
   return combined;
 };

@@ -33,10 +33,10 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find(
-      (item: any) => item.name === office.name
-    );
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(1);
     expect(slot.bookedParking).toEqual(0);
@@ -67,10 +67,10 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(deleteResponse.status).toBe(204);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find(
-      (item: any) => item.name === office.name
-    );
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(0);
   });
@@ -97,10 +97,10 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find(
-      (item: any) => item.name === office.name
-    );
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(1);
     expect(slot.bookedParking).toEqual(1);
@@ -133,10 +133,10 @@ describe('Testing DB logic', async () => {
       .set('bearer', normalUserEmail);
     expect(deleteResponse.status).toBe(204);
 
-    const getOfficeBookingsResponse = await app.get(`/api/offices`).set('bearer', normalUserEmail);
-    const officeData = getOfficeBookingsResponse.body.find(
-      (item: any) => item.name === office.name
-    );
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
     const slot = officeData.slots.find((item: any) => item.date === date);
     expect(slot.booked).toEqual(0);
     expect(slot.bookedParking).toEqual(0);

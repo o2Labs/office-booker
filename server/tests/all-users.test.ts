@@ -1,14 +1,25 @@
 import { format, addDays } from 'date-fns';
 import { configureServer, getNormalUser, adminUserEmail, officeQuotas } from './test-utils';
+import { setUser } from '../db/users';
 
-const { app, resetDb } = configureServer('all-users');
+const { app, resetDb, config } = configureServer('all-users');
 const normalUserEmail = getNormalUser();
+const officeAdminEmail = 'office-a.admin@office-booker.test';
 
-beforeEach(resetDb);
+const office = officeQuotas[0];
+beforeEach(async () => {
+  await resetDb();
+  await setUser(config, {
+    email: officeAdminEmail,
+    adminOffices: [office.name],
+    quota: 1,
+  });
+});
 
 const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,
   admin: adminUserEmail,
+  officeAdmin: officeAdminEmail,
 };
 
 describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) => {
@@ -32,14 +43,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
       const response = await app.get(`/api/offices`).set('bearer', email);
       expect(response.ok).toBe(true);
       expect(response.body).toHaveLength(officeQuotas.length);
-      expect(Object.keys(response.body[0])).toEqual([
-        'id',
-        'name',
-        'quota',
-        'parkingQuota',
-        'slots',
-      ]);
-      expect(Object.keys(response.body[0].slots[0])).toEqual(['date', 'booked', 'bookedParking']);
+      expect(Object.keys(response.body[0])).toEqual(['id', 'name', 'quota', 'parkingQuota']);
     });
 
     test(`can get single office`, async () => {

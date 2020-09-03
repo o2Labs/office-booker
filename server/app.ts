@@ -9,7 +9,7 @@ import { putUser } from './users/putUser';
 import { isCreateBooking, mapBookings } from './bookings/model';
 import { createBooking } from './bookings/createBooking';
 import { getUserBookings } from './db/bookings';
-import { getOffices, getOffice } from './getOffices';
+import { getOffice } from './getOffices';
 import { deleteBooking } from './bookings/deleteBooking';
 import { errorResponse, HttpError, Forbidden, NotFound } from './errors';
 import { queryBookings } from './bookings/queryBookings';
@@ -76,10 +76,10 @@ export const configureApp = (config: Config) => {
         throw new Forbidden(`Incorrect self-test key`);
       }
       const testUserEmail = normaliseEmail(config.selfTestUser);
-      const offices = await getOffices(config);
+      const office = getOffice(config, config.officeQuotas[0].id);
       const user = await getUser(config, testUserEmail);
       const bookings = mapBookings(config, await getUserBookings(config, testUserEmail));
-      return res.json({ offices, user, bookings });
+      return res.json({ office, user, bookings });
     } catch (error) {
       return next(error);
     }
@@ -89,8 +89,7 @@ export const configureApp = (config: Config) => {
 
   app.get('/api/offices', async (_req, res, next) => {
     try {
-      const combined = await getOffices(config);
-      return res.json(combined);
+      return res.json(config.officeQuotas);
     } catch (err) {
       return next(err);
     }
