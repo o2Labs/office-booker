@@ -33,7 +33,7 @@ export type Config = {
 export type AppState = {
   config?: Config;
   user?: User;
-  office?: { name: string } | { id: string };
+  office?: { name: string } | { id: string }; // TODO: Remove name option once we're happy most people have moved over to using the ID.
   alert?: Alert;
 };
 
@@ -41,10 +41,11 @@ export type AppState = {
 export const appInitialState: AppState = {
   office: (() => {
     const officeId = localStorage.getItem('officeId');
-    const officeName = localStorage.getItem('office');
     if (officeId !== null) {
       return { id: officeId };
     }
+    // TODO: Remove once we're happy most people have moved over to using the ID.
+    const officeName = localStorage.getItem('office');
     if (officeName !== null) {
       return { name: officeName };
     }

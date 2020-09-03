@@ -22,7 +22,7 @@ const Home: React.FC<RouteComponentProps> = () => {
   const { user, office } = state;
 
   // Local state
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [refreshedAt, setRefreshedAt] = useState(new Date());
   const [allOffices, setAllOffices] = useState<Office[] | undefined>();
   const [currentOffice, setCurrentOffice] = useState<OfficeWithSlots | undefined>();
@@ -44,24 +44,25 @@ const Home: React.FC<RouteComponentProps> = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    // Get all offices
     if (office === undefined) {
-      return;
-    }
-    if ('id' in office) {
-      setLoading(true);
+      setLoading(false);
+    } else if ('id' in office) {
       getOffice(office.id)
         .then(setCurrentOffice)
         .catch((err) => {
           dispatch({
-            type: 'SET_ALERT',
-            payload: {
-              message: formatError(err),
-              color: 'error',
-            },
+            type: 'SET_OFFICE',
+            payload: undefined,
           });
         })
         .then(() => setLoading(false));
+    }
+  }, [office, refreshedAt, dispatch]);
+
+  // TODO: Remove in a while once we're happy no-one's stored the old name version any more.
+  useEffect(() => {
+    if (office === undefined) {
+      return;
     }
     if ('name' in office && allOffices) {
       const newOffice = allOffices.find((o) => o.name === office.name);
@@ -73,8 +74,7 @@ const Home: React.FC<RouteComponentProps> = () => {
   }, [office, allOffices, refreshedAt, dispatch]);
 
   useEffect(() => {
-    if (user && refreshedAt) {
-      // Get users bookings
+    if (user) {
       getBookings({ user: user.email })
         .then((data) => setUserBookings(data))
         .catch((err) => {
