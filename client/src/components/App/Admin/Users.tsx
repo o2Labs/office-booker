@@ -330,12 +330,12 @@ const Users: React.FC<RouteComponentProps> = () => {
                           <TableCell>{user.quota}</TableCell>
                           <TableCell>{user.role.name}</TableCell>
                           <TableCell align="right">
-                            <Tooltip title={`Edit This User`} arrow>
+                            <Tooltip title={`Edit`} arrow>
                               <IconButton onClick={() => navigate(`/admin/users/${user.email}`)}>
                                 <CreateIcon />
                               </IconButton>
                             </Tooltip>
-                            <Tooltip title={`View All User Bookings`} arrow>
+                            <Tooltip title={`View Bookings`} arrow>
                               <IconButton
                                 onClick={() => navigate(`/admin/users/bookings/${user.email}`)}
                               >

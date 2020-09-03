@@ -17,7 +17,16 @@ export default styled.div`
     font-weight: 500;
   }
 
-  > .form-container {
+  > h4 {
+    margin: 0 0 1.6rem;
+
+    color: ${(props) => props.theme.palette.secondary.main};
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  > .table-container {
+    /* margin-top: 2rem; */
     padding: 2rem 3rem 3rem;
 
     > h4 {
@@ -28,23 +37,13 @@ export default styled.div`
       font-weight: 700;
     }
 
-    > .user-bookings {
-      margin-top: 3rem;
-      color: ${(props) => props.theme.palette.primary.main};
+    > .table {
+      padding: 0 1.6rem 3rem;
+      overflow: scroll;
+    }
 
-      > .bookings-list {
-        margin: 0;
-
-        &:not(:last-child) {
-          margin-bottom: 2.2rem;
-        }
-
-        > .booking-list-item {
-          color: ${(props) => props.theme.palette.primary.main};
-          font-size: 1.4rem;
-          font-weight: 400;
-        }
-      }
+    .table-header {
+      font-weight: 700;
     }
   }
 `;
