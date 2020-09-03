@@ -9,7 +9,7 @@ import { putUser } from './users/putUser';
 import { isCreateBooking, mapBookings } from './bookings/model';
 import { createBooking } from './bookings/createBooking';
 import { getUserBookings } from './db/bookings';
-import { getOffices } from './getOffices';
+import { getOffices, getOffice } from './getOffices';
 import { deleteBooking } from './bookings/deleteBooking';
 import { errorResponse, HttpError, Forbidden, NotFound } from './errors';
 import { queryBookings } from './bookings/queryBookings';
@@ -91,6 +91,16 @@ export const configureApp = (config: Config) => {
     try {
       const combined = await getOffices(config);
       return res.json(combined);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  app.get('/api/offices/:officeId', async (req, res, next) => {
+    try {
+      const officeId = req.params.officeId;
+      const office = await getOffice(config, officeId);
+      return res.json(office);
     } catch (err) {
       return next(err);
     }

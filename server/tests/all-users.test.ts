@@ -28,7 +28,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
       expect(response.body?.quota).toBeGreaterThanOrEqual(0);
     });
 
-    test(`can get list of offices `, async () => {
+    test(`can get list of offices`, async () => {
       const response = await app.get(`/api/offices`).set('bearer', email);
       expect(response.ok).toBe(true);
       expect(response.body).toHaveLength(officeQuotas.length);
@@ -40,6 +40,13 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
         'slots',
       ]);
       expect(Object.keys(response.body[0].slots[0])).toEqual(['date', 'booked', 'bookedParking']);
+    });
+
+    test(`can get single office`, async () => {
+      const response = await app.get(`/api/offices/${officeQuotas[0].id}`).set('bearer', email);
+      expect(response.ok).toBe(true);
+      expect(Object.keys(response.body)).toEqual(['id', 'name', 'quota', 'parkingQuota', 'slots']);
+      expect(Object.keys(response.body.slots[0])).toEqual(['date', 'booked', 'bookedParking']);
     });
 
     test('can get own bookings', async () => {

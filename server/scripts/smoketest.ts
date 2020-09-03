@@ -10,6 +10,7 @@ const args = yargs.options({
 
 const authRoutes = [
   ['GET', `/api/offices`],
+  ['GET', `/api/offices/an-office`],
   ['GET', `/api/users`],
   ['GET', `/api/users/${args.user}`],
   ['PUT', `/api/users/${args.user}`],

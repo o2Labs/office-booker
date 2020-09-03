@@ -2,6 +2,7 @@ import { Config, OfficeQuota } from '../app-config';
 import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { attribute, table, hashKey, rangeKey } from '@aws/dynamodb-data-mapper-annotations';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
+import { ConditionExpression } from '@aws/dynamodb-expressions';
 import { Arrays } from 'collection-fns';
 
 import {
@@ -144,6 +145,54 @@ export const decrementOfficeBookingCount = async (
       ExpressionAttributeValues: attributes.values,
     })
     .promise();
+};
+
+export const getOfficeBookings = async (
+  config: Config,
+  officeName: string,
+  dates: string[]
+): Promise<OfficeBookingModel[]> => {
+  const mapper = buildMapper(config);
+  const resultKey = (model: OfficeBookingModel) => model.date;
+  const resultsMap = new Map(
+    dates.map((date) => {
+      const model = Object.assign(new OfficeBookingModel(), { date, name: officeName });
+      return [resultKey(model), model];
+    })
+  );
+  const sortedDates = Arrays.sort(dates);
+  const condition: ConditionExpression = {
+    type: 'And',
+    conditions: [
+      {
+        subject: 'name',
+        type: 'Equals',
+        object: officeName,
+      },
+      {
+        subject: 'date',
+        type: 'Between',
+        lowerBound: sortedDates[0],
+        upperBound: sortedDates[sortedDates.length - 1],
+      },
+    ],
+  };
+
+  for await (const item of mapper.query(OfficeBookingModel, condition)) {
+    const key = resultKey(item);
+    if (resultsMap.has(key)) {
+      resultsMap.set(key, item);
+    }
+  }
+
+  for (const [key, value] of Array.from(resultsMap)) {
+    if (typeof value.bookingCount !== 'number') {
+      value.bookingCount = 0;
+      value.parkingCount = 0;
+      resultsMap.set(key, value);
+    }
+  }
+  return Array.from(resultsMap.values());
 };
 
 export const getOfficesBookings = async (
