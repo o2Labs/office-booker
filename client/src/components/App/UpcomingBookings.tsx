@@ -84,7 +84,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
                           DATE_FNS_OPTIONS
                         )}
                       </p>
-                      <p className="office">{row.office}</p>
+                      <p className="office">{row.office.name}</p>
                     </div>
                     <div className="right">
                       <OurButton
@@ -120,7 +120,7 @@ const UpcomingBookings: React.FC<RouteComponentProps> = () => {
                       DATE_FNS_OPTIONS
                     )}
                     {` `}
-                    <span>at {row.office}</span>
+                    <span>at {row.office.name}</span>
                     {` `}
                     <span>{row.parking ? '(+ Parking)' : ''}</span>
                   </li>
