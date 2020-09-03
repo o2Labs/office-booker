@@ -293,6 +293,11 @@ export default styled.div`
           .cancelBtn {
             margin-right: 1.2rem;
           }
+
+          .disabled {
+            color: #a7a7a7;
+            cursor: not-allowed;
+          }
         }
       }
     }
