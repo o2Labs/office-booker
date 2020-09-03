@@ -15,6 +15,7 @@ import Help from './App/Help';
 import Bookings from './App/Admin/Bookings';
 import Users from './App/Admin/Users';
 import User from './App/Admin/User';
+import UserBookings from './App/Admin/UserBookings';
 import CreateBooking from './App/Admin/CreateBooking';
 import UpcomingBookings from './App/UpcomingBookings';
 import Privacy from './App/Privacy';
@@ -98,7 +99,8 @@ const Structure: React.FC = () => {
               <CreateBooking path="/admin/booking" />
               <Users path="/admin/users" />
               <User path="/admin/users/:email" />
-
+              <UserBookings path="/admin/users/bookings/:email" />
+                
               <Privacy path="/privacy" />
               <PageNotFound default={true} />
             </RequireLogin>

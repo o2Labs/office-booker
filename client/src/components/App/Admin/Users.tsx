@@ -21,6 +21,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import CreateIcon from '@material-ui/icons/Create';
 import SearchIcon from '@material-ui/icons/Search';
+import TodayIcon from '@material-ui/icons/Today';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
 
@@ -36,7 +37,7 @@ import { queryUsers } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 
 import UsersStyles from './Users.styles';
-import { DialogTitle } from '@material-ui/core';
+import { DialogTitle, Tooltip } from '@material-ui/core';
 
 // Types
 type UserFilter = {
@@ -329,9 +330,18 @@ const Users: React.FC<RouteComponentProps> = () => {
                           <TableCell>{user.quota}</TableCell>
                           <TableCell>{user.role.name}</TableCell>
                           <TableCell align="right">
-                            <IconButton onClick={() => navigate(`/admin/users/${user.email}`)}>
-                              <CreateIcon />
-                            </IconButton>
+                            <Tooltip title={`Edit This User`} arrow>
+                              <IconButton onClick={() => navigate(`/admin/users/${user.email}`)}>
+                                <CreateIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title={`View All User Bookings`} arrow>
+                              <IconButton
+                                onClick={() => navigate(`/admin/users/bookings/${user.email}`)}
+                              >
+                                <TodayIcon />
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
                       ))

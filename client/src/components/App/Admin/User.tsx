@@ -8,8 +8,6 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import Chip from '@material-ui/core/Chip';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import format from 'date-fns/format';
-import parse from 'date-fns/parse';
 
 import { AppContext } from '../../AppProvider';
 
@@ -17,12 +15,11 @@ import AdminLayout from './Layout/Layout';
 import { OurButton } from '../../../styles/MaterialComponents';
 import Loading from '../../Assets/LoadingSpinner';
 
-import { getUser, putUser, getOffices, getBookings } from '../../../lib/api';
+import { getUser, putUser, getOffices } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { User, Office, Booking } from '../../../types/api';
+import { User, Office } from '../../../types/api';
 
 import UserStyles from './User.styles';
-import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 
 // Component
 const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
@@ -35,31 +32,8 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   const [loading, setLoading] = useState(true);
   const [offices, setOffices] = useState<Office[] | undefined>();
   const [selectedUser, setSelectedUser] = useState<User | undefined>();
-  const [bookings, setBookings] = useState<Booking[] | undefined>();
 
   // Effects
-  useEffect(() => {
-    if (state.user) {
-      getBookings({ user: state.user.email })
-        .then((data) => {
-          // Split for previous and upcoming
-          setBookings(data);
-        })
-        .catch((err) => {
-          // Handle errors
-          setLoading(false);
-
-          dispatch({
-            type: 'SET_ALERT',
-            payload: {
-              message: formatError(err),
-              color: 'error',
-            },
-          });
-        });
-    }
-  }, [state.user, dispatch]);
-
   useEffect(() => {
     if (user && !user.permissions.canViewUsers) {
       // No permissions - Bounce to home page
@@ -309,29 +283,6 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
                   </div>
                 )}
               </form>
-              <section className="user-bookings">
-                {bookings && bookings.length > 0 && (
-                  <>
-                    <h4>Bookings</h4>
-
-                      <ul className="bookings-list">
-                      {bookings.map((row) => (
-                        <li key={row.id} className="booking-list-item">
-                          {format(
-                            parse(row.date, 'yyyy-MM-dd', new Date(), DATE_FNS_OPTIONS),
-                            'do LLLL',
-                            DATE_FNS_OPTIONS
-                          )}
-                          {` `}
-                          <span>at {row.office}</span>
-                          {` `}
-                          <span>{row.parking ? '(+ Parking)' : ''}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </section>
             </Paper>
 
             <section className="help">
