@@ -1,12 +1,13 @@
 import { getAuthorization } from './auth';
 import {
   User,
-  Office,
+  OfficeWithSlots,
   Booking,
   UserQuery,
   DefaultRole,
   OfficeAdminRole,
   UserQueryResponse,
+  Office,
 } from '../types/api';
 
 // Constants
@@ -132,6 +133,23 @@ export const getUserCached = async (email: string): Promise<User> => {
   }
 };
 
+export const getOffice = async (officeId: string): Promise<OfficeWithSlots> => {
+  const url = new URL(`offices/${officeId}`, BASE_URL);
+
+  const headers = await buildHeaders();
+
+  const response = await fetch(url.href, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw await buildHttpError(response);
+  }
+
+  return await response.json();
+};
+
 export const getOffices = async (): Promise<Office[]> => {
   const url = new URL('offices', BASE_URL);
 
@@ -153,13 +171,13 @@ export const getBookings = async ({
   user,
   office,
   date,
-}: { user?: string; office?: string; date?: string } = {}): Promise<Booking[]> => {
+}: { user?: string; office?: { id: string }; date?: string } = {}): Promise<Booking[]> => {
   const params = new URLSearchParams();
   if (user !== undefined) {
     params.set('user', user);
   }
   if (office !== undefined) {
-    params.set('office', office);
+    params.set('office', office.id);
   }
   if (date !== undefined) {
     params.set('date', date);
@@ -183,7 +201,7 @@ export const getBookings = async ({
 export const createBooking = async (
   user: User['email'],
   date: string,
-  office: Office['name'],
+  office: Pick<Office, 'id'>,
   parking?: boolean
 ): Promise<Booking> => {
   const url = new URL('bookings', BASE_URL);

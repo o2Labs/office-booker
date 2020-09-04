@@ -1,6 +1,6 @@
 import express, { Response, Request, NextFunction } from 'express';
 import morgan from 'morgan';
-import { Config } from './app-config';
+import { Config, OfficeQuota } from './app-config';
 
 import { configureAuth, getAuthUserEmail } from './auth';
 import { getUser, isPutUserBody, isValidEmail } from './users/model';
@@ -9,7 +9,7 @@ import { putUser } from './users/putUser';
 import { isCreateBooking, mapBookings } from './bookings/model';
 import { createBooking } from './bookings/createBooking';
 import { getUserBookings } from './db/bookings';
-import { getOffices } from './getOffices';
+import { getOffice } from './getOffices';
 import { deleteBooking } from './bookings/deleteBooking';
 import { errorResponse, HttpError, Forbidden, NotFound } from './errors';
 import { queryBookings } from './bookings/queryBookings';
@@ -76,10 +76,10 @@ export const configureApp = (config: Config) => {
         throw new Forbidden(`Incorrect self-test key`);
       }
       const testUserEmail = normaliseEmail(config.selfTestUser);
-      const offices = await getOffices(config);
+      const office = getOffice(config, config.officeQuotas[0].id);
       const user = await getUser(config, testUserEmail);
-      const bookings = mapBookings(await getUserBookings(config, testUserEmail));
-      return res.json({ offices, user, bookings });
+      const bookings = mapBookings(config, await getUserBookings(config, testUserEmail));
+      return res.json({ office, user, bookings });
     } catch (error) {
       return next(error);
     }
@@ -89,8 +89,17 @@ export const configureApp = (config: Config) => {
 
   app.get('/api/offices', async (_req, res, next) => {
     try {
-      const combined = await getOffices(config);
-      return res.json(combined);
+      return res.json(config.officeQuotas);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  app.get('/api/offices/:officeId', async (req, res, next) => {
+    try {
+      const officeId = req.params.officeId;
+      const office = await getOffice(config, officeId);
+      return res.json(office);
     } catch (err) {
       return next(err);
     }
@@ -177,7 +186,7 @@ export const configureApp = (config: Config) => {
         return { email };
       };
 
-      const parseOffice = (): { office?: string } => {
+      const parseOffice = (): { office?: OfficeQuota } => {
         const officeQuery = req.query.office as unknown;
         if (typeof officeQuery === 'undefined') {
           return {};
@@ -185,7 +194,11 @@ export const configureApp = (config: Config) => {
         if (typeof officeQuery !== 'string') {
           throw new HttpError({ httpMessage: 'Invalid office type', status: 400 });
         }
-        return { office: officeQuery };
+        const office = config.officeQuotas.find((o) => o.id === officeQuery);
+        if (office === undefined) {
+          throw new HttpError({ httpMessage: 'Unknown office query', status: 400 });
+        }
+        return { office };
       };
 
       const parseDate = (): { date?: string } => {

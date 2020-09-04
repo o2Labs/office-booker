@@ -30,7 +30,9 @@ export const createBooking = async (
   const isAuthorised =
     request.user === currentUser.email ||
     currentUser.permissions.canManageAllBookings ||
-    currentUser.permissions.officesCanManageBookingsFor.includes(request.office);
+    currentUser.permissions.officesCanManageBookingsFor.find(
+      (office) => office.id === request.office.id
+    ) !== undefined;
 
   if (!isAuthorised) {
     throw new Forbidden();
@@ -53,7 +55,7 @@ export const createBooking = async (
     });
   }
 
-  const requestedOffice = config.officeQuotas.find((office) => office.name === request.office);
+  const requestedOffice = config.officeQuotas.find((office) => office.id === request.office.id);
   if (!requestedOffice) {
     throw new HttpError({
       internalMessage: `Office not found: ${request.office}`,
@@ -68,12 +70,13 @@ export const createBooking = async (
     ...request,
     id,
     parking: request.parking ?? false,
+    office: requestedOffice.name,
   };
 
   const userEmail = newBooking.user.toLocaleLowerCase();
   const startOfWeek = dateStartOfWeek(newBooking.date);
 
-  const officeBookings = await getOfficeBookings(config, [newBooking.date], [requestedOffice.name]);
+  const officeBookings = await getOfficeBookings(config, requestedOffice.name, [newBooking.date]);
   const isQuotaExceeded = officeBookings[0]?.bookingCount >= requestedOffice.quota;
   const isParkingExceeded =
     newBooking.parking && officeBookings[0]?.parkingCount >= requestedOffice.parkingQuota;
@@ -169,5 +172,5 @@ export const createBooking = async (
   }
 
   audit('4:Completed');
-  return mapBooking(createdBooking);
+  return mapBooking(config, createdBooking);
 };

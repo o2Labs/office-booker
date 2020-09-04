@@ -20,7 +20,9 @@ const audit = (step: string, details?: any) =>
 
 const canManageBooking = (authUser: User, booking: BookingsModel) =>
   authUser.permissions.canManageAllBookings ||
-  authUser.permissions.officesCanManageBookingsFor.includes(booking.office);
+  authUser.permissions.officesCanManageBookingsFor.find(
+    (office) => office.name === booking.office
+  ) !== undefined;
 
 export const deleteBooking = async (
   config: Config,

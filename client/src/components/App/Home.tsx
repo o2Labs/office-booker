@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from '@reach/router';
 
 import { AppContext } from '../AppProvider';
@@ -9,9 +9,9 @@ import WhichOffice from './Home/WhichOffice';
 import NextBooking from './Home/NextBooking';
 import MakeBooking from './Home/MakeBooking';
 
-import { getOffices, getBookings } from '../../lib/api';
+import { getOffices, getBookings, getOffice } from '../../lib/api';
 import { formatError } from '../../lib/app';
-import { Office, Booking } from '../../types/api';
+import { OfficeWithSlots, Booking, Office } from '../../types/api';
 
 import HomeStyles from './Home.styles';
 
@@ -23,18 +23,16 @@ const Home: React.FC<RouteComponentProps> = () => {
 
   // Local state
   const [loading, setLoading] = useState(true);
+  const [refreshedAt, setRefreshedAt] = useState(new Date());
   const [allOffices, setAllOffices] = useState<Office[] | undefined>();
-  const [currentOffice, setCurrentOffice] = useState<Office | undefined>();
+  const [currentOffice, setCurrentOffice] = useState<OfficeWithSlots | undefined>();
   const [userBookings, setUserBookings] = useState<Booking[] | undefined>();
 
-  // Helpers
-  const getAllOffices = useCallback(() => {
+  // Effects
+  useEffect(() => {
     getOffices()
-      .then((data) => setAllOffices(data))
+      .then(setAllOffices)
       .catch((err) => {
-        // Handle errors
-        setLoading(false);
-
         dispatch({
           type: 'SET_ALERT',
           payload: {
@@ -45,14 +43,41 @@ const Home: React.FC<RouteComponentProps> = () => {
       });
   }, [dispatch]);
 
-  const getAllBookings = useCallback(() => {
+  useEffect(() => {
+    if (office === undefined) {
+      setLoading(false);
+    } else if ('id' in office) {
+      getOffice(office.id)
+        .then(setCurrentOffice)
+        .catch((err) => {
+          dispatch({
+            type: 'SET_OFFICE',
+            payload: undefined,
+          });
+        })
+        .then(() => setLoading(false));
+    }
+  }, [office, refreshedAt, dispatch]);
+
+  // TODO: Remove in a while once we're happy no-one's stored the old name version any more.
+  useEffect(() => {
+    if (office === undefined) {
+      return;
+    }
+    if ('name' in office && allOffices) {
+      const newOffice = allOffices.find((o) => o.name === office.name);
+      dispatch({
+        type: 'SET_OFFICE',
+        payload: newOffice !== undefined ? { id: newOffice.id } : undefined,
+      });
+    }
+  }, [office, allOffices, refreshedAt, dispatch]);
+
+  useEffect(() => {
     if (user) {
       getBookings({ user: user.email })
         .then((data) => setUserBookings(data))
         .catch((err) => {
-          // Handle errors
-          setLoading(false);
-
           dispatch({
             type: 'SET_ALERT',
             payload: {
@@ -62,53 +87,7 @@ const Home: React.FC<RouteComponentProps> = () => {
           });
         });
     }
-  }, [user, dispatch]);
-
-  // Effects
-  useEffect(() => {
-    // Get all offices
-    getAllOffices();
-  }, [getAllOffices]);
-
-  useEffect(() => {
-    if (allOffices) {
-      // Retrieve selected office
-      if (office) {
-        // Validate
-        const findOffice = allOffices.find((o) => o.name === office);
-
-        if (findOffice) {
-          setCurrentOffice(findOffice);
-
-          // Update global state if coming from local storage
-          if (!office) {
-            dispatch({
-              type: 'SET_OFFICE',
-              payload: findOffice.name,
-            });
-          }
-        } else {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    }
-  }, [allOffices, office, dispatch]);
-
-  useEffect(() => {
-    if (currentOffice && user) {
-      // Get users bookings
-      getAllBookings();
-    }
-  }, [currentOffice, user, getAllBookings]);
-
-  useEffect(() => {
-    if (userBookings) {
-      // Wait until we've finished finding bookings
-      setLoading(false);
-    }
-  }, [userBookings]);
+  }, [user, refreshedAt, dispatch]);
 
   useEffect(() => {
     if (!office) {
@@ -120,7 +99,7 @@ const Home: React.FC<RouteComponentProps> = () => {
   // Handlers
   const handleRefreshBookings = () => {
     // Re-retrieve offices (and subsequently bookings) from the DB
-    getAllOffices();
+    setRefreshedAt(new Date());
   };
 
   // Render

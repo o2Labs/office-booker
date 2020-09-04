@@ -15,6 +15,7 @@ import Paper from '@material-ui/core/Paper';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import BusinessIcon from '@material-ui/icons/Business';
+import Warning from '@material-ui/icons/Warning';
 import Tooltip from '@material-ui/core/Tooltip';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 import CachedIcon from '@material-ui/icons/Cached';
@@ -24,7 +25,7 @@ import { AppContext } from '../../AppProvider';
 import BookButton from '../../Assets/BookButton';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { Booking, Office } from '../../../types/api';
+import { Booking, OfficeWithSlots } from '../../../types/api';
 import { createBooking, cancelBooking } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
@@ -35,7 +36,7 @@ import BookingStatus from '../../Assets/BookingStatus';
 
 // Types
 type Props = {
-  office: Office;
+  office: OfficeWithSlots;
   bookings: Booking[];
   refreshBookings: () => void;
 };
@@ -86,9 +87,12 @@ const MakeBooking: React.FC<Props> = (props) => {
   const [selectedWeek, setSelectedWeek] = useState<Week | undefined>();
   const [selectedWeekLabel, setSelectedWeekLabel] = useState<string | undefined>();
   const [buttonsLoading, setButtonsLoading] = useState(true);
+  const [slideConfirm, setSlideConfirm] = useState(false);
+  const [todayWithParking, setTodayWithParking] = useState(false);
 
   // Refs
   const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
+  const sliderRef = useRef<HTMLDivElement>(null);
 
   // Helper
   const setReloadTimer = useCallback(() => {
@@ -200,7 +204,7 @@ const MakeBooking: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (user && weeks && weeks.length > 0) {
-      const { name, quota: officeQuota, parkingQuota, slots } = office;
+      const { id, quota: officeQuota, parkingQuota, slots } = office;
       const { quota: userQuota } = user;
 
       const rows: Row[] = [];
@@ -235,7 +239,7 @@ const MakeBooking: React.FC<Props> = (props) => {
             const availableCarPark = parkingQuota - slot.bookedParking;
 
             // Find any user booking for this office/slot
-            const booking = bookings.find((b) => b.office === name && b.date === slot.date);
+            const booking = bookings.find((b) => b.office.id === id && b.date === slot.date);
 
             // Total user bookings for this week
             const userWeekBookings = bookings.filter((b) =>
@@ -263,7 +267,7 @@ const MakeBooking: React.FC<Props> = (props) => {
           } else {
             // Did we have a booking on this day?
             const booking = bookings.find(
-              (b) => b.office === name && b.date === format(d, 'y-MM-dd', DATE_FNS_OPTIONS)
+              (b) => b.office.id === id && b.date === format(d, 'y-MM-dd', DATE_FNS_OPTIONS)
             );
 
             // Not in range
@@ -287,6 +291,20 @@ const MakeBooking: React.FC<Props> = (props) => {
       setRows(rows);
     }
   }, [bookings, office, user, weeks]);
+
+  useEffect(() => {
+    // Close today booking confirmation slide
+    const handleClickOutside = (event: Event) => {
+      if (sliderRef.current && !sliderRef.current.contains(event.target as Node)) {
+        setSlideConfirm(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [sliderRef]);
 
   // Handlers
   const handleChangeWeek = (direction: 'forward' | 'backward') => {
@@ -312,7 +330,7 @@ const MakeBooking: React.FC<Props> = (props) => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, office.name, withParking)
+      createBooking(user.email, formattedDate, office, withParking)
         .then(() => refreshBookings())
         .catch((err) => {
           // Refresh DB
@@ -329,6 +347,50 @@ const MakeBooking: React.FC<Props> = (props) => {
             },
           });
         });
+    }
+  };
+
+  const renderBookingConfirmSlide = () => {
+    return (
+      <div className="slide" ref={sliderRef}>
+        <p>
+          <Warning />
+          You will not be able to cancel today's booking.
+        </p>
+        <div className="slide-btns">
+          <button
+            className="cancel-btn"
+            onClick={() => {
+              setSlideConfirm(false);
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className="confirm-btn"
+            onClick={() => {
+              setSlideConfirm(false);
+              handleCreateBooking(new Date(), todayWithParking);
+            }}
+          >
+            Confirm
+            {todayWithParking ? ' + Parking' : null}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const confirmTodayBooking = (
+    handleCreateBooking: (date: Date, withParking: boolean) => void,
+    date: Date,
+    withParking: boolean
+  ) => {
+    if (isToday(date)) {
+      setSlideConfirm(true);
+      setTodayWithParking(withParking);
+    } else {
+      handleCreateBooking(date, withParking);
     }
   };
 
@@ -484,20 +546,34 @@ const MakeBooking: React.FC<Props> = (props) => {
 
                   {day.isBookable && (
                     <div className="right">
+                      {isToday(day.date) && slideConfirm ? renderBookingConfirmSlide() : null}
+
                       {day.booking ? (
                         <>
-                          {!isToday(day.date) && (
+                          <Tooltip
+                            title={
+                              isToday(day.date)
+                                ? "Today's booking can only be cancelled by administrators"
+                                : ''
+                            }
+                            placement="top-end"
+                          >
                             <Link
                               component="button"
                               underline="always"
-                              className={`${buttonsLoading ? 'loading ' : ''}cancelBtn`}
+                              className={`${buttonsLoading ? 'loading ' : ''}${
+                                isToday(day.date) ? 'disabled ' : ''
+                              }cancelBtn`}
                               onClick={() =>
-                                !buttonsLoading && day.booking && handleCancelBooking(day.booking)
+                                !buttonsLoading &&
+                                day.booking &&
+                                !isToday(day.date) &&
+                                handleCancelBooking(day.booking)
                               }
                             >
                               Cancel
                             </Link>
-                          )}
+                          </Tooltip>
 
                           <OurButton
                             size="small"
@@ -528,7 +604,7 @@ const MakeBooking: React.FC<Props> = (props) => {
                             <div className="book">
                               <BookButton
                                 onClick={(withParking) =>
-                                  handleCreateBooking(day.date, withParking)
+                                  confirmTodayBooking(handleCreateBooking, day.date, withParking)
                                 }
                                 parkingQuota={office.parkingQuota}
                                 parkingAvailable={day.availableCarPark}

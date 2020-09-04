@@ -48,7 +48,7 @@ describe.each(Object.keys(userTypes))('Non-admin user actions', (userType) => {
         .post('/api/bookings')
         .send({
           user: otherUser,
-          office: officeQuotas[0].name,
+          office: { id: officeQuotas[0].id },
           date: format(new Date(), 'yyyy-MM-dd'),
           parking: false,
         })
