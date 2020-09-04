@@ -10,6 +10,8 @@ export type CreateBooking = {
   parking?: boolean;
 };
 
+export type RestoreBooking = CreateBooking & { created: string };
+
 export const isCreateBooking = (arg: any): arg is CreateBooking =>
   typeof arg.user === 'string' &&
   typeof arg.date === 'string' &&

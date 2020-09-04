@@ -1,13 +1,18 @@
 import { Config, parseConfigFromEnv } from '../app-config';
 import { getAllBookings } from '../db/bookings';
-import { mapBookings } from '../bookings/model';
-import { makeUser } from '../users/model';
-import { getAllUsers, User } from '../db/users';
+import { mapBookings, Booking } from '../bookings/model';
+import { makeUser, User } from '../users/model';
+import { getAllUsers, User as DbUser } from '../db/users';
 import { CognitoIdentityServiceProvider } from 'aws-sdk';
 import { config as configDotenv } from 'dotenv';
 import { writeFileSync } from 'fs';
 
 configDotenv();
+
+export type Backup = {
+  bookings: Booking[];
+  users: User[];
+};
 
 const getAllCognitoUserEmails = async (config: Config) => {
   if (config.authConfig.type !== 'cognito') {
@@ -37,7 +42,7 @@ const getAllCognitoUserEmails = async (config: Config) => {
   return emails;
 };
 
-const mergeUserSets = (config: Config, users: User[], cognitoEmails: string[]) => {
+const mergeUserSets = (config: Config, users: DbUser[], cognitoEmails: string[]) => {
   const usersByEmail = new Map(users.map((user) => [user.email, user]));
   for (const email of cognitoEmails) {
     if (!usersByEmail.has(email)) {
@@ -47,7 +52,7 @@ const mergeUserSets = (config: Config, users: User[], cognitoEmails: string[]) =
   return Array.from(usersByEmail.values());
 };
 
-const getAllData = async (config: Config) => {
+const getAllData = async (config: Config): Promise<Backup> => {
   const [bookings, dbUsers, cognitoEmails] = await Promise.all([
     getAllBookings(config),
     getAllUsers(config),

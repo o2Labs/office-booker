@@ -1,4 +1,4 @@
-import { CreateBooking, Booking, mapBooking } from './model';
+import { CreateBooking, Booking, mapBooking, RestoreBooking } from './model';
 import { Config } from '../app-config';
 import { createBooking as dbCreate } from '../db/bookings';
 import { parse } from 'date-fns';
@@ -25,7 +25,7 @@ const audit = (step: string, details?: any) =>
 export const createBooking = async (
   config: Config,
   currentUser: User,
-  request: CreateBooking
+  request: CreateBooking | RestoreBooking
 ): Promise<Booking> => {
   const isAuthorised =
     request.user === currentUser.email ||

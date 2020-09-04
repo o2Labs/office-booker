@@ -238,7 +238,12 @@ export const configureApp = (config: Config) => {
       }
       newBooking.user = normaliseEmail(newBooking.user);
       const authUser = await getAuthUser(res);
-      const result = await createBooking(config, authUser, newBooking);
+      const result = await createBooking(config, authUser, {
+        date: newBooking.date,
+        office: newBooking.office,
+        user: newBooking.user,
+        parking: newBooking.parking,
+      });
       return res.json(result);
     } catch (err) {
       return next(err);
