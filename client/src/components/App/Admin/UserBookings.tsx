@@ -42,8 +42,8 @@ type SortOrder = 'asc' | 'desc';
 const sortData = (data: Booking[], key: keyof Booking, order: SortOrder): Booking[] | undefined => {
   if (key === 'office') {
     return order === 'desc'
-      ? data.sort((a, b) => b.office.localeCompare(a.office))
-      : data.sort((a, b) => a.office.localeCompare(b.office));
+      ? data.sort((a, b) => b.office.name.localeCompare(a.office.name))
+      : data.sort((a, b) => a.office.name.localeCompare(b.office.name));
   }
 
   if (key === 'parking') {
@@ -262,7 +262,7 @@ const UserBookings: React.FC<RouteComponentProps<{ email: string }>> = (props) =
 
                         return (
                           <TableRow key={index}>
-                            <TableCell>{booking.office}</TableCell>
+                            <TableCell>{booking.office.name}</TableCell>
                             <TableCell>
                               {' '}
                               {format(
