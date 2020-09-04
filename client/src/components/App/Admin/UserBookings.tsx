@@ -35,6 +35,32 @@ import { parseISO, isToday, isPast } from 'date-fns';
 import { OurButton } from '../../../styles/MaterialComponents';
 import useTheme from '@material-ui/core/styles/useTheme';
 
+// Types
+type SortOrder = 'asc' | 'desc';
+
+// Helpers
+const sortData = (data: Booking[], key: keyof Booking, order: SortOrder): Booking[] | undefined => {
+  if (key === 'office') {
+    return order === 'desc'
+      ? data.sort((a, b) => b.office.localeCompare(a.office))
+      : data.sort((a, b) => a.office.localeCompare(b.office));
+  }
+
+  if (key === 'parking') {
+    return order === 'desc'
+      ? data.sort((a, b) => Number(a.parking) - Number(b.parking))
+      : data.sort((a, b) => Number(b.parking) - Number(a.parking));
+  }
+
+  if (key === 'date') {
+    return order === 'desc'
+      ? data.sort((a, b) => parseISO(a.date).valueOf() - parseISO(b.date).valueOf())
+      : data.sort((a, b) => parseISO(b.date).valueOf() - parseISO(a.date).valueOf());
+  }
+
+  return data;
+};
+
 // Component
 const UserBookings: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   // Global state
@@ -46,6 +72,10 @@ const UserBookings: React.FC<RouteComponentProps<{ email: string }>> = (props) =
   const [selectedUser, setSelectedUser] = useState<User | undefined>();
   const [bookings, setBookings] = useState<Booking[] | undefined>();
   const [bookingToCancel, setBookingToCancel] = useState<undefined | Booking>();
+  const [sortedBookings, setSortedBookings] = useState<Booking[] | undefined>();
+
+  const [sortBy, setSortBy] = useState<keyof Booking>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   // Theme
   const theme = useTheme();
@@ -103,12 +133,27 @@ const UserBookings: React.FC<RouteComponentProps<{ email: string }>> = (props) =
 
   useEffect(() => {
     if (bookings) {
+      // Sort it!
+      setSortedBookings(sortData([...bookings], sortBy, sortOrder));
+    }
+  }, [bookings, sortBy, sortOrder]);
+
+  useEffect(() => {
+    if (bookings) {
       // Wait for global state to be ready
       setLoading(false);
     }
   }, [bookings]);
 
   // Handlers
+  const handleSort = (key: keyof Booking) => {
+    if (key === sortBy) {
+      setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSortBy(key);
+    }
+  };
+
   const getAllBookings = useCallback(() => {
     if (state.user) {
       getBookings({ user: state.user.email })
@@ -182,25 +227,37 @@ const UserBookings: React.FC<RouteComponentProps<{ email: string }>> = (props) =
                     <TableRow>
                       <TableCell className="table-header">
                         <TableSortLabel
+                          active={sortBy === 'office'}
+                          direction={sortOrder}
+                          onClick={() => handleSort('office')}
                         >
                           Office
                         </TableSortLabel>
                       </TableCell>
                       <TableCell className="table-header">
                         <TableSortLabel
+                          active={sortBy === 'date'}
+                          direction={sortOrder}
+                          onClick={() => handleSort('date')}
                         >
                           Date
                         </TableSortLabel>
                       </TableCell>
                       <TableCell className="table-header">
-                        <TableSortLabel>Parking</TableSortLabel>
+                        <TableSortLabel
+                          active={sortBy === 'parking'}
+                          direction={sortOrder}
+                          onClick={() => handleSort('parking')}
+                        >
+                          Parking
+                        </TableSortLabel>
                       </TableCell>
                       <TableCell />
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {bookings && bookings.length > 0 ? (
-                      bookings.map((booking, index) => {
+                    {sortedBookings && sortedBookings.length > 0 ? (
+                      sortedBookings.map((booking, index) => {
                         const parsedDate = parseISO(booking.date);
 
                         return (
