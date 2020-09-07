@@ -108,6 +108,18 @@ test('can set user quotas', async () => {
     .get(`/api/users/${otherUser}`)
     .set('bearer', adminUserEmail);
   expect(getUpdatedUserResponse.body).toEqual(putResponse.body);
+
+  const putDefaultsResponse = await app
+    .put(`/api/users/${otherUser}`)
+    .send({ quota: null })
+    .set('bearer', adminUserEmail);
+  expect(putDefaultsResponse.status).toBe(200);
+  expect(putDefaultsResponse.body).toMatchObject(getInitialUserResponse.body);
+
+  const getResetUserResponse = await app
+    .get(`/api/users/${otherUser}`)
+    .set('bearer', adminUserEmail);
+  expect(getResetUserResponse.body).toEqual(putDefaultsResponse.body);
 });
 
 test('can set user role', async () => {
