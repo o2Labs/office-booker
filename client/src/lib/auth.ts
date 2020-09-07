@@ -3,6 +3,7 @@ import { CognitoUser, CognitoUserPool } from 'amazon-cognito-identity-js';
 
 import { User } from '../types/api';
 import { Config } from '../context/stores';
+import { registerUser } from './api';
 
 const mockSetupLocalStorageKey = 'mock-auth';
 let mockSetup: undefined | { auth?: { username: string; code: string } } = undefined;
@@ -22,17 +23,6 @@ export const configureAuth = (config: Config) => {
       mockSetup = {};
     }
   }
-};
-
-// Helpers
-const intToHex = (nr: number) => nr.toString(16).padStart(2, '0');
-
-const getRandomString = (bytes: number) => {
-  const randomValues = new Uint8Array(bytes);
-
-  window.crypto.getRandomValues(randomValues);
-
-  return Array.from(randomValues).map(intToHex).join('');
 };
 
 const tryGetCurrentSession = async () => {
@@ -94,24 +84,15 @@ export const verifyCode = async (
 
 export const signIn = async (email: string): Promise<CognitoUser> => {
   const emailLowered = email.toLowerCase();
+  await registerUser({ email });
   if (mockSetup !== undefined) {
     return new CognitoUser({
       Username: emailLowered,
       Pool: new CognitoUserPool({ ClientId: 'client-id', UserPoolId: 'us-east-1_user-pool-id' }),
     });
   }
-  // Ignoring the "catch" as the response may be that the user
-  // already exists, so we want to continue regardless
-  try {
-    await Auth.signUp({
-      username: emailLowered,
-      password: getRandomString(20),
-    });
-    // eslint-disable-next-line no-empty
-  } catch {}
 
   const cognitoUser: CognitoUser = await Auth.signIn(emailLowered);
-
   return cognitoUser;
 };
 
