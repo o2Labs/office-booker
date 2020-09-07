@@ -4,7 +4,6 @@ import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import eachDayOfInterval from 'date-fns/eachDayOfInterval';
 import isToday from 'date-fns/isToday';
-import isSameDay from 'date-fns/isSameDay';
 import isSameWeek from 'date-fns/isSameWeek';
 import isSameMonth from 'date-fns/isSameMonth';
 import startOfWeek from 'date-fns/startOfWeek';
