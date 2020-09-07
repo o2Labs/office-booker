@@ -8,6 +8,7 @@ export interface User {
   email: string;
   quota: number;
   adminOffices: string[];
+  created: string;
 }
 
 @table('users')
@@ -21,14 +22,15 @@ export class UserModel {
   @attribute({
     defaultProvider: () => new Date().toISOString(),
   })
-  created!: string;
+  created?: string;
 }
 
-const toUser = (config: Config, dbUser: Pick<UserModel, 'email' | 'quota' | 'adminOffices'>) => {
+const toUser = (config: Config, dbUser: UserModel) => {
   return {
     email: dbUser.email,
     quota: dbUser.quota || config.defaultWeeklyQuota,
     adminOffices: dbUser.adminOffices || [],
+    created: dbUser.created ?? new Date().toISOString(),
   };
 };
 
@@ -52,7 +54,7 @@ export const getUsersDb = async (config: Config, userEmails: string[]): Promise<
   const emailsLowered = userEmails.map((e) => e.toLowerCase());
   const users = [];
 
-  for await (const result of await mapper.batchGet(
+  for await (const result of mapper.batchGet(
     emailsLowered.map((userEmail) => Object.assign(new UserModel(), { email: userEmail }))
   )) {
     users.push(result);
@@ -67,6 +69,7 @@ export const getUserDb = async (config: Config, userEmail: string): Promise<User
 
   try {
     const result = await mapper.get(Object.assign(new UserModel(), { email }));
+    console.log(result);
     return toUser(config, result);
   } catch (err) {
     if (err.name === 'ItemNotFoundException') {
@@ -90,6 +93,7 @@ export const ensureUserExists = async (
         email: user.email,
         quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
         adminOffices: user.adminOffices.length === 0 ? undefined : user.adminOffices,
+        created: new Date().toISOString(),
       }),
       {
         condition: new FunctionExpression('attribute_not_exists', new AttributePath('email')),
@@ -115,6 +119,7 @@ export const setUser = async (config: Config, user: User): Promise<void> => {
         email: user.email,
         quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
         adminOffices: user.adminOffices.length === 0 ? undefined : user.adminOffices,
+        create: user.created,
       })
     );
   }
