@@ -2,6 +2,7 @@ import React from 'react';
 import StructureStyles from './Structure.styles';
 import Layout from './Layout/Layout';
 import { OurButton } from '../styles/MaterialComponents';
+import ErrorPageStyles from './Assets/ErrorPage.styles';
 
 export default class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
   constructor(props: Readonly<{}>) {
@@ -20,12 +21,20 @@ export default class ErrorBoundary extends React.Component<{}, { hasError: boole
       return (
         <StructureStyles>
           <Layout>
-            <div style={{ padding: '0 2rem' }}>
-              <h1>Something went wrong.</h1>
-              <OurButton variant="contained" onClick={() => window.location.reload()}>
+            <ErrorPageStyles>
+              <h2>Something went wrong.</h2>
+              <p>
+                Something has gone wrong with the application. Please reload your browser window to
+                continue.
+              </p>
+              <OurButton
+                variant="contained"
+                color="primary"
+                onClick={() => window.location.reload()}
+              >
                 Reload application
               </OurButton>
-            </div>
+            </ErrorPageStyles>
           </Layout>
         </StructureStyles>
       );

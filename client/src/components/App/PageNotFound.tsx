@@ -4,7 +4,7 @@ import { RouteComponentProps, navigate, Redirect } from '@reach/router';
 import Layout from '../Layout/Layout';
 import { OurButton } from '../../styles/MaterialComponents';
 
-import PageNotFoundStyles from './PageNotFound.styles';
+import ErrorPageStyles from '../Assets/ErrorPage.styles';
 
 const PageNotFound: React.FC<RouteComponentProps> = () => {
   // Local state
@@ -20,7 +20,7 @@ const PageNotFound: React.FC<RouteComponentProps> = () => {
   // Render
   return (
     <Layout>
-      <PageNotFoundStyles>
+      <ErrorPageStyles>
         <h2>Page Not Found</h2>
         <p>We&apos;ll redirect you to home in 5 seconds</p>
 
@@ -36,7 +36,7 @@ const PageNotFound: React.FC<RouteComponentProps> = () => {
         >
           Redirect Now
         </OurButton>
-      </PageNotFoundStyles>
+      </ErrorPageStyles>
     </Layout>
   );
 };
