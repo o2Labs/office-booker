@@ -2,7 +2,7 @@ import { Config } from '../app-config';
 import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { attribute, table, hashKey } from '@aws/dynamodb-data-mapper-annotations';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
-import { UpdateExpression, FunctionExpression, AttributePath } from '@aws/dynamodb-expressions';
+import { FunctionExpression, AttributePath } from '@aws/dynamodb-expressions';
 
 export interface User {
   email: string;
@@ -110,12 +110,12 @@ export const setUser = async (config: Config, user: User): Promise<void> => {
   const { userCreated } = await ensureUserExists(config, user);
 
   if (!userCreated) {
-    const updateExpression = new UpdateExpression();
-    updateExpression.set(
-      'quota',
-      user.quota === config.defaultWeeklyQuota ? undefined : user.quota
+    await mapper.update(
+      Object.assign(new UserModel(), {
+        email: user.email,
+        quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
+        adminOffices: user.adminOffices.length === 0 ? undefined : user.adminOffices,
+      })
     );
-    updateExpression.set('adminOffices', user.adminOffices);
-    await mapper.executeUpdateExpression(updateExpression, { email: user.email }, UserModel);
   }
 };

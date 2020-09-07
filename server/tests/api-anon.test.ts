@@ -6,6 +6,12 @@ const normalUserEmail = getNormalUser();
 
 beforeEach(resetDb);
 
+test('can register', async () => {
+  const email = getNormalUser();
+  const response = await app.post(`/api/users`).send({ action: 'Register', email });
+  expect(response.status).toBe(204);
+});
+
 test('get user', async () => {
   const response = await app.get(`/api/users/${normalUserEmail}`);
   expectUnauthorized(response);
