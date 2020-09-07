@@ -11,6 +11,7 @@ import StyledGlobal from '../styles/StyledGlobal';
 import { AppProvider } from './AppProvider';
 
 import Structure from './Structure';
+import ErrorBoundary from './ErrorBoundary';
 
 const Root: React.FC = () => (
   <StylesProvider injectFirst>
@@ -20,9 +21,11 @@ const Root: React.FC = () => (
         <StyledGlobal />
 
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <AppProvider>
-            <Structure />
-          </AppProvider>
+          <ErrorBoundary>
+            <AppProvider>
+              <Structure />
+            </AppProvider>
+          </ErrorBoundary>
         </MuiPickersUtilsProvider>
       </MaterialThemeProvider>
     </StyledThemeProvider>
