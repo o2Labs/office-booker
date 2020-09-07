@@ -13,6 +13,7 @@ beforeEach(async () => {
     email: officeAdminEmail,
     adminOffices: [office.name],
     quota: 1,
+    created: new Date().toISOString(),
   });
 });
 
