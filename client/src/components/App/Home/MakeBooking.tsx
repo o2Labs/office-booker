@@ -250,18 +250,13 @@ const MakeBooking: React.FC<Props> = (props) => {
               )
             );
 
-            // Did the user booked this day
-            const userDayBooking = userWeekBookings.find((b) =>
-              isSameDay(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS), d)
-            );
-
             // Add day
             days.push({
               date: d,
               isBookable: true,
               available,
               availableCarPark,
-              userCanBook: available > 0 && userWeekBookings.length < userQuota && !userDayBooking,
+              userCanBook: available > 0 && userWeekBookings.length < userQuota,
               booking,
             });
           } else {
