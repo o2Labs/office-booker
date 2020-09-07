@@ -2,6 +2,7 @@ import { Config } from '../app-config';
 import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { attribute, table, hashKey } from '@aws/dynamodb-data-mapper-annotations';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
+import { UpdateExpression, FunctionExpression, AttributePath } from '@aws/dynamodb-expressions';
 
 export interface User {
   email: string;
@@ -76,11 +77,45 @@ export const getUserDb = async (config: Config, userEmail: string): Promise<User
   }
 };
 
+export const ensureUserExists = async (
+  config: Config,
+  user: User
+): Promise<{ userCreated: boolean }> => {
+  const mapper = buildMapper(config);
+
+  // Ensure object exists
+  try {
+    await mapper.put(
+      Object.assign(new UserModel(), {
+        email: user.email,
+        quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
+        adminOffices: user.adminOffices.length === 0 ? undefined : user.adminOffices,
+      }),
+      {
+        condition: new FunctionExpression('attribute_not_exists', new AttributePath('email')),
+      }
+    );
+    return { userCreated: true };
+  } catch (err) {
+    if (err.code !== 'ConditionalCheckFailedException') {
+      throw err;
+    }
+    return { userCreated: false };
+  }
+};
+
 export const setUser = async (config: Config, user: User): Promise<void> => {
   const mapper = buildMapper(config);
-  if (user.quota === config.defaultWeeklyQuota && user.adminOffices.length === 0) {
-    await mapper.delete(Object.assign(new UserModel(), { email: user.email }));
-  } else {
-    await mapper.put(Object.assign(new UserModel(), user));
+
+  const { userCreated } = await ensureUserExists(config, user);
+
+  if (!userCreated) {
+    const updateExpression = new UpdateExpression();
+    updateExpression.set(
+      'quota',
+      user.quota === config.defaultWeeklyQuota ? undefined : user.quota
+    );
+    updateExpression.set('adminOffices', user.adminOffices);
+    await mapper.executeUpdateExpression(updateExpression, { email: user.email }, UserModel);
   }
 };
