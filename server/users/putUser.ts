@@ -32,6 +32,7 @@ export const putUser = async (
     email: user.email,
     quota,
     adminOffices: validOffices,
+    created: user.created,
   };
 
   console.info(

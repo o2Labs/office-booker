@@ -28,6 +28,7 @@ export const registerUser = async (config: Config, email: string) => {
     email,
     adminOffices: [],
     quota: config.defaultWeeklyQuota,
+    created: new Date().toISOString(),
   });
 
   const cognito = new CognitoIdentityServiceProvider();
