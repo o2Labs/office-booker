@@ -14,6 +14,7 @@ import { deleteBooking } from './bookings/deleteBooking';
 import { errorResponse, HttpError, Forbidden, NotFound } from './errors';
 import { queryBookings } from './bookings/queryBookings';
 import { parse } from 'date-fns';
+import { registerUser, isRegisterBody } from './users/register';
 
 export const configureApp = (config: Config) => {
   const getAuthUser = (res: Response) => getUser(config, getAuthUserEmail(res));
@@ -123,6 +124,23 @@ export const configureApp = (config: Config) => {
         paginationToken,
       });
       return res.json(users);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  app.post('/api/users', async (req, res, next) => {
+    try {
+      const body = req.body;
+      if (!isRegisterBody(body)) {
+        throw new HttpError({ httpMessage: 'Bad Request', status: 400 });
+      }
+      const normalisedEmail = normaliseEmail(body.email);
+      if (!isValidEmail(normalisedEmail)) {
+        throw new HttpError({ httpMessage: 'Email not valid', status: 400 });
+      }
+      await registerUser(config, normalisedEmail);
+      return res.sendStatus(204);
     } catch (err) {
       return next(err);
     }
