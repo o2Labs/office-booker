@@ -1,5 +1,5 @@
 import { Config, OfficeQuota } from '../app-config';
-import { getUserDb, User as DbUser } from '../db/users';
+import { getUserDb, DbUser } from '../db/users';
 import { Arrays } from 'collection-fns';
 
 export type UserProfile = {
@@ -65,7 +65,7 @@ const getOfficesFromNames = (
   quota: number;
   parkingQuota?: number | undefined;
 }>[] =>
-  Arrays.choose(dbUser.adminOffices, (name) => {
+  Arrays.choose(dbUser.adminOffices ?? [], (name) => {
     const office = config.officeQuotas.find((officeQuota) => officeQuota.name === name);
     return office;
   });
@@ -79,11 +79,11 @@ const makeOfficeAdmin = (config: Config, dbUser: DbUser): OfficeAdminRole => {
 
 export const makeUser = (config: Config, dbUser: DbUser): User => {
   const admin = isAdmin(config, dbUser.email);
-  const isOfficeAdmin = dbUser.adminOffices.length > 0;
+  const isOfficeAdmin = (dbUser.adminOffices?.length ?? 0) > 0;
   return {
     email: dbUser.email,
     admin,
-    quota: dbUser.quota,
+    quota: dbUser.quota ?? config.defaultWeeklyQuota,
     role: admin
       ? { name: 'System Admin' }
       : isOfficeAdmin
