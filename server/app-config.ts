@@ -49,6 +49,7 @@ export type Config = {
   advanceBookingDays: number;
   dataRetentionDays: number;
   showTestBanner: boolean;
+  readonly?: boolean;
 };
 
 const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
@@ -150,5 +151,6 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     advanceBookingDays,
     dataRetentionDays,
     showTestBanner: env.SHOW_TEST_BANNER === 'true',
+    readonly: env.READONLY === 'true',
   };
 };
