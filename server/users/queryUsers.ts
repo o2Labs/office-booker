@@ -63,6 +63,13 @@ const mergeUserSets = (config: Config, users: DbUser[], cognitoUsers: CognitoUse
       });
     }
   }
+  for (const adminEmail of config.systemAdminEmails) {
+    const adminUser = usersByEmail.get(adminEmail) ?? {
+      email: adminEmail,
+      created: new Date().toISOString(),
+    };
+    usersByEmail.set(adminEmail, adminUser);
+  }
   return Array.from(usersByEmail.values());
 };
 
