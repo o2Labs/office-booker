@@ -4,7 +4,6 @@ import format from 'date-fns/format';
 import parse from 'date-fns/parse';
 import eachDayOfInterval from 'date-fns/eachDayOfInterval';
 import isToday from 'date-fns/isToday';
-import isSameDay from 'date-fns/isSameDay';
 import isSameWeek from 'date-fns/isSameWeek';
 import isSameMonth from 'date-fns/isSameMonth';
 import startOfWeek from 'date-fns/startOfWeek';
@@ -250,18 +249,13 @@ const MakeBooking: React.FC<Props> = (props) => {
               )
             );
 
-            // Did the user booked this day
-            const userDayBooking = userWeekBookings.find((b) =>
-              isSameDay(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS), d)
-            );
-
             // Add day
             days.push({
               date: d,
               isBookable: true,
               available,
               availableCarPark,
-              userCanBook: available > 0 && userWeekBookings.length < userQuota && !userDayBooking,
+              userCanBook: available > 0 && userWeekBookings.length < userQuota,
               booking,
             });
           } else {
