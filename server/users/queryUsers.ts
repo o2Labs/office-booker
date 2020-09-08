@@ -79,9 +79,10 @@ export const queryUsers = async (
   config: Config,
   query: UsersQuery
 ): Promise<QueryUsersResponse> => {
-  const dbUsers = await getAllUsers(config);
-  const cognitoUsers =
-    !query.customQuota && query.roleName === undefined ? await getAllCognitoUsers(config) : [];
+  const [dbUsers, cognitoUsers] = await Promise.all([
+    getAllUsers(config),
+    !query.customQuota && query.roleName === undefined ? getAllCognitoUsers(config) : [],
+  ]);
   const potentialUsers = mergeUserSets(config, dbUsers, cognitoUsers);
   const users = potentialUsers
     .map((user) => makeUser(config, user))
