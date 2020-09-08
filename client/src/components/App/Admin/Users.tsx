@@ -91,7 +91,6 @@ const Users: React.FC<RouteComponentProps> = () => {
   const { user } = state;
 
   // Local state
-  const [loading, setLoading] = useState(true);
   const [dbUsers, setDbUsers] = useState<User[] | undefined>(undefined);
   const [sortedUsers, setSortedUsers] = useState<User[] | undefined>(undefined);
   const [paginationToken, setPaginationToken] = useState<string | undefined>();
@@ -109,6 +108,7 @@ const Users: React.FC<RouteComponentProps> = () => {
 
   // Effects
   useEffect(() => {
+    setDbUsers(undefined);
     // Retrieve results
     queryUsers(userFilterToQuery(selectedFilter))
       .then((result) => {
@@ -117,8 +117,6 @@ const Users: React.FC<RouteComponentProps> = () => {
       })
       .catch((err) => {
         // Handle errors
-        setLoading(false);
-
         dispatch({
           type: 'SET_ALERT',
           payload: {
@@ -133,15 +131,10 @@ const Users: React.FC<RouteComponentProps> = () => {
     if (dbUsers) {
       // Sort it!
       setSortedUsers(sortData([...dbUsers], sortBy, sortOrder));
+    } else {
+      setSortedUsers(undefined);
     }
   }, [dbUsers, sortBy, sortOrder]);
-
-  useEffect(() => {
-    if (loading && sortedUsers) {
-      // Wait for local state to be ready
-      setLoading(false);
-    }
-  }, [loading, sortedUsers]);
 
   useEffect(() => {
     // Only allow the following
@@ -234,202 +227,199 @@ const Users: React.FC<RouteComponentProps> = () => {
   return (
     <AdminLayout currentRoute="users">
       <UsersStyles>
-        {loading ? (
-          <Loading />
-        ) : (
-          <>
-            <h3>Users</h3>
+        <h3>Users</h3>
 
-            <OurButton
-              startIcon={<AddCircleIcon />}
-              type="submit"
-              color="secondary"
-              onClick={() => setShowAddUser(true)}
-              variant="contained"
-              size="small"
-            >
-              New user
-            </OurButton>
+        <OurButton
+          startIcon={<AddCircleIcon />}
+          type="submit"
+          color="secondary"
+          onClick={() => setShowAddUser(true)}
+          variant="contained"
+          size="small"
+        >
+          New user
+        </OurButton>
 
-            <Paper square className="table-container">
-              <section className="filters">
-                <div className="filter-role">
-                  <FormControl>
-                    <InputLabel>User</InputLabel>
-                    <Select value={selectedFilter.user} onChange={handleChangeUser}>
-                      <MenuItem value="active">All active users</MenuItem>
-                      <MenuItem value="System Admin">System Admins</MenuItem>
-                      <MenuItem value="Office Admin">Office Admins</MenuItem>
-                      <MenuItem value="custom">With custom quota</MenuItem>
-                    </Select>
-                  </FormControl>
-                </div>
+        <Paper square className="table-container">
+          <section className="filters">
+            <div className="filter-role">
+              <FormControl>
+                <InputLabel>User</InputLabel>
+                <Select value={selectedFilter.user} onChange={handleChangeUser}>
+                  <MenuItem value="active">All active users</MenuItem>
+                  <MenuItem value="System Admin">System Admins</MenuItem>
+                  <MenuItem value="Office Admin">Office Admins</MenuItem>
+                  <MenuItem value="custom">With custom quota</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
 
-                <div className="search-user">
-                  <TextField
-                    placeholder="Start of email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </div>
-              </section>
+            <div className="search-user">
+              <TextField
+                placeholder="Start of email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </div>
+          </section>
 
-              {selectedFilter.user === 'active' && (
-                <p className="note">
-                  Please note, a user is only considered "active" after logging into the app the
-                  first time.
-                </p>
-              )}
+          {selectedFilter.user === 'active' && (
+            <p className="note">
+              Please note, a user is only considered "active" after logging into the app the first
+              time.
+            </p>
+          )}
 
-              <TableContainer className="table">
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell className="table-header">
-                        <TableSortLabel
-                          active={sortBy === 'email'}
-                          direction={sortOrder}
-                          onClick={() => handleSort('email')}
-                        >
-                          User Email
-                        </TableSortLabel>
+          <TableContainer className="table">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell className="table-header">
+                    <TableSortLabel
+                      active={sortBy === 'email'}
+                      direction={sortOrder}
+                      onClick={() => handleSort('email')}
+                    >
+                      User Email
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell className="table-header">
+                    <TableSortLabel
+                      active={sortBy === 'quota'}
+                      direction={sortOrder}
+                      onClick={() => handleSort('quota')}
+                    >
+                      Quota
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell className="table-header">
+                    <TableSortLabel
+                      active={sortBy === 'role'}
+                      direction={sortOrder}
+                      onClick={() => handleSort('role')}
+                    >
+                      Role
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell className="table-header" />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedUsers === undefined ? (
+                  <TableRow>
+                    <TableCell colSpan={4}>
+                      <Loading />
+                    </TableCell>
+                  </TableRow>
+                ) : sortedUsers.length > 0 ? (
+                  sortedUsers.map((user) => (
+                    <TableRow key={user.email}>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.quota}</TableCell>
+                      <TableCell>{user.role.name}</TableCell>
+                      <TableCell align="right">
+                        <Tooltip title={`Edit`} arrow>
+                          <IconButton onClick={() => navigate(`/admin/users/${user.email}`)}>
+                            <CreateIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={`View Bookings`} arrow>
+                          <IconButton
+                            onClick={() => navigate(`/admin/users/bookings/${user.email}`)}
+                          >
+                            <TodayIcon />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
-                      <TableCell className="table-header">
-                        <TableSortLabel
-                          active={sortBy === 'quota'}
-                          direction={sortOrder}
-                          onClick={() => handleSort('quota')}
-                        >
-                          Quota
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell className="table-header">
-                        <TableSortLabel
-                          active={sortBy === 'role'}
-                          direction={sortOrder}
-                          onClick={() => handleSort('role')}
-                        >
-                          Role
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell className="table-header" />
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {sortedUsers && sortedUsers.length > 0 ? (
-                      sortedUsers.map((user) => (
-                        <TableRow key={user.email}>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>{user.quota}</TableCell>
-                          <TableCell>{user.role.name}</TableCell>
-                          <TableCell align="right">
-                            <Tooltip title={`Edit`} arrow>
-                              <IconButton onClick={() => navigate(`/admin/users/${user.email}`)}>
-                                <CreateIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title={`View Bookings`} arrow>
-                              <IconButton
-                                onClick={() => navigate(`/admin/users/bookings/${user.email}`)}
-                              >
-                                <TodayIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell>No users found</TableCell>
-                        <TableCell />
-                        <TableCell />
-                        <TableCell />
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {paginationToken && (
-                <section className="load-more-container">
-                  <OurButton onClick={handleLoadMore} color="primary" variant="contained">
-                    Load More
-                  </OurButton>
-                </section>
-              )}
-
-              {selectedFilter.user === 'active' &&
-                selectedFilter.email !== undefined &&
-                validateEmail(state.config?.emailRegex, selectedFilter.email) &&
-                dbUsers?.length === 0 && (
-                  <section className="unregistered-user">
-                    <div className="link">
-                      <p>
-                        User <span>{selectedFilter.email}</span> not yet registered
-                      </p>
-
-                      <OurButton
-                        startIcon={<AddCircleIcon />}
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => navigate(`/admin/users/${selectedFilter.email}`)}
-                        size="small"
-                      >
-                        Add user
-                      </OurButton>
-                    </div>
-
-                    <p>
-                      Please note the user will not be considered "active" until they login for the
-                      first time.
-                    </p>
-                  </section>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4}>No users found</TableCell>
+                  </TableRow>
                 )}
-            </Paper>
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-            <Dialog open={showAddUser} onClose={() => setShowAddUser(false)}>
-              <DialogTitle>Enter the email address for the user you wish to create.</DialogTitle>
-              <DialogContent>
-                <DialogContentText>
+          {paginationToken && (
+            <section className="load-more-container">
+              <OurButton onClick={handleLoadMore} color="primary" variant="contained">
+                Load More
+              </OurButton>
+            </section>
+          )}
+
+          {selectedFilter.user === 'active' &&
+            selectedFilter.email !== undefined &&
+            validateEmail(state.config?.emailRegex, selectedFilter.email) &&
+            dbUsers?.length === 0 && (
+              <section className="unregistered-user">
+                <div className="link">
+                  <p>
+                    User <span>{selectedFilter.email}</span> not yet registered
+                  </p>
+
+                  <OurButton
+                    startIcon={<AddCircleIcon />}
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate(`/admin/users/${selectedFilter.email}`)}
+                    size="small"
+                  >
+                    Add user
+                  </OurButton>
+                </div>
+
+                <p>
                   Please note the user will not be considered "active" until they login for the
                   first time.
-                </DialogContentText>
+                </p>
+              </section>
+            )}
+        </Paper>
 
-                <TextField
-                  autoFocus
-                  label="Email Address"
-                  type="email"
-                  value={addUserEmail}
-                  onChange={(e) => setAddUserEmail(e.target.value)}
-                  error={addUserError}
-                  helperText={addUserError && `Invalid email address`}
-                  fullWidth
-                />
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setShowAddUser(false)} color="primary" autoFocus>
-                  Cancel
-                </Button>
-                <Button
-                  startIcon={<AddCircleIcon />}
-                  variant="contained"
-                  onClick={() => handleAdduser()}
-                  color="secondary"
-                >
-                  New user
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </>
-        )}
+        <Dialog open={showAddUser} onClose={() => setShowAddUser(false)}>
+          <DialogTitle>Enter the email address for the user you wish to create.</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Please note the user will not be considered "active" until they login for the first
+              time.
+            </DialogContentText>
+
+            <TextField
+              autoFocus
+              label="Email Address"
+              type="email"
+              value={addUserEmail}
+              onChange={(e) => setAddUserEmail(e.target.value)}
+              error={addUserError}
+              helperText={addUserError && `Invalid email address`}
+              fullWidth
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowAddUser(false)} color="primary" autoFocus>
+              Cancel
+            </Button>
+            <Button
+              startIcon={<AddCircleIcon />}
+              variant="contained"
+              onClick={() => handleAdduser()}
+              color="secondary"
+            >
+              New user
+            </Button>
+          </DialogActions>
+        </Dialog>
       </UsersStyles>
     </AdminLayout>
   );
