@@ -1,44 +1,69 @@
 import { Config } from '../app-config';
-import { getAllUsers, getUserDb, getUsersDb } from '../db/users';
+import { getAllUsers, DbUser } from '../db/users';
 import { User, makeUser } from './model';
-import { CognitoIdentityServiceProvider } from 'aws-sdk';
+import { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
+import { PromiseResult } from 'aws-sdk/lib/request';
 
-const getAllAdmins = async (config: Config) => {
-  const results = [];
-  for (const email of config.systemAdminEmails) {
-    const user = await getUserDb(config, email);
-    results.push(user);
-  }
-  return results;
+export type CognitoUser = {
+  email: string;
+  enabled: boolean;
+  created: string;
+  lastModified: string;
 };
 
-const getCognitoUsers = async (
-  config: Config,
-  paginationToken?: string,
-  emailPrefix?: string
-): Promise<{ users: User[]; paginationToken?: string }> => {
+const getAllCognitoUsers = async (config: Config): Promise<CognitoUser[]> => {
   if (config.authConfig.type !== 'cognito') {
-    return { users: [] };
+    return [];
   }
+  const { cognitoUserPoolId } = config.authConfig;
   const cognito = new CognitoIdentityServiceProvider();
-  const filter = emailPrefix === undefined ? "status='Enabled'" : `email^='${emailPrefix}'`;
-  const cognitoResponse = await cognito
-    .listUsers({
-      UserPoolId: config.authConfig.cognitoUserPoolId,
-      AttributesToGet: ['email'],
-      Filter: filter,
-      Limit: 60,
-      PaginationToken: paginationToken,
-    })
-    .promise();
-  const cognitoEmails = (cognitoResponse.Users ?? [])
-    .map((user) => user.Attributes?.[0].Value as string)
-    .filter((e) => e !== undefined);
-  const dbUsers = await getUsersDb(config, cognitoEmails);
-  return {
-    users: dbUsers.map((u) => makeUser(config, u)),
-    paginationToken: cognitoResponse.PaginationToken,
-  };
+  const emails: CognitoUser[] = [];
+  let paginationToken: string | undefined = undefined;
+  do {
+    const response: PromiseResult<
+      CognitoIdentityServiceProvider.ListUsersResponse,
+      AWSError
+    > = await cognito
+      .listUsers({
+        UserPoolId: cognitoUserPoolId,
+        AttributesToGet: ['email'],
+        PaginationToken: paginationToken,
+      })
+      .promise();
+    paginationToken = response.PaginationToken;
+    for (const user of response.Users ?? []) {
+      const email = user.Attributes?.find((att) => att.Name === 'email')?.Value;
+      if (
+        email !== undefined &&
+        user.Enabled !== undefined &&
+        user.UserCreateDate &&
+        user.UserLastModifiedDate
+      ) {
+        emails.push({
+          email,
+          enabled: user.Enabled,
+          created: user.UserCreateDate.toISOString(),
+          lastModified: user.UserLastModifiedDate.toISOString(),
+        });
+      }
+    }
+  } while (paginationToken !== undefined);
+  return emails;
+};
+
+const mergeUserSets = (config: Config, users: DbUser[], cognitoUsers: CognitoUser[]): DbUser[] => {
+  const usersByEmail = new Map(users.map((user) => [user.email, user]));
+  for (const cognitoUser of cognitoUsers) {
+    if (!usersByEmail.has(cognitoUser.email)) {
+      usersByEmail.set(cognitoUser.email, {
+        email: cognitoUser.email,
+        quota: config.defaultWeeklyQuota,
+        adminOffices: [],
+        created: cognitoUser.created,
+      });
+    }
+  }
+  return Array.from(usersByEmail.values());
 };
 
 export type UsersQuery = {
@@ -54,11 +79,10 @@ export const queryUsers = async (
   config: Config,
   query: UsersQuery
 ): Promise<QueryUsersResponse> => {
-  if (!query.customQuota && query.roleName === undefined) {
-    return getCognitoUsers(config, query.paginationToken, query.emailPrefix);
-  }
-  const potentialUsers =
-    query.roleName === 'System Admin' ? await getAllAdmins(config) : await getAllUsers(config);
+  const dbUsers = await getAllUsers(config);
+  const cognitoUsers =
+    !query.customQuota && query.roleName === undefined ? await getAllCognitoUsers(config) : [];
+  const potentialUsers = mergeUserSets(config, dbUsers, cognitoUsers);
   const users = potentialUsers
     .map((user) => makeUser(config, user))
     .filter((user) => {
