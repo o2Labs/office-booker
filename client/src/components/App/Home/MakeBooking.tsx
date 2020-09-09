@@ -172,6 +172,8 @@ const MakeBooking: React.FC<Props> = (props) => {
 
         if (index !== -1) {
           setSelectedWeek(weeks[index]);
+        } else {
+          setSelectedWeek(weeks[0]);
         }
       } else {
         // Default to first week
