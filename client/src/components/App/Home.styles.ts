@@ -18,16 +18,30 @@ export default styled.div`
   }
 
   .ie-banner__close__a {
-    position: absolute;
-    top: 20px;
-    right: 20px;
     height: 20px;
     width: 20px;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
   }
 
   .ie-banner__p {
     font-size: 14px;
     line-height: 18px;
-    margin: 1rem 0 2rem 0.5rem;
+    margin: 0;
+  }
+
+  .container {
+    padding: 1rem 1.4rem;
+    display: flex;
+    align-items: center;
+
+    > .button-container {
+      ${(props) => props.theme.breakpoints.down('sm')} {
+        margin-right: 8%; 
+      }
+      display: flex;
+      align-items: flex-end;
+    }
   }
 `;

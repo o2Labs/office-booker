@@ -126,8 +126,7 @@ const Home: React.FC<RouteComponentProps> = () => {
       }
     })();
 
-     browser === 'Microsoft Internet Explorer' ? setIEWarningOpen(true) : setIEWarningOpen(false);
-
+    browser === 'Google Chrome' ? setIEWarningOpen(true) : setIEWarningOpen(false);
   }, []);
 
   // Handlers
@@ -146,17 +145,20 @@ const Home: React.FC<RouteComponentProps> = () => {
       <HomeStyles>
         <div className={`ie-banner${openIEWarning ? ` ie-banner--open` : ``}`}>
           <div className="container">
-            <IconButton
-              className="ie-banner__close__a"
-              onClick={handleClose}
-              onKeyPress={handleClose}
-              tabIndex={0}
-            >
-              <CloseIcon height={24} width={24} />
-            </IconButton>
             <p className="ie-banner__p">
-              Microsoft will end support for Internet Explorer in 2021. Consider upgrading to a <a href="https://browsehappy.com/"> modern browser</a> for an optimal experience.
+              Microsoft will end support for Internet Explorer in 2021. Consider upgrading to a{' '}
+              <a href="https://browsehappy.com/"> modern browser</a> for an optimal experience.
             </p>
+            <div className="button-container">
+            <IconButton
+                className="ie-banner__close__a"
+                onClick={handleClose}
+                onKeyPress={handleClose}
+                tabIndex={0}
+              >
+                <CloseIcon height={24} width={24} />
+              </IconButton>
+          </div>
           </div>
         </div>
         {loading || !allOffices ? (
