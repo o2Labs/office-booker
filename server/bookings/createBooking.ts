@@ -1,6 +1,6 @@
-import { CreateBooking, Booking, mapBooking } from './model';
+import { CreateBooking, Booking, mapBooking, RestoreBooking } from './model';
 import { Config } from '../app-config';
-import { createBooking as dbCreate } from '../db/bookings';
+import { createBooking as dbCreate, BookingsModel } from '../db/bookings';
 import { parse } from 'date-fns';
 import { getAvailableDates, dateStartOfWeek } from '../availableDates';
 import {
@@ -25,7 +25,7 @@ const audit = (step: string, details?: any) =>
 export const createBooking = async (
   config: Config,
   currentUser: User,
-  request: CreateBooking
+  request: CreateBooking | RestoreBooking
 ): Promise<Booking> => {
   const isAuthorised =
     request.user === currentUser.email ||
@@ -66,11 +66,13 @@ export const createBooking = async (
 
   // Id date as a direct string
   const id = requestedOffice.id + '_' + request.date.replace(/-/gi, '');
-  const newBooking = {
-    ...request,
+  const newBooking = <BookingsModel>{
     id,
     parking: request.parking ?? false,
     office: requestedOffice.name,
+    date: request.date,
+    user: request.user,
+    ...('created' in request ? { id: request.id, created: request.created } : {}),
   };
 
   const userEmail = newBooking.user.toLocaleLowerCase();

@@ -14,6 +14,7 @@ import { deleteBooking } from './bookings/deleteBooking';
 import { errorResponse, HttpError, Forbidden, NotFound } from './errors';
 import { queryBookings } from './bookings/queryBookings';
 import { parse } from 'date-fns';
+import { registerUser, isRegisterBody } from './users/register';
 
 export const configureApp = (config: Config) => {
   const getAuthUser = (res: Response) => getUser(config, getAuthUserEmail(res));
@@ -85,8 +86,6 @@ export const configureApp = (config: Config) => {
     }
   });
 
-  configureAuth(config, app);
-
   app.use((req, res, next) => {
     if (config.readonly) {
       if (req.method === 'GET' || req.method === 'OPTIONS' || req.method === 'HEAD') {
@@ -99,6 +98,25 @@ export const configureApp = (config: Config) => {
     }
     return next();
   });
+
+  app.post('/api/users', async (req, res, next) => {
+    try {
+      const body = req.body;
+      if (!isRegisterBody(body)) {
+        throw new HttpError({ httpMessage: 'Bad Request', status: 400 });
+      }
+      const normalisedEmail = normaliseEmail(body.email);
+      if (!isValidEmail(normalisedEmail)) {
+        throw new HttpError({ httpMessage: 'Email not valid', status: 400 });
+      }
+      await registerUser(config, normalisedEmail);
+      return res.sendStatus(204);
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  configureAuth(config, app);
 
   app.get('/api/offices', async (_req, res, next) => {
     try {
@@ -251,7 +269,12 @@ export const configureApp = (config: Config) => {
       }
       newBooking.user = normaliseEmail(newBooking.user);
       const authUser = await getAuthUser(res);
-      const result = await createBooking(config, authUser, newBooking);
+      const result = await createBooking(config, authUser, {
+        date: newBooking.date,
+        office: newBooking.office,
+        user: newBooking.user,
+        parking: newBooking.parking,
+      });
       return res.json(result);
     } catch (err) {
       return next(err);

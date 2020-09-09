@@ -159,6 +159,10 @@ const userPool = new aws.cognito.UserPool(`${serviceName}-users`, {
     preSignUp: preSignUp.arn,
     verifyAuthChallengeResponse: verifyAuthChallengeResponse.arn,
   },
+  // TODO: Block public sign-ups to the user pool.
+  // adminCreateUserConfig: {
+  //   allowAdminCreateUserOnly: true,
+  // },
   tags,
 });
 
@@ -333,7 +337,13 @@ new aws.iam.RolePolicy('lambda-iam-policy', {
       },
       {
         Effect: 'Allow',
-        Action: ['cognito-idp:ListUsersInGroup', 'cognito-idp:ListUsers'],
+        Action: [
+          'cognito-idp:ListUsersInGroup',
+          'cognito-idp:ListUsers',
+          'cognito-idp:AdminCreateUser',
+          'cognito-idp:AdminResetUserPassword',
+          'cognito-idp:AdminGetUser',
+        ],
         Resource: [userPool.arn],
       },
     ],

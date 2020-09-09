@@ -2,15 +2,18 @@ import { Config } from '../app-config';
 import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { attribute, table, hashKey } from '@aws/dynamodb-data-mapper-annotations';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
+import { FunctionExpression, AttributePath } from '@aws/dynamodb-expressions';
+import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
-export interface User {
+export interface DbUser {
   email: string;
-  quota: number;
-  adminOffices: string[];
+  quota?: number;
+  adminOffices?: string[];
+  created: string;
 }
 
 @table('users')
-export class UserModel {
+export class UserModel implements DbUser {
   @hashKey()
   email!: string;
   @attribute()
@@ -23,64 +26,133 @@ export class UserModel {
   created!: string;
 }
 
-const toUser = (config: Config, dbUser: Pick<UserModel, 'email' | 'quota' | 'adminOffices'>) => {
-  return {
-    email: dbUser.email,
-    quota: dbUser.quota || config.defaultWeeklyQuota,
-    adminOffices: dbUser.adminOffices || [],
-  };
-};
-
 const buildMapper = (config: Config) =>
   new DataMapper({
     client: new DynamoDB(config.dynamoDB),
     tableNamePrefix: config.dynamoDBTablePrefix,
   });
 
-export const getAllUsers = async (config: Config): Promise<User[]> => {
+export const getAllUsers = async (config: Config): Promise<DbUser[]> => {
   const mapper = buildMapper(config);
-  const rows: User[] = [];
+  const rows: UserModel[] = [];
   for await (const item of mapper.scan(UserModel)) {
-    rows.push(toUser(config, item));
+    rows.push(item);
   }
   return rows;
 };
 
-export const getUsersDb = async (config: Config, userEmails: string[]): Promise<User[]> => {
+export const getUsersDb = async (config: Config, userEmails: string[]): Promise<DbUser[]> => {
   const mapper = buildMapper(config);
   const emailsLowered = userEmails.map((e) => e.toLowerCase());
   const users = [];
 
-  for await (const result of await mapper.batchGet(
+  for await (const result of mapper.batchGet(
     emailsLowered.map((userEmail) => Object.assign(new UserModel(), { email: userEmail }))
   )) {
     users.push(result);
   }
   const usersByEmail = new Map(users.map((u) => [u.email, u]));
-  return emailsLowered.map((email) => toUser(config, usersByEmail.get(email) ?? { email }));
+  return emailsLowered.map(
+    (email) => usersByEmail.get(email) ?? { email, created: new Date().toISOString() }
+  );
 };
 
-export const getUserDb = async (config: Config, userEmail: string): Promise<User> => {
-  const mapper = buildMapper(config);
-  const email = userEmail.toLocaleLowerCase();
-
+const getUserCognito = async (config: Config, userEmail: string) => {
+  if (config.authConfig.type !== 'cognito') {
+    return { email: userEmail };
+  }
+  const cognito = new CognitoIdentityServiceProvider();
   try {
-    const result = await mapper.get(Object.assign(new UserModel(), { email }));
-    return toUser(config, result);
+    const cognitoUser = await cognito
+      .adminGetUser({ UserPoolId: config.authConfig.cognitoUserPoolId, Username: userEmail })
+      .promise();
+    return {
+      email: userEmail,
+      created: cognitoUser.UserCreateDate?.toISOString(),
+    };
   } catch (err) {
-    if (err.name === 'ItemNotFoundException') {
-      return toUser(config, { email });
+    if (err.code === 'UserNotFoundException') {
+      return undefined;
     } else {
       throw err;
     }
   }
 };
 
-export const setUser = async (config: Config, user: User): Promise<void> => {
+const pickCreated = (a?: string, b?: string) => {
+  if (a && b) {
+    return a < b ? a : b;
+  }
+  return a ?? b ?? new Date().toISOString();
+};
+
+export const getUserDb = async (config: Config, userEmail: string): Promise<DbUser> => {
+  const cognitoUser = await getUserCognito(config, userEmail);
   const mapper = buildMapper(config);
-  if (user.quota === config.defaultWeeklyQuota && user.adminOffices.length === 0) {
-    await mapper.delete(Object.assign(new UserModel(), { email: user.email }));
-  } else {
-    await mapper.put(Object.assign(new UserModel(), user));
+  const email = userEmail.toLocaleLowerCase();
+
+  const dbUser = await (async () => {
+    try {
+      const result = await mapper.get(Object.assign(new UserModel(), { email }));
+      return result;
+    } catch (err) {
+      if (err.name === 'ItemNotFoundException') {
+        return undefined;
+      } else {
+        throw err;
+      }
+    }
+  })();
+
+  return {
+    email,
+    quota: dbUser?.quota,
+    adminOffices: dbUser?.adminOffices,
+    created: pickCreated(cognitoUser?.created, dbUser?.created),
+  };
+};
+
+export const ensureUserExists = async (
+  config: Config,
+  user: DbUser
+): Promise<{ userCreated: boolean }> => {
+  const mapper = buildMapper(config);
+
+  // Ensure object exists
+  try {
+    await mapper.put(
+      Object.assign(new UserModel(), {
+        email: user.email,
+        quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
+        adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
+        created: user.created,
+      }),
+      {
+        condition: new FunctionExpression('attribute_not_exists', new AttributePath('email')),
+      }
+    );
+    return { userCreated: true };
+  } catch (err) {
+    if (err.code !== 'ConditionalCheckFailedException') {
+      throw err;
+    }
+    return { userCreated: false };
+  }
+};
+
+export const setUser = async (config: Config, user: DbUser): Promise<void> => {
+  const mapper = buildMapper(config);
+
+  const { userCreated } = await ensureUserExists(config, user);
+
+  if (!userCreated) {
+    await mapper.update(
+      Object.assign(new UserModel(), {
+        email: user.email,
+        quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
+        adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
+        created: user.created,
+      })
+    );
   }
 };

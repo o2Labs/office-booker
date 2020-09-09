@@ -88,6 +88,22 @@ export const getUser = async (email: string): Promise<User> => {
   return await response.json();
 };
 
+export const registerUser = async (user: { email: string }): Promise<void> => {
+  const url = new URL(`users`, BASE_URL);
+
+  const response = await fetch(url.href, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ action: 'Register', email: user.email }),
+  });
+
+  if (!response.ok) {
+    throw await buildHttpError(response);
+  }
+};
+
 export const putUser = async (user: {
   email: string;
   quota?: number | null;
