@@ -342,6 +342,7 @@ new aws.iam.RolePolicy('lambda-iam-policy', {
           'cognito-idp:ListUsers',
           'cognito-idp:AdminCreateUser',
           'cognito-idp:AdminResetUserPassword',
+          'cognito-idp:AdminGetUser',
         ],
         Resource: [userPool.arn],
       },
