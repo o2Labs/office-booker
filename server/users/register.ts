@@ -1,7 +1,6 @@
 import { Config } from '../app-config';
 import { CognitoIdentityServiceProvider } from 'aws-sdk';
 import { ensureUserExists } from '../db/users';
-import { randomBytes } from 'crypto';
 
 export type RegisterBody = {
   action: 'Register';
@@ -10,11 +9,6 @@ export type RegisterBody = {
 
 export const isRegisterBody = (input: any): input is RegisterBody =>
   typeof input === 'object' && input.action === 'Register' && typeof input.email === 'string';
-
-const getRandomString = (bytes: number) => {
-  const randomValues = randomBytes(bytes);
-  return randomValues.toString('base64');
-};
 
 export const registerUser = async (config: Config, email: string) => {
   if (config.authConfig.type !== 'cognito') {
