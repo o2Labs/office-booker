@@ -126,7 +126,7 @@ const Home: React.FC<RouteComponentProps> = () => {
       }
     })();
 
-    browser === 'Google Chrome' ? setIEWarningOpen(true) : setIEWarningOpen(false);
+    browser === 'Microsoft Internet Explorer' ? setIEWarningOpen(true) : setIEWarningOpen(false);
   }, []);
 
   // Handlers
