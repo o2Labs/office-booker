@@ -172,6 +172,8 @@ const MakeBooking: React.FC<Props> = (props) => {
 
         if (index !== -1) {
           setSelectedWeek(weeks[index]);
+        } else {
+          setSelectedWeek(weeks[0]);
         }
       } else {
         // Default to first week
@@ -525,95 +527,103 @@ const MakeBooking: React.FC<Props> = (props) => {
             </p>
           </div>
 
-          {rows.map((row) => (
-            <div key={row.week.id} className="grid" hidden={selectedWeek.id !== row.week.id}>
-              {row.days.map((day, dayIndex) => (
-                <div
-                  key={dayIndex}
-                  className="row"
-                  data-today={isToday(day.date)}
-                  data-bookable={day.isBookable && (day.userCanBook || day.booking) ? true : false}
-                >
-                  <div className="left">
-                    <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
-                  </div>
+          {rows
+            .filter((row) => selectedWeek.id === row.week.id)
+            .map((row) => (
+              <div key={row.week.id} className="grid">
+                {row.days.map((day, dayIndex) => (
+                  <div
+                    key={dayIndex}
+                    className="row"
+                    data-today={isToday(day.date)}
+                    data-bookable={
+                      day.isBookable && (day.userCanBook || day.booking) ? true : false
+                    }
+                  >
+                    <div className="left">
+                      <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
+                    </div>
 
-                  {day.isBookable && (
-                    <div className="right">
-                      {isToday(day.date) && slideConfirm ? renderBookingConfirmSlide() : null}
+                    {day.isBookable && (
+                      <div className="right">
+                        {isToday(day.date) && slideConfirm ? renderBookingConfirmSlide() : null}
 
-                      {day.booking ? (
-                        <>
-                          <Tooltip
-                            title={
-                              isToday(day.date)
-                                ? "Today's booking can only be cancelled by administrators"
-                                : ''
-                            }
-                            placement="top-end"
-                          >
-                            <Link
-                              component="button"
-                              underline="always"
-                              className={`${buttonsLoading ? 'loading ' : ''}${
-                                isToday(day.date) ? 'disabled ' : ''
-                              }cancelBtn`}
-                              onClick={() =>
-                                !buttonsLoading &&
-                                day.booking &&
-                                !isToday(day.date) &&
-                                handleCancelBooking(day.booking)
+                        {day.booking ? (
+                          <>
+                            <Tooltip
+                              title={
+                                isToday(day.date)
+                                  ? "Today's booking can only be cancelled by administrators"
+                                  : ''
+                              }
+                              placement="top-end"
+                            >
+                              <Link
+                                component="button"
+                                underline="always"
+                                className={`${buttonsLoading ? 'loading ' : ''}${
+                                  isToday(day.date) ? 'disabled ' : ''
+                                }cancelBtn`}
+                                onClick={() =>
+                                  !buttonsLoading &&
+                                  day.booking &&
+                                  !isToday(day.date) &&
+                                  handleCancelBooking(day.booking)
+                                }
+                              >
+                                Cancel
+                              </Link>
+                            </Tooltip>
+
+                            <OurButton
+                              size="small"
+                              variant="contained"
+                              color="primary"
+                              onClick={() => {
+                                navigate(`./booking/${day.booking?.id}`);
+                              }}
+                              endIcon={
+                                day.booking?.parking ? (
+                                  <EmojiTransportationIcon />
+                                ) : (
+                                  <BusinessIcon />
+                                )
                               }
                             >
-                              Cancel
-                            </Link>
-                          </Tooltip>
-
-                          <OurButton
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                              navigate(`./booking/${day.booking?.id}`);
-                            }}
-                            endIcon={
-                              day.booking?.parking ? <EmojiTransportationIcon /> : <BusinessIcon />
-                            }
-                          >
-                            View Pass
-                          </OurButton>
-                        </>
-                      ) : (
-                        <div className="no-booking">
-                          <div className="availability">
-                            <BookingStatus
-                              officeQuota={office.quota}
-                              officeAvailable={day.available}
-                              parkingQuota={office.parkingQuota}
-                              parkingAvailable={day.availableCarPark}
-                            />
-                          </div>
-
-                          {day.userCanBook && (
-                            <div className="book">
-                              <BookButton
-                                onClick={(withParking) =>
-                                  confirmTodayBooking(handleCreateBooking, day.date, withParking)
-                                }
+                              View Pass
+                            </OurButton>
+                          </>
+                        ) : (
+                          <div className="no-booking">
+                            <div className="availability">
+                              <BookingStatus
+                                officeQuota={office.quota}
+                                officeAvailable={day.available}
                                 parkingQuota={office.parkingQuota}
                                 parkingAvailable={day.availableCarPark}
-                                buttonsLoading={buttonsLoading}
                               />
                             </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ))}
+
+                            {day.userCanBook && (
+                              <div className="book">
+                                <BookButton
+                                  onClick={(withParking) =>
+                                    confirmTodayBooking(handleCreateBooking, day.date, withParking)
+                                  }
+                                  parkingQuota={office.parkingQuota}
+                                  parkingAvailable={day.availableCarPark}
+                                  buttonsLoading={buttonsLoading}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ))}
         </Paper>
       )}
     </MakeBookingStyles>
