@@ -20,7 +20,7 @@ export const putUser = async (
     if (putBody.role.name === 'Office Admin') {
       return Arrays.choose(putBody.role.offices, (office) => {
         const officeQuota = config.officeQuotas.find((officeQuota) => officeQuota.id === office.id);
-        return officeQuota?.name;
+        return officeQuota?.id;
       });
     }
 
