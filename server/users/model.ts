@@ -65,8 +65,10 @@ const getOfficesFromNames = (
   quota: number;
   parkingQuota?: number | undefined;
 }>[] =>
-  Arrays.choose(dbUser.adminOffices ?? [], (name) => {
-    const office = config.officeQuotas.find((officeQuota) => officeQuota.name === name);
+  Arrays.choose(dbUser.adminOffices ?? [], (nameOrId) => {
+    const office = config.officeQuotas.find(
+      (officeQuota) => officeQuota.name === nameOrId || officeQuota.id === nameOrId
+    );
     return office;
   });
 
