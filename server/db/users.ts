@@ -80,9 +80,17 @@ export const ensureUserExists = async (
 
   // Ensure object exists
   try {
-    await mapper.put(Object.assign(new UserModel(), user), {
-      condition: new FunctionExpression('attribute_not_exists', new AttributePath('email')),
-    });
+    await mapper.put(
+      Object.assign(new UserModel(), {
+        email: user.email,
+        quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
+        adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
+        created: user.created,
+      }),
+      {
+        condition: new FunctionExpression('attribute_not_exists', new AttributePath('email')),
+      }
+    );
     return { userCreated: true };
   } catch (err) {
     if (err.code !== 'ConditionalCheckFailedException') {
@@ -103,7 +111,7 @@ export const setUser = async (config: Config, user: DbUser): Promise<void> => {
         email: user.email,
         quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
         adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
-        create: user.created,
+        created: user.created,
       })
     );
   }
