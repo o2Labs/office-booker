@@ -5,6 +5,14 @@ if [ -z ${1+x} ]; then echo "Usage: ./deploy.sh [STACK]"; exit 1; fi
 
 cd infrastructure
 pulumi stack select $1 --non-interactive
+
+STACK_OUTPUTS=`pulumi stack output --json || true`
+if [ "$STACK_OUTPUTS" == "{}" ]; then
+  ./migrate.sh --first-run --stack "office-booker-$1"
+else
+  ./migrate.sh --stack "office-booker-$1"
+fi
+
 pulumi up --yes --non-interactive
 SELFTESTKEY=`pulumi config get selftest-key`
 SELFTESTUSER=`pulumi config get selftest-user`
