@@ -86,6 +86,19 @@ export const configureApp = (config: Config) => {
     }
   });
 
+  app.use((req, res, next) => {
+    if (config.readonly) {
+      if (req.method === 'GET' || req.method === 'OPTIONS' || req.method === 'HEAD') {
+        return next();
+      } else {
+        return next(
+          new HttpError({ httpMessage: 'Service currently in read-only mode', status: 503 })
+        );
+      }
+    }
+    return next();
+  });
+
   app.post('/api/users', async (req, res, next) => {
     try {
       const body = req.body;
@@ -104,19 +117,6 @@ export const configureApp = (config: Config) => {
   });
 
   configureAuth(config, app);
-
-  app.use((req, res, next) => {
-    if (config.readonly) {
-      if (req.method === 'GET' || req.method === 'OPTIONS' || req.method === 'HEAD') {
-        return next();
-      } else {
-        return next(
-          new HttpError({ httpMessage: 'Service currently in read-only mode', status: 503 })
-        );
-      }
-    }
-    return next();
-  });
 
   app.get('/api/offices', async (_req, res, next) => {
     try {
