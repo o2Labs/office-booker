@@ -10,7 +10,10 @@ export type CognitoUser = {
 
 const getAllCognitoUsers = async (config: Config): Promise<CognitoUser[]> => {
   if (config.authConfig.type !== 'cognito') {
-    return [];
+    return config.authConfig.users.map((u) => ({
+      email: u.Username!,
+      created: u.UserCreateDate?.toISOString()!,
+    }));
   }
   const { cognitoUserPoolId } = config.authConfig;
   const cognito = new CognitoIdentityServiceProvider();

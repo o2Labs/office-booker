@@ -31,6 +31,7 @@ const getLocalConfig = (): Config => {
           const decoded = Buffer.from(token, 'base64').toString();
           return { email: decoded.split(':')[0] };
         },
+        users: [],
       },
     };
   }
