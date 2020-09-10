@@ -95,7 +95,9 @@ const migrate = async () => {
         if ('execute' in migration) {
           const status = await getMigrationStatus(name);
           if (status === 'pending') {
+            console.log('Beginning migration ', name);
             await migration.execute(config);
+            console.log('Completed migration ', name);
           }
         }
       }
