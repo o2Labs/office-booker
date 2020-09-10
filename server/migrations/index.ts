@@ -1,6 +1,8 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 
+import { saveCognitoUsersToDb } from './1-save-users-to-db';
+
 /** Collection all migrations that should be applied to the system */
 type Migrations = {
   /** Unique name of the migration, this should not change */
@@ -18,9 +20,7 @@ type Migrations = {
 /** Enter migrations here */
 const migrations: Migrations = {
   '1-save-users-to-db': {
-    execute: async () => {
-      // TODO: Loop through users
-    },
+    execute: saveCognitoUsersToDb,
   },
 };
 

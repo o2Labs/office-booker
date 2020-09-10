@@ -2,4 +2,4 @@
 set -e # stop on error
 
 cd server
-npx ts-node scripts/migrate.ts $@
+npx ts-node migrations/index.ts $@
