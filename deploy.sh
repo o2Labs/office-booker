@@ -12,7 +12,9 @@ STACK_NAME="office-booker-$1"
 
 # Do pre-migration check if it's not the first deploy
 if [ "$PRE_DEPLOY_STACK_OUTPUTS" != "{}" ]; then
+  cd ..
   ./migrate.sh --pre-check --stack $STACK_NAME
+  cd infrastructure
 fi
 
 pulumi up --yes --non-interactive
@@ -21,6 +23,7 @@ SELFTESTUSER=`pulumi config get selftest-user`
 STATIC_SITE_BUCKET=`pulumi stack output staticSiteBucket`
 DOMAIN_NAME=`pulumi config get domain-name`
 
+cd ..
 if [ "$PRE_DEPLOY_STACK_OUTPUTS" == "{}" ]; then
   # Flag if this is the first deploy
   ./migrate.sh --first-run --stack $STACK_NAME
@@ -28,7 +31,6 @@ else
   ./migrate.sh --stack $STACK_NAME
 fi
 
-cd ..
 aws s3 sync client/build "s3://$STATIC_SITE_BUCKET" --delete --exclude "index.html" --exclude "precache-manifest.*" --cache-control "public, max-age=31536000"
 aws s3 sync client/build "s3://$STATIC_SITE_BUCKET" --delete --exclude "*" --include "index.html" --include "precache-manifest.*"
 ./smoketest.sh --domain "https://$DOMAIN_NAME/" --selftestkey "$SELFTESTKEY" --user "$SELFTESTUSER"
