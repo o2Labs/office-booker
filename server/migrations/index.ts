@@ -1,5 +1,6 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
+import { parseConfigFromEnv, Config } from '../app-config';
 
 /** Collection all migrations that should be applied to the system */
 type Migrations = {
@@ -7,7 +8,7 @@ type Migrations = {
   [migrationName: string]:
     | {
         /** Async function to perform maintenance work */
-        execute: () => Promise<void>;
+        execute: (config: Config) => Promise<void>;
       }
     | {
         /**
@@ -34,6 +35,7 @@ const args = options({
   stack: { type: 'string', demandOption: true },
   'first-run': { type: 'boolean', default: false },
   'pre-check': { type: 'boolean', default: false },
+  env: { type: 'string' },
 }).argv;
 
 const firstRun = args['first-run'];
@@ -87,11 +89,15 @@ const migrate = async () => {
         process.exitCode = 1;
       }
     } else {
+      if (args.env === undefined) throw Error('Env required for running migrations');
+      const config = parseConfigFromEnv(JSON.parse(args['env']));
       for (const [name, migration] of Object.entries(migrations)) {
         if ('execute' in migration) {
           const status = await getMigrationStatus(name);
           if (status === 'pending') {
-            await migration.execute();
+            console.log('Beginning migration ', name);
+            await migration.execute(config);
+            console.log('Completed migration ', name);
           }
         }
       }

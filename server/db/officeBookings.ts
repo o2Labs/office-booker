@@ -195,30 +195,10 @@ export const getOfficeBookings = async (
   return Array.from(resultsMap.values());
 };
 
-export const getOfficesBookings = async (
-  config: Config,
-  dates: string[],
-  offices: string[]
-): Promise<OfficeBookingModel[]> => {
+export const setOfficeBookings = async (config: Config, officeBookings: OfficeBookingModel[]) => {
   const mapper = buildMapper(config);
-  const resultKey = (model: OfficeBookingModel) => model.date + model.name;
-  const resultsMap = new Map(
-    Arrays.collect(offices, (office) =>
-      dates.map((date) => {
-        const model = Object.assign(new OfficeBookingModel(), { date, name: office });
-        return [resultKey(model), model];
-      })
-    )
-  );
-  for await (const item of mapper.batchGet(Array.from(resultsMap.values()))) {
-    resultsMap.set(resultKey(item), item);
+  for await (const _result of mapper.batchPut(
+    officeBookings.map((booking) => Object.assign(new OfficeBookingModel(), booking))
+  )) {
   }
-  for (const [key, value] of Array.from(resultsMap)) {
-    if (typeof value.bookingCount !== 'number') {
-      value.bookingCount = 0;
-      value.parkingCount = 0;
-      resultsMap.set(key, value);
-    }
-  }
-  return Array.from(resultsMap.values());
 };
