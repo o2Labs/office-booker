@@ -1,40 +1,91 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 
+type Migrations = {
+  [migrationName: string]: {
+    // If set to true, the next deploy will fail if this migration was not previously executed.
+    requiredBeforeDeploy: boolean;
+    // Async function to perform maintenance work
+    execute: () => Promise<void>;
+  };
+};
+
+/** Enter migrations here */
+const migrations: Migrations = {
+  're-save-users': {
+    requiredBeforeDeploy: false,
+    execute: async () => {
+      // TODO: Loop through users
+    },
+  },
+};
+
+/**
+ * Plumbing to execute migrations
+ */
+
 const args = options({
   stack: { type: 'string', demandOption: true },
   'first-run': { type: 'boolean', default: false },
+  'pre-check': { type: 'boolean', default: false },
 }).argv;
+
+const firstRun = args['first-run'];
+const preCheck = args['pre-check'];
 
 const ssm = new SSM();
 
 const COMPLETE = 'completed';
+type MigrationStatus = 'completed' | 'pending';
 
-const getMigrationName = (migration: string) => `/${args.stack}/${migration}`;
+const getMigrationSSMParamName = (migrationName: string) => `/${args.stack}/${migrationName}`;
 
-const completeMigration = async (migration: string) => {
-  await ssm.putParameter({ Name: getMigrationName(migration), Value: COMPLETE }).promise();
+const completeMigration = async (migrationName: string) => {
+  await ssm
+    .putParameter({ Name: getMigrationSSMParamName(migrationName), Value: COMPLETE })
+    .promise();
 };
 
-const needsMigration = async (migration: string) => {
-  if (args['first-run']) {
-    await completeMigration(migration);
-    return false;
-  } else {
-    const parameter = await ssm.getParameter({ Name: getMigrationName(migration) }).promise();
-    return parameter?.Parameter?.Value !== COMPLETE;
-  }
-};
-
-const migrateUsers = async () => {
-  const shouldMigrate = await needsMigration('users');
-  if (shouldMigrate) {
-    // TODO: Loop through users
-  }
+const getMigrationStatus = async (migrationName: string): Promise<MigrationStatus> => {
+  const parameter = await ssm
+    .getParameter({ Name: getMigrationSSMParamName(migrationName) })
+    .promise();
+  return parameter?.Parameter?.Value === COMPLETE ? COMPLETE : 'pending';
 };
 
 const migrate = async () => {
-  await migrateUsers();
+  if (firstRun) {
+    if (preCheck) {
+      // Do nothing - we're always ready to do the first deploy
+    } else {
+      for (const name of Object.keys(migrations)) {
+        await completeMigration(name);
+      }
+    }
+  } else {
+    if (preCheck) {
+      const failedPreChecks: string[] = [];
+      for (const [name, migration] of Object.entries(migrations)) {
+        if (migration.requiredBeforeDeploy) {
+          const status = await getMigrationStatus(name);
+          if (status === 'pending') {
+            failedPreChecks.push(name);
+          }
+        }
+      }
+      if (failedPreChecks.length > 0) {
+        console.error(`Failed pre-deploy migration checks: ${failedPreChecks.join(', ')}`);
+        process.exitCode = 1;
+      }
+    } else {
+      for (const [name, migration] of Object.entries(migrations)) {
+        const status = await getMigrationStatus(name);
+        if (status === 'pending') {
+          await migration.execute();
+        }
+      }
+    }
+  }
 };
 
 migrate().catch((err) => {
