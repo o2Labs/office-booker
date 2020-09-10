@@ -21,14 +21,16 @@ pulumi up --yes --non-interactive
 SELFTESTKEY=`pulumi config get selftest-key`
 SELFTESTUSER=`pulumi config get selftest-user`
 STATIC_SITE_BUCKET=`pulumi stack output staticSiteBucket`
+HTTP_ENV=`pulumi stack output httpEnv`
 DOMAIN_NAME=`pulumi config get domain-name`
+
 
 cd ..
 if [ "$PRE_DEPLOY_STACK_OUTPUTS" == "{}" ]; then
   # Flag if this is the first deploy
-  ./migrate.sh --first-run --stack $STACK_NAME
+  ./migrate.sh --first-run --stack "$STACK_NAME" --env "$HTTP_ENV"
 else
-  ./migrate.sh --stack $STACK_NAME
+  ./migrate.sh --stack "$STACK_NAME" --env "$HTTP_ENV"
 fi
 
 aws s3 sync client/build "s3://$STATIC_SITE_BUCKET" --delete --exclude "index.html" --exclude "precache-manifest.*" --cache-control "public, max-age=31536000"

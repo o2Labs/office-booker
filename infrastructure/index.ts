@@ -449,3 +449,4 @@ export const cfUrn = stack.cdn.urn;
 export const staticSiteUrl = stack.url;
 export const cognitoPoolId = userPool.id;
 export const cognitoAuthClientId = authClient.id;
+export const httpEnv = httpHandler.environment.apply((env) => env?.variables ?? {});
