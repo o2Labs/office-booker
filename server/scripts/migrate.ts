@@ -1,19 +1,23 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 
+/** Collection all migrations that should be applied to the system */
 type Migrations = {
+  /** Unique name of the migration, this should not change */
   [migrationName: string]: {
-    // If set to true, the next deploy will fail if this migration was not previously executed.
-    requiredBeforeDeploy: boolean;
-    // Async function to perform maintenance work
+    /**
+     * If set, the next deploy will fail if this migration was not previously executed.
+     * This should explain why the migration can't be run, and which version should be installed first.
+     */
+    reasonToFailPreCheck?: string;
+    /** Async function to perform maintenance work */
     execute: () => Promise<void>;
   };
 };
 
 /** Enter migrations here */
 const migrations: Migrations = {
-  're-save-users': {
-    requiredBeforeDeploy: false,
+  '1-save-users-to-db': {
     execute: async () => {
       // TODO: Loop through users
     },
@@ -64,17 +68,20 @@ const migrate = async () => {
     }
   } else {
     if (preCheck) {
-      const failedPreChecks: string[] = [];
+      const failedPreChecks: { name: string; reason: string }[] = [];
       for (const [name, migration] of Object.entries(migrations)) {
-        if (migration.requiredBeforeDeploy) {
+        if (migration.reasonToFailPreCheck) {
           const status = await getMigrationStatus(name);
           if (status === 'pending') {
-            failedPreChecks.push(name);
+            failedPreChecks.push({ name, reason: migration.reasonToFailPreCheck });
           }
         }
       }
       if (failedPreChecks.length > 0) {
-        console.error(`Failed pre-deploy migration checks: ${failedPreChecks.join(', ')}`);
+        const failureMessages = failedPreChecks.map(
+          (failure) => `\t${failure.name}: ${failure.reason}`
+        );
+        console.error(`Failed pre-deploy migration checks:\n${failureMessages.join('\n')}`);
         process.exitCode = 1;
       }
     } else {
