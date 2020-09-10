@@ -14,6 +14,8 @@ import { formatError } from '../../lib/app';
 import { OfficeWithSlots, Booking, Office } from '../../types/api';
 
 import HomeStyles from './Home.styles';
+import CloseIcon from '@material-ui/icons/Close';
+import { IconButton } from '@material-ui/core';
 
 // Component
 const Home: React.FC<RouteComponentProps> = () => {
@@ -27,6 +29,7 @@ const Home: React.FC<RouteComponentProps> = () => {
   const [allOffices, setAllOffices] = useState<Office[] | undefined>();
   const [currentOffice, setCurrentOffice] = useState<OfficeWithSlots | undefined>();
   const [userBookings, setUserBookings] = useState<Booking[] | undefined>();
+  const [openIEWarning, setIEWarningOpen] = React.useState(false);
 
   // Effects
   useEffect(() => {
@@ -96,16 +99,68 @@ const Home: React.FC<RouteComponentProps> = () => {
     }
   }, [office]);
 
+  useEffect(() => {
+    const browser = (() => {
+      const test = (regexp: RegExp) => {
+        return regexp.test(window.navigator.userAgent);
+      };
+      switch (true) {
+        case test(/edg/i):
+          return 'Microsoft Edge';
+        case test(/trident/i):
+          return 'Microsoft Internet Explorer';
+        case test(/firefox|fxios/i):
+          return 'Mozilla Firefox';
+        case test(/opr\//i):
+          return 'Opera';
+        case test(/ucbrowser/i):
+          return 'UC Browser';
+        case test(/samsungbrowser/i):
+          return 'Samsung Browser';
+        case test(/chrome|chromium|crios/i):
+          return 'Google Chrome';
+        case test(/safari/i):
+          return 'Apple Safari';
+        default:
+          return 'Other';
+      }
+    })();
+
+    browser === 'Microsoft Internet Explorer' ? setIEWarningOpen(true) : setIEWarningOpen(false);
+  }, []);
+
   // Handlers
   const handleRefreshBookings = () => {
     // Re-retrieve offices (and subsequently bookings) from the DB
     setRefreshedAt(new Date());
   };
 
+  const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
+    setIEWarningOpen(false);
+  };
+
   // Render
   return (
     <Layout>
       <HomeStyles>
+        <div className={`ie-banner${openIEWarning ? ` ie-banner--open` : ``}`}>
+          <div className="container">
+            <p className="ie-banner__p">
+              Microsoft will end support for Internet Explorer in 2021. Consider upgrading to a{' '}
+              <a href="https://browsehappy.com/"> modern browser</a> for an optimal experience.
+            </p>
+            <div className="button-container">
+            <IconButton
+                className="ie-banner__close__a"
+                onClick={handleClose}
+                onKeyPress={handleClose}
+                tabIndex={0}
+              >
+                <CloseIcon height={24} width={24} />
+              </IconButton>
+          </div>
+          </div>
+        </div>
         {loading || !allOffices ? (
           <Loading />
         ) : currentOffice ? (
