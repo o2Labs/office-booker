@@ -4,10 +4,12 @@ import { isValidEmail } from './users/model';
 import { assert } from 'console';
 import { getOfficeId, isValidOfficeId } from './getOffices';
 import { Arrays } from 'collection-fns';
+import { UserType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 
 type TestAuthConfig = {
   type: 'test';
   validate: (req: Request) => any;
+  users: UserType[];
 };
 
 type CognitoAuthConfig = {
