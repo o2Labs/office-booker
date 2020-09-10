@@ -1,27 +1,29 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 
-import { saveCognitoUsersToDb } from './1-save-users-to-db';
-
 /** Collection all migrations that should be applied to the system */
 type Migrations = {
   /** Unique name of the migration, this should not change */
-  [migrationName: string]: {
-    /**
-     * If set, the next deploy will fail if this migration was not previously executed.
-     * This should explain why the migration can't be run, and which version should be installed first.
-     */
-    reasonToFailPreCheck?: string;
-    /** Async function to perform maintenance work */
-    execute: () => Promise<void>;
-  };
+  [migrationName: string]:
+    | {
+        /** Async function to perform maintenance work */
+        execute: () => Promise<void>;
+      }
+    | {
+        /**
+         * If set, the next deploy will fail if this migration was not previously executed.
+         * This should explain why the migration can't be run, and which version should be installed first.
+         */
+        reasonToFailPreCheck: string;
+      };
 };
 
 /** Enter migrations here */
 const migrations: Migrations = {
-  '1-save-users-to-db': {
-    execute: saveCognitoUsersToDb,
-  },
+  // TODO: Implement this migration soon
+  // '1-save-users-to-db': {
+  //   execute: saveCognitoUsersToDb,
+  // },
 };
 
 /**
@@ -70,7 +72,7 @@ const migrate = async () => {
     if (preCheck) {
       const failedPreChecks: { name: string; reason: string }[] = [];
       for (const [name, migration] of Object.entries(migrations)) {
-        if (migration.reasonToFailPreCheck) {
+        if ('reasonToFailPreCheck' in migration) {
           const status = await getMigrationStatus(name);
           if (status === 'pending') {
             failedPreChecks.push({ name, reason: migration.reasonToFailPreCheck });
@@ -86,9 +88,11 @@ const migrate = async () => {
       }
     } else {
       for (const [name, migration] of Object.entries(migrations)) {
-        const status = await getMigrationStatus(name);
-        if (status === 'pending') {
-          await migration.execute();
+        if ('execute' in migration) {
+          const status = await getMigrationStatus(name);
+          if (status === 'pending') {
+            await migration.execute();
+          }
         }
       }
     }
