@@ -69,6 +69,12 @@ export const configureServer = (dynamoDBTablePrefix: string, testConfig?: TestCo
   };
 };
 
+export const expectOk = (response: Response) => {
+  if (!response.ok) {
+    throw new Error(`Response not okay: ${response.status}\n${response.body}`);
+  }
+};
+
 export const expectUnauthorized = (response: Response) => {
   expect(response.status).toBe(401);
   expect(response.body).toMatchObject({
