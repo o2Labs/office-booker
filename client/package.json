@@ -22,12 +22,12 @@
     "amazon-cognito-identity-js": "^4.2.2",
     "core-js": "^3.6.5",
     "date-fns": "^2.12.0",
-    "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.19",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "regenerator-runtime": "^0.13.5",
-    "styled-components": "^5.1.0"
+    "styled-components": "^5.1.0",
+    "whatwg-fetch": "^3.4.1"
   },
   "devDependencies": {
     "@types/date-fns": "^2.6.0",
@@ -55,9 +55,6 @@
     "stylelint-config-styled-components": "^0.1.1",
     "stylelint-processor-styled-components": "^1.8.0",
     "typescript": "^4.0.2"
-  },
-  "resolutions": {
-    "node-fetch": "2.6.1"
   },
   "proxy": "http://localhost:3030/"
 }
