@@ -100,7 +100,7 @@ const Structure: React.FC = () => {
               <Users path="/admin/users" />
               <User path="/admin/users/:email" />
               <UserBookings path="/admin/users/bookings/:email" />
-                
+
               <Privacy path="/privacy" />
               <PageNotFound default={true} />
             </RequireLogin>

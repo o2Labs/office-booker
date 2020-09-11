@@ -38,7 +38,7 @@ export default styled.div`
 
     > .button-container {
       ${(props) => props.theme.breakpoints.down('sm')} {
-        margin-right: 8%; 
+        margin-right: 8%;
       }
       display: flex;
       align-items: flex-end;

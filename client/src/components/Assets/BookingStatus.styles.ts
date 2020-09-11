@@ -24,23 +24,23 @@ export default styled.div<BookingStatusStylesProps>`
     }
 
     > svg {
-        margin-right: 0.2rem;
-        font-size: 2rem;
+      margin-right: 0.2rem;
+      font-size: 2rem;
 
-        color: #5f5f5f;
+      color: #5f5f5f;
     }
 
     > .bars {
-        height: 2rem;
-        width: 0.8rem;
+      height: 2rem;
+      width: 0.8rem;
 
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
 
-        background: lightgray;
+      background: lightgray;
 
-        padding: 2px;
+      padding: 2px;
 
       > .bar {
         flex: 0 0 100%;
@@ -69,8 +69,8 @@ export default styled.div<BookingStatusStylesProps>`
         `}
     }
 
-    .bars .parking{
-     flex: 0 0 ${(props) => props.parkingLeft}%;
+    .bars .parking {
+      flex: 0 0 ${(props) => props.parkingLeft}%;
 
       ${(props) =>
         props.parkingStatus === 'h' &&
