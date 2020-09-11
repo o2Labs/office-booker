@@ -56,5 +56,8 @@
     "stylelint-processor-styled-components": "^1.8.0",
     "typescript": "^4.0.2"
   },
+  "resolutions": {
+    "node-fetch": "2.6.1"
+  },
   "proxy": "http://localhost:3030/"
 }
