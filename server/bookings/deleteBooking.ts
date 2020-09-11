@@ -52,7 +52,7 @@ export const deleteBooking = async (
  {
     throw new HttpError({
       internalMessage: `Past Booking can not be deleted. id: ${booking.id} for ${booking.user}`,
-      status: 400,
+      status: 403,
       httpMessage: 'Not able to cancel Past booking',
     });
   }
