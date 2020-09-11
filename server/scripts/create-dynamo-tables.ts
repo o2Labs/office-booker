@@ -3,6 +3,7 @@ import { DataMapper } from '@aws/dynamodb-data-mapper';
 import { OfficeBookingModel } from '../db/officeBookings';
 import { UserBookingsModel } from '../db/userBookings';
 import { BookingsModel } from '../db/bookings';
+import { BookingsModel as BookingsModelV2 } from '../db/bookingsV2';
 import { UserModel } from '../db/users';
 
 export const createLocalTables = async (
@@ -15,6 +16,7 @@ export const createLocalTables = async (
     await mapper.ensureTableNotExists(OfficeBookingModel);
     await mapper.ensureTableNotExists(UserBookingsModel);
     await mapper.ensureTableNotExists(BookingsModel);
+    await mapper.ensureTableNotExists(BookingsModelV2);
     await mapper.ensureTableNotExists(UserModel);
   }
   await mapper.ensureTableExists(OfficeBookingModel, {
@@ -26,6 +28,18 @@ export const createLocalTables = async (
     writeCapacityUnits: 1,
   });
   await mapper.ensureTableExists(BookingsModel, {
+    readCapacityUnits: 1,
+    writeCapacityUnits: 1,
+    indexOptions: {
+      'office-date-bookings': {
+        type: 'global',
+        projection: 'all',
+        readCapacityUnits: 1,
+        writeCapacityUnits: 1,
+      },
+    },
+  });
+  await mapper.ensureTableExists(BookingsModelV2, {
     readCapacityUnits: 1,
     writeCapacityUnits: 1,
     indexOptions: {
