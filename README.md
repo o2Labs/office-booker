@@ -1,4 +1,4 @@
-# Office Booker (Open Preview)
+# Office Booker
 
 The Office Booker was created to solve the problem of coordinating the safe return to offices once COVID-19 restrictions are lifted.
 
