@@ -1,6 +1,7 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 import { parseConfigFromEnv, Config } from '../app-config';
+import { saveCognitoUsersToDb } from './1-save-users-to-db';
 
 /** Collection all migrations that should be applied to the system */
 type Migrations = {
@@ -21,10 +22,9 @@ type Migrations = {
 
 /** Enter migrations here */
 const migrations: Migrations = {
-  // TODO: Implement this migration soon
-  // '1-save-users-to-db': {
-  //   execute: saveCognitoUsersToDb,
-  // },
+  '1-save-users-to-db': {
+    execute: saveCognitoUsersToDb,
+  },
 };
 
 /**
@@ -35,13 +35,13 @@ const args = options({
   stack: { type: 'string', demandOption: true },
   'first-run': { type: 'boolean', default: false },
   'pre-check': { type: 'boolean', default: false },
-  env: { type: 'string' },
+  region: { type: 'string', demandOption: true },
 }).argv;
 
 const firstRun = args['first-run'];
 const preCheck = args['pre-check'];
 
-const ssm = new SSM();
+const ssm = new SSM({ region: args.region });
 
 const COMPLETE = 'completed';
 type MigrationStatus = 'completed' | 'pending';
@@ -50,15 +50,26 @@ const getMigrationSSMParamName = (migrationName: string) => `/${args.stack}/${mi
 
 const completeMigration = async (migrationName: string) => {
   await ssm
-    .putParameter({ Name: getMigrationSSMParamName(migrationName), Value: COMPLETE })
+    .putParameter({
+      Name: getMigrationSSMParamName(migrationName),
+      Value: COMPLETE,
+      Type: 'String',
+    })
     .promise();
 };
 
 const getMigrationStatus = async (migrationName: string): Promise<MigrationStatus> => {
-  const parameter = await ssm
-    .getParameter({ Name: getMigrationSSMParamName(migrationName) })
-    .promise();
-  return parameter?.Parameter?.Value === COMPLETE ? COMPLETE : 'pending';
+  try {
+    const parameter = await ssm
+      .getParameter({ Name: getMigrationSSMParamName(migrationName) })
+      .promise();
+    return parameter?.Parameter?.Value === COMPLETE ? COMPLETE : 'pending';
+  } catch (err) {
+    if (err.code === 'ParameterNotFound') {
+      return 'pending';
+    }
+    throw err;
+  }
 };
 
 const migrate = async () => {
@@ -89,14 +100,15 @@ const migrate = async () => {
         process.exitCode = 1;
       }
     } else {
-      if (args.env === undefined) throw Error('Env required for running migrations');
-      const config = parseConfigFromEnv(JSON.parse(args['env']));
+      if (process.env.MIGRATE_ENV === undefined) throw Error('Env required for running migrations');
+      const config = parseConfigFromEnv(JSON.parse(process.env.MIGRATE_ENV));
       for (const [name, migration] of Object.entries(migrations)) {
         if ('execute' in migration) {
           const status = await getMigrationStatus(name);
           if (status === 'pending') {
             console.log('Beginning migration ', name);
             await migration.execute(config);
+            await completeMigration(name);
             console.log('Completed migration ', name);
           }
         }
