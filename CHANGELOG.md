@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2020-09-14
+
+- Migrate DB to store all bookings with office ID rather than office name.
+- Temporarily set API to readonly mode to avoid changes during migration.
+
 ## [1.1.0] - 2020-09-14
 
 - Introduced users migration to store all active users in DynamoDB.

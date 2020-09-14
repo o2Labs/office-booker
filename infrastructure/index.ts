@@ -414,6 +414,7 @@ const getHttpEnv = (): aws.types.input.lambda.FunctionEnvironment['variables'] =
     DEFAULT_WEEKLY_QUOTA: defaultWeeklyQuota.toString(),
     DATA_RETENTION_DAYS: logRetention.toString(),
     SHOW_TEST_BANNER: showTestBanner.toString(),
+    READONLY: 'true',
   };
   if (caseSensitiveEmail) {
     env.CASE_SENSITIVE_EMAIL = 'true';
