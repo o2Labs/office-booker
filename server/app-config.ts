@@ -2,7 +2,7 @@ import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { Request } from 'express';
 import { isValidEmail } from './users/model';
 import { assert } from 'console';
-import { getOfficeId, isValidOfficeId } from './getOffices';
+import { isValidOfficeId } from './getOffices';
 import { Arrays } from 'collection-fns';
 import { UserType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 
@@ -19,7 +19,7 @@ type CognitoAuthConfig = {
   region: string;
 };
 
-type OfficeQuotaConfig = { id?: string; name: string; quota: number; parkingQuota?: number };
+type OfficeQuotaConfig = { id: string; name: string; quota: number; parkingQuota?: number };
 export type OfficeQuota = Required<OfficeQuotaConfig>;
 
 const isOfficeQuotaConfigs = (input: any): input is OfficeQuotaConfig[] =>
@@ -30,7 +30,7 @@ const isOfficeQuotaConfigs = (input: any): input is OfficeQuotaConfig[] =>
       o !== null &&
       typeof o.name === 'string' &&
       typeof o.quota === 'number' &&
-      (typeof o.id === 'undefined' || typeof o.id === 'string') &&
+      typeof o.id === 'string' &&
       (typeof o.parkingQuota === 'undefined' || typeof o.parkingQuota === 'number')
   );
 
@@ -54,14 +54,13 @@ export type Config = {
   readonly?: boolean;
 };
 
-const parseOfficeQuotas = (OFFICE_QUOTAS: string) => {
+const parseOfficeQuotas = (OFFICE_QUOTAS: string): OfficeQuota[] => {
   const officeQuotaConfigs = JSON.parse(OFFICE_QUOTAS);
   if (!isOfficeQuotaConfigs(officeQuotaConfigs)) {
     throw new Error('Invalid office quotas in OFFICE_QUOTAS');
   }
   const officeQuotas = officeQuotaConfigs.map((o) => ({
     ...o,
-    id: o.id ?? getOfficeId(o.name),
     parkingQuota: o.parkingQuota ?? 0,
   }));
   const invalidIds = officeQuotas.map((o) => o.id).filter((id) => !isValidOfficeId(id));

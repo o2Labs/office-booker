@@ -9,11 +9,11 @@ export interface CreateBookingModel {
   id: string;
   user: string;
   date: string;
-  office: string;
+  officeId: string;
   parking: boolean;
 }
 
-@table('bookings')
+@table('bookings-v2')
 export class BookingsModel {
   @rangeKey()
   id!: string;
@@ -22,7 +22,7 @@ export class BookingsModel {
   @attribute({ indexKeyConfigurations: { 'office-date-bookings': 'RANGE' } })
   date!: string;
   @attribute({ indexKeyConfigurations: { 'office-date-bookings': 'HASH' } })
-  office!: string;
+  officeId!: string;
   @attribute()
   parking!: boolean;
   @attribute()
@@ -53,11 +53,11 @@ export const getUserBookings = async (
 
 export const queryBookings = async (
   config: Config,
-  query: { office: string; date?: string }
+  query: { officeId: string; date?: string }
 ): Promise<BookingsModel[]> => {
   const mapper = buildMapper(config);
   const rows: BookingsModel[] = [];
-  const mapperQuery: Partial<BookingsModel> = { office: query.office };
+  const mapperQuery: Partial<BookingsModel> = { officeId: query.officeId };
   if (query.date !== undefined) {
     mapperQuery.date = query.date;
   }

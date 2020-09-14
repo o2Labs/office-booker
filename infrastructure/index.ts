@@ -159,10 +159,9 @@ const userPool = new aws.cognito.UserPool(`${serviceName}-users`, {
     preSignUp: preSignUp.arn,
     verifyAuthChallengeResponse: verifyAuthChallengeResponse.arn,
   },
-  // TODO: Block public sign-ups to the user pool.
-  // adminCreateUserConfig: {
-  //   allowAdminCreateUserOnly: true,
-  // },
+  adminCreateUserConfig: {
+    allowAdminCreateUserOnly: true,
+  },
   tags,
 });
 
@@ -414,7 +413,6 @@ const getHttpEnv = (): aws.types.input.lambda.FunctionEnvironment['variables'] =
     DEFAULT_WEEKLY_QUOTA: defaultWeeklyQuota.toString(),
     DATA_RETENTION_DAYS: logRetention.toString(),
     SHOW_TEST_BANNER: showTestBanner.toString(),
-    READONLY: 'true',
   };
   if (caseSensitiveEmail) {
     env.CASE_SENSITIVE_EMAIL = 'true';
