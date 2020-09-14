@@ -40,7 +40,7 @@ export const mapBooking = (config: Config, booking: DbBooking): Booking => ({
   created: booking.created,
   user: booking.user,
   date: booking.date,
-  office: Arrays.get(config.officeQuotas, (office) => office.name === booking.office),
+  office: Arrays.get(config.officeQuotas, (office) => office.id === booking.officeId),
   lastCancellation: getBookingLastCancelTime(booking.date),
   parking: booking.parking,
 });

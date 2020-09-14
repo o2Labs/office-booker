@@ -15,7 +15,7 @@ import {
 import { addDays } from 'date-fns';
 
 export interface OfficeBooking {
-  name: string;
+  officeId: string;
   date: string;
   bookingCount: number;
   parkingCount: number;
@@ -23,6 +23,7 @@ export interface OfficeBooking {
 
 @table('office-bookings')
 export class OfficeBookingModel {
+  /** This is still called name, but now contains the officeId since version 3 */
   @hashKey()
   name!: string;
   @rangeKey()
@@ -52,7 +53,7 @@ export const incrementOfficeBookingCount = async (
   try {
     await mapper.put(
       Object.assign(new OfficeBookingModel(), {
-        name: office.name,
+        name: office.id,
         date,
         bookingCount: 0,
         parkingCount: 0,
@@ -97,7 +98,7 @@ export const incrementOfficeBookingCount = async (
     const checkParkingQuota = includeParking ? `AND parkingCount < ${parkingQuotaValue}` : '';
     await client
       .updateItem({
-        Key: { name: { S: office.name }, date: { S: date } },
+        Key: { name: { S: office.id }, date: { S: date } },
         TableName: (config.dynamoDBTablePrefix || '') + 'office-bookings',
         UpdateExpression: updateExpression.serialize(attributes),
         ExpressionAttributeNames: attributes.names,
@@ -118,7 +119,7 @@ export const incrementOfficeBookingCount = async (
 
 export const decrementOfficeBookingCount = async (
   config: Config,
-  officeName: string,
+  officeId: string,
   date: string,
   includeParking: boolean
 ) => {
@@ -138,7 +139,7 @@ export const decrementOfficeBookingCount = async (
   const client = new DynamoDB(config.dynamoDB);
   await client
     .updateItem({
-      Key: { name: { S: officeName }, date: { S: date } },
+      Key: { name: { S: officeId }, date: { S: date } },
       TableName: (config.dynamoDBTablePrefix || '') + 'office-bookings',
       UpdateExpression: updateExpression.serialize(attributes),
       ExpressionAttributeNames: attributes.names,
@@ -149,14 +150,14 @@ export const decrementOfficeBookingCount = async (
 
 export const getOfficeBookings = async (
   config: Config,
-  officeName: string,
+  officeId: string,
   dates: string[]
 ): Promise<OfficeBookingModel[]> => {
   const mapper = buildMapper(config);
   const resultKey = (model: OfficeBookingModel) => model.date;
   const resultsMap = new Map(
     dates.map((date) => {
-      const model = Object.assign(new OfficeBookingModel(), { date, name: officeName });
+      const model = Object.assign(new OfficeBookingModel(), { date, name: officeId });
       return [resultKey(model), model];
     })
   );
@@ -167,7 +168,7 @@ export const getOfficeBookings = async (
       {
         subject: 'name',
         type: 'Equals',
-        object: officeName,
+        object: officeId,
       },
       {
         subject: 'date',
@@ -193,12 +194,4 @@ export const getOfficeBookings = async (
     }
   }
   return Array.from(resultsMap.values());
-};
-
-export const setOfficeBookings = async (config: Config, officeBookings: OfficeBookingModel[]) => {
-  const mapper = buildMapper(config);
-  for await (const _result of mapper.batchPut(
-    officeBookings.map((booking) => Object.assign(new OfficeBookingModel(), booking))
-  )) {
-  }
 };

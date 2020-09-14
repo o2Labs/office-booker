@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2020-09-14
+
+- Re-enable API write access.
+- Use newly migrated DB (using officeId).
+- Require officeId to be specified in config (to avoid renaming issues).
+
 ## [1.2.0] - 2020-09-14
 
 - Migrate DB to store all bookings with office ID rather than office name.

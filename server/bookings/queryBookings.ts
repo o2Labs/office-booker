@@ -26,7 +26,7 @@ export const queryBookings = async (config: Config, currentUser: User, query: Bo
   }
 
   const filterBookings = (booking: BookingsModel) =>
-    (!query.office || booking.office === query.office.name) &&
+    (!query.office || booking.officeId === query.office.id) &&
     (!query.date || booking.date === query.date) &&
     (!query.email || booking.user === query.email);
 
@@ -35,7 +35,7 @@ export const queryBookings = async (config: Config, currentUser: User, query: Bo
     return mapBookings(config, userBookings.filter(filterBookings));
   } else if (query.office !== undefined) {
     const officeBookings = await queryBookingsDb(config, {
-      office: query.office.name,
+      officeId: query.office.id,
       date: query.date,
     });
     return mapBookings(config, officeBookings.filter(filterBookings));
