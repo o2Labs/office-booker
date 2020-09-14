@@ -159,10 +159,9 @@ const userPool = new aws.cognito.UserPool(`${serviceName}-users`, {
     preSignUp: preSignUp.arn,
     verifyAuthChallengeResponse: verifyAuthChallengeResponse.arn,
   },
-  // TODO: Block public sign-ups to the user pool.
-  // adminCreateUserConfig: {
-  //   allowAdminCreateUserOnly: true,
-  // },
+  adminCreateUserConfig: {
+    allowAdminCreateUserOnly: true,
+  },
   tags,
 });
 
