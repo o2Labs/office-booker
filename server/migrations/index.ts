@@ -2,6 +2,8 @@ import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 import { parseConfigFromEnv, Config } from '../app-config';
 import { saveCognitoUsersToDb } from './1-save-users-to-db';
+import { duplicateOfficeBooking } from './2-replace-office-booking-ids';
+import { moveBookingsToV2 } from './3-move-bookings';
 
 /** Collection all migrations that should be applied to the system */
 type Migrations = {
@@ -24,6 +26,12 @@ type Migrations = {
 const migrations: Migrations = {
   '1-save-users-to-db': {
     execute: saveCognitoUsersToDb,
+  },
+  '2-replace-office-booking-ids': {
+    execute: duplicateOfficeBooking,
+  },
+  '3-move-bookings': {
+    execute: moveBookingsToV2,
   },
 };
 
