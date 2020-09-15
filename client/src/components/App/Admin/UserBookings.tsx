@@ -83,8 +83,8 @@ const UserBookings: React.FC<RouteComponentProps<{ email: string }>> = (props) =
 
   // Effects
   useEffect(() => {
-    if (state.user) {
-      getBookings({ user: state.user.email })
+    if (props.email) {
+      getBookings({ user: props.email })
         .then((data) => {
           // Split for previous and upcoming
           setBookings(data);
