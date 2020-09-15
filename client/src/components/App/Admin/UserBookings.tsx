@@ -102,7 +102,7 @@ const UserBookings: React.FC<RouteComponentProps<{ email: string }>> = (props) =
           });
         });
     }
-  }, [state.user, dispatch]);
+  }, [props.email, dispatch]);
 
   useEffect(() => {
     if (user && !user.permissions.canViewUsers) {
