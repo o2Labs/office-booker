@@ -159,10 +159,9 @@ const userPool = new aws.cognito.UserPool(`${serviceName}-users`, {
     preSignUp: preSignUp.arn,
     verifyAuthChallengeResponse: verifyAuthChallengeResponse.arn,
   },
-  // TODO: Block public sign-ups to the user pool.
-  // adminCreateUserConfig: {
-  //   allowAdminCreateUserOnly: true,
-  // },
+  adminCreateUserConfig: {
+    allowAdminCreateUserOnly: true,
+  },
   tags,
 });
 
@@ -272,6 +271,50 @@ const bookingsTable = new aws.dynamodb.Table('bookings-table', {
   tags,
 });
 
+const bookingsV2Table = new aws.dynamodb.Table('bookings-table-v2', {
+  name: dynamoTablePrefix + 'bookings-v2',
+  attributes: [
+    {
+      name: 'id',
+      type: 'S',
+    },
+    {
+      name: 'user',
+      type: 'S',
+    },
+    {
+      name: 'officeId',
+      type: 'S',
+    },
+    {
+      name: 'date',
+      type: 'S',
+    },
+  ],
+  hashKey: 'user',
+  rangeKey: 'id',
+  billingMode: 'PAY_PER_REQUEST',
+  globalSecondaryIndexes: [
+    {
+      name: 'office-date-bookings',
+      hashKey: 'officeId',
+      rangeKey: 'date',
+      projectionType: 'ALL',
+    },
+  ],
+  pointInTimeRecovery: {
+    enabled: false,
+  },
+  ttl: {
+    attributeName: 'ttl',
+    enabled: true,
+  },
+  serverSideEncryption: {
+    enabled: true,
+  },
+  tags,
+});
+
 const userTable = new aws.dynamodb.Table('user-table', {
   name: dynamoTablePrefix + 'users',
   attributes: [
@@ -331,8 +374,10 @@ new aws.iam.RolePolicy('lambda-iam-policy', {
           userBookingsTable.arn,
           officeBookingsTable.arn,
           bookingsTable.arn,
+          bookingsV2Table.arn,
           userTable.arn,
           bookingsTable.arn.apply((tableArn) => `${tableArn}/index/office-date-bookings`),
+          bookingsV2Table.arn.apply((tableArn) => `${tableArn}/index/office-date-bookings`),
         ],
       },
       {
@@ -449,3 +494,4 @@ export const cfUrn = stack.cdn.urn;
 export const staticSiteUrl = stack.url;
 export const cognitoPoolId = userPool.id;
 export const cognitoAuthClientId = authClient.id;
+export const httpEnv = httpHandler.environment.apply((env) => env?.variables ?? {});

@@ -17,7 +17,7 @@ export const getOffice = async (config: Config, officeId: string) => {
   if (office === undefined) {
     throw new NotFound();
   }
-  const officeBookings = await getOfficeBookings(config, office.name, availableDates);
+  const officeBookings = await getOfficeBookings(config, office.id, availableDates);
   const indexedBookings = new Map(
     officeBookings.map((officeBooking) => [officeBooking.date, officeBooking])
   );

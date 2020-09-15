@@ -69,7 +69,7 @@ export const createBooking = async (
   const newBooking = <BookingsModel>{
     id,
     parking: request.parking ?? false,
-    office: requestedOffice.name,
+    officeId: requestedOffice.id,
     date: request.date,
     user: request.user,
     ...('created' in request ? { id: request.id, created: request.created } : {}),
@@ -130,7 +130,7 @@ export const createBooking = async (
     audit('2.1:DecrementingOfficeBookingCount');
     await decrementOfficeBookingCount(
       config,
-      requestedOffice.name,
+      requestedOffice.id,
       newBooking.date,
       newBooking.parking
     );
@@ -151,7 +151,7 @@ export const createBooking = async (
       audit('3.1:DecremetingOfficeBookingCount');
       await decrementOfficeBookingCount(
         config,
-        requestedOffice.name,
+        requestedOffice.id,
         newBooking.date,
         newBooking.parking
       );

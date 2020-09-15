@@ -1,4 +1,4 @@
-# Office Booker (Open Preview)
+# Office Booker
 
 The Office Booker was created to solve the problem of coordinating the safe return to offices once COVID-19 restrictions are lifted.
 
@@ -72,7 +72,9 @@ Before running this application, you should review the privacy policy and adjust
 
 ## Releases
 
-Currently the application is "in preview" meaning **there may be breaking changes** on the master branch. Once we've released version 1.0 we will follow [semantic versioning](https://semver.org/) and maintain a changelog to indicate the impact of changes.
+We are following [semantic versioning](https://semver.org/) and maintain a changelog to indicate the impact of changes.
+
+Each major release must be installed in order to make sure that migrations are completed. I.e. if you're running version 3 and want version 5, you must deploy version 4 first.
 
 ## Pulumi Config Example
 

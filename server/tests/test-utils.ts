@@ -3,6 +3,7 @@ import { configureApp } from '../app';
 import { Config, OfficeQuota } from '../app-config';
 import { createLocalTables } from '../scripts/create-dynamo-tables';
 import { randomBytes } from 'crypto';
+import { UserType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 
 export const adminUserEmail = 'office-booker-admin-test@office-booker.test';
 
@@ -25,7 +26,7 @@ export const officeQuotas: OfficeQuota[] = [
 
 type TestConfig = Partial<
   Pick<Config, 'officeQuotas' | 'systemAdminEmails' | 'defaultWeeklyQuota'>
->;
+> & { users?: UserType[] };
 
 export const getConfig = (dynamoDBTablePrefix: string, testConfig?: TestConfig): Config => {
   return {
@@ -39,6 +40,7 @@ export const getConfig = (dynamoDBTablePrefix: string, testConfig?: TestConfig):
         }
         return { email: email };
       },
+      users: testConfig?.users ?? [],
     },
     dynamoDB: {
       region: 'eu-west-1',
@@ -65,6 +67,12 @@ export const configureServer = (dynamoDBTablePrefix: string, testConfig?: TestCo
       ),
     config,
   };
+};
+
+export const expectOk = (response: Response) => {
+  if (!response.ok) {
+    throw new Error(`Response not okay: ${response.status}\n${response.body}`);
+  }
 };
 
 export const expectUnauthorized = (response: Response) => {

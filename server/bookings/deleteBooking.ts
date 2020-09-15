@@ -21,7 +21,7 @@ const audit = (step: string, details?: any) =>
 const canManageBooking = (authUser: User, booking: BookingsModel) =>
   authUser.permissions.canManageAllBookings ||
   authUser.permissions.officesCanManageBookingsFor.find(
-    (office) => office.name === booking.office
+    (office) => office.id === booking.officeId
   ) !== undefined;
 
 export const deleteBooking = async (
@@ -73,7 +73,7 @@ export const deleteBooking = async (
 
   try {
     audit('2:DecrementingOfficeBookingCount');
-    await decrementOfficeBookingCount(config, booking.office, booking.date, booking.parking);
+    await decrementOfficeBookingCount(config, booking.officeId, booking.date, booking.parking);
     audit('3:DecrementingUserBookingCount');
     await decrementUserBookingCount(config, booking.user, startOfWeek);
   } catch (err) {
