@@ -127,7 +127,7 @@ test(`can't delete past bookings for other people`, async () => {
   const createBookingBody = {
     id: id,
     user: otherUser,
-    office: officeQuotas[1].id,
+    officeId: officeQuotas[1].id,
     date: format(yesterday, 'yyyy-MM-dd'),
     parking: false,
   };
