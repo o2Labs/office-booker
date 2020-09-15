@@ -8,13 +8,13 @@ pulumi stack select $1 --non-interactive
 
 # Stack output will be empty if it's a fresh install
 PRE_DEPLOY_STACK_OUTPUTS=`pulumi stack output --json || true`
-export AWS_REGION=`pulumi config get aws:region`
+REGION=`pulumi config get aws:region`
 STACK_NAME="office-booker-$1"
 
 # Do pre-migration check if it's not the first deploy
 if [ "$PRE_DEPLOY_STACK_OUTPUTS" != "{}" ]; then
   cd ..
-  ./migrate.sh --pre-check --stack $STACK_NAME
+  AWS_REGION="$REGION" ./migrate.sh --pre-check --stack $STACK_NAME
   cd infrastructure
 fi
 
@@ -32,9 +32,9 @@ aws s3 sync client/build "s3://$STATIC_SITE_BUCKET" --delete --exclude "*" --inc
 
 if [ "$PRE_DEPLOY_STACK_OUTPUTS" == "{}" ]; then
   # Flag if this is the first deploy
-  ./migrate.sh --first-run --stack "$STACK_NAME"
+  AWS_REGION="$REGION" ./migrate.sh --first-run --stack "$STACK_NAME"
 else
-  ./migrate.sh --stack "$STACK_NAME"
+  AWS_REGION="$REGION" ./migrate.sh --stack "$STACK_NAME"
 fi
 
 ./smoketest.sh --domain "https://$DOMAIN_NAME/" --selftestkey "$SELFTESTKEY" --user "$SELFTESTUSER"
