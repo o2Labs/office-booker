@@ -85,8 +85,6 @@ test('can create and delete bookings for other people for their office', async (
     parking: false,
   };
 
-  console.log('booking DATE:', new Date().getTime());
-
   const createResponse = await app
     .post('/api/bookings')
     .send(createBookingBody)

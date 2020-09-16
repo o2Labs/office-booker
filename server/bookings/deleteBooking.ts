@@ -46,11 +46,11 @@ export const deleteBooking = async (
   }
 
   const startOfWeek = dateStartOfWeek(booking.date);
-  const lastCancelledTime = canManageOfficeBookings
+  const lastCancelTime = canManageOfficeBookings
     ? getBookingAdminLastCancelTime(booking.date)
     : getBookingLastCancelTime(booking.date);
 
-  if (isAfter(new Date(), parseISO(lastCancelledTime))) {
+  if (isAfter(new Date(), parseISO(lastCancelTime))) {
     throw new HttpError({
       internalMessage: `Booking can no longer be cancelled. id: ${booking.id} for ${booking.user}`,
       status: 403,
