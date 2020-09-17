@@ -1,7 +1,6 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 import { parseConfigFromEnv, Config } from '../app-config';
-import { saveCognitoUsersToDb } from './1-save-users-to-db';
 
 /** Collection all migrations that should be applied to the system */
 type Migrations = {
@@ -23,7 +22,13 @@ type Migrations = {
 /** Enter migrations here */
 const migrations: Migrations = {
   '1-save-users-to-db': {
-    execute: saveCognitoUsersToDb,
+    reasonToFailPreCheck: 'You must deploy version 1.1.0 first.',
+  },
+  '2-replace-office-booking-ids': {
+    reasonToFailPreCheck: 'You must deploy version 1.2.0 first.',
+  },
+  '3-move-bookings': {
+    reasonToFailPreCheck: 'You must deploy version 1.2.0 first.',
   },
 };
 
