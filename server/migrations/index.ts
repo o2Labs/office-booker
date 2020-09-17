@@ -40,13 +40,12 @@ const args = options({
   stack: { type: 'string', demandOption: true },
   'first-run': { type: 'boolean', default: false },
   'pre-check': { type: 'boolean', default: false },
-  region: { type: 'string', demandOption: true },
 }).argv;
 
 const firstRun = args['first-run'];
 const preCheck = args['pre-check'];
 
-const ssm = new SSM({ region: args.region });
+const ssm = new SSM();
 
 const COMPLETE = 'completed';
 type MigrationStatus = 'completed' | 'pending';
