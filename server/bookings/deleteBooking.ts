@@ -4,7 +4,7 @@ import { deleteBooking as deleteBookingDb, getBooking, BookingsModel } from '../
 import { dateStartOfWeek } from '../availableDates';
 import { decrementUserBookingCount } from '../db/userBookings';
 import { parseISO, isAfter } from 'date-fns';
-import { getBookingLastCancelTime } from './model';
+import { getBookingLastCancelTime, getBookingAdminLastCancelTime } from './model';
 import { CustomError, NotFound, Forbidden, HttpError } from '../errors';
 import { User } from '../users/model';
 
@@ -46,14 +46,14 @@ export const deleteBooking = async (
   }
 
   const startOfWeek = dateStartOfWeek(booking.date);
+  const lastCancelTime = canManageOfficeBookings
+    ? getBookingAdminLastCancelTime(booking.date)
+    : getBookingLastCancelTime(booking.date);
 
-  if (
-    !canManageBooking(currentUser, booking) &&
-    isAfter(new Date(), parseISO(getBookingLastCancelTime(booking.date)))
-  ) {
+  if (isAfter(new Date(), parseISO(lastCancelTime))) {
     throw new HttpError({
       internalMessage: `Booking can no longer be cancelled. id: ${booking.id} for ${booking.user}`,
-      status: 400,
+      status: 403,
       httpMessage: 'No longer able to cancel booking',
     });
   }
