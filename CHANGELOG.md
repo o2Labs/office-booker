@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1]
+
+- Disable cancelling previous bookings.
 - Run migrations in the same AWS region as the Pulumi stack.
 - Fix bug which shows current user bookings in place of other user's bookings.
 
