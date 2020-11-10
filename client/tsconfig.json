@@ -3,12 +3,7 @@
     "strict": true,
     "target": "es6",
     "module": "esnext",
-    "lib": [
-      "es6",
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["es6", "dom", "dom.iterable", "esnext"],
     "jsx": "react",
     "noEmit": true,
     "esModuleInterop": true,
@@ -28,7 +23,5 @@
     "alwaysStrict": false,
     "noImplicitUseStrict": true
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*"]
 }
