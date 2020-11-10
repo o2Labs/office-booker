@@ -16,7 +16,9 @@ const Header: React.FC = () => (
     </div>
 
     <div className="title">
-      <h1>Office Booker</h1>
+      <h1>
+        <Link href="/">Office Booker</Link>
+      </h1>
     </div>
 
     <div className="lab-logo">
