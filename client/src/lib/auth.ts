@@ -51,7 +51,10 @@ export const getAuthState = async (): Promise<User['email'] | undefined> => {
 };
 
 const getJwtToken = async () => {
-  const session = await Auth.currentSession();
+  const session = await tryGetCurrentSession();
+  if (session === undefined) {
+    return undefined;
+  }
   const accessToken = session.getIdToken();
   return accessToken.getJwtToken();
 };
@@ -63,6 +66,9 @@ export const getAuthorization = async () => {
     return `Basic ${btoa(credentials)}`;
   }
   const token = await getJwtToken();
+  if (token === undefined) {
+    return undefined;
+  }
 
   return `Bearer ${token}`;
 };
