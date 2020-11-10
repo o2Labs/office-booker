@@ -351,7 +351,7 @@ const MakeBooking: React.FC<Props> = (props) => {
       <div className="slide" ref={sliderRef}>
         <p>
           <Warning />
-          You will not be able to cancel today's booking.
+          You will not be able to cancel today&apos;s booking.
         </p>
         <div className="slide-btns">
           <button

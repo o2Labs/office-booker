@@ -226,7 +226,12 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
                       )}
                       renderTags={(selectedOffices, tagProps) =>
                         selectedOffices.map((office, index: number) => (
-                          <Chip variant="outlined" label={office} {...tagProps({ index })} />
+                          <Chip
+                            variant="outlined"
+                            key={index}
+                            label={office}
+                            {...tagProps({ index })}
+                          />
                         ))
                       }
                     />
@@ -294,7 +299,7 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
               <ul>
                 <li>Must be assigned by a System Admin.</li>
                 <li>Can view and edit bookings for their assigned offices.</li>
-                <li>Can view other users (but can't edit).</li>
+                <li>Can view other users (but can&apos;t edit).</li>
               </ul>
 
               <p>A default quota is applied to all users regardless of role.</p>

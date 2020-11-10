@@ -4,18 +4,18 @@ import Layout from './Layout/Layout';
 import { OurButton } from '../styles/MaterialComponents';
 import ErrorPageStyles from './Assets/ErrorPage.styles';
 
-export default class ErrorBoundary extends React.Component<{}, { hasError: boolean }> {
-  constructor(props: Readonly<{}>) {
+export default class ErrorBoundary extends React.Component<unknown, { hasError: boolean }> {
+  constructor(props: Readonly<unknown>) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(): { hasError: boolean } {
     // Update state so the next render will show the fallback UI.
     return { hasError: true };
   }
 
-  render() {
+  render(): React.ReactNode {
     if (this.state.hasError) {
       return (
         <StructureStyles>
