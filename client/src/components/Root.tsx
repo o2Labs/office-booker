@@ -12,6 +12,7 @@ import { AppProvider } from './AppProvider';
 
 import Structure from './Structure';
 import ErrorBoundary from './ErrorBoundary';
+import Routes from './Routes';
 
 const Root: React.FC = () => (
   <StylesProvider injectFirst>
@@ -23,7 +24,9 @@ const Root: React.FC = () => (
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
           <ErrorBoundary>
             <AppProvider>
-              <Structure />
+              <Structure>
+                <Routes />
+              </Structure>
             </AppProvider>
           </ErrorBoundary>
         </MuiPickersUtilsProvider>
