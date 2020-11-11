@@ -21,7 +21,7 @@ const Help: React.FC<RouteComponentProps> = () => {
   const [currentOffice, setCurrentOffice] = useState<OfficeWithSlots | undefined>();
 
   useEffect(() => {
-    if (office && 'id' in office) {
+    if (user && office && 'id' in office) {
       getOffice(office.id)
         .then(setCurrentOffice)
         .catch((err) =>
@@ -34,7 +34,7 @@ const Help: React.FC<RouteComponentProps> = () => {
           })
         );
     }
-    if (office && 'name' in office) {
+    if (user && office && 'name' in office) {
       getOffices()
         .then((offices) =>
           dispatch({
@@ -52,7 +52,7 @@ const Help: React.FC<RouteComponentProps> = () => {
           })
         );
     }
-  }, [office, dispatch]);
+  }, [user, office, dispatch]);
 
   // Effects
   useEffect(() => {

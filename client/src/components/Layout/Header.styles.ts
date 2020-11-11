@@ -51,6 +51,11 @@ export default styled.header`
       margin: 0;
       padding: 0 2rem 0 1.5rem;
 
+      > a {
+        color: unset;
+        text-decoration: none;
+      }
+
       ${(props) => props.theme.breakpoints.up('xs')} {
         font-size: 2.2rem;
         line-height: 2.6rem;

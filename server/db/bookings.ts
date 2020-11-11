@@ -2,7 +2,7 @@ import { Config } from '../app-config';
 import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { attribute, table, hashKey, rangeKey } from '@aws/dynamodb-data-mapper-annotations';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
-import { addDays } from 'date-fns';
+import { format, subDays, addDays } from 'date-fns';
 import { AttributePath, FunctionExpression } from '@aws/dynamodb-expressions';
 
 export interface CreateBookingModel {
@@ -43,9 +43,23 @@ export const getUserBookings = async (
   config: Config,
   userEmail: string
 ): Promise<BookingsModel[]> => {
+  const lowerBound = subDays(new Date().getTime(), config.dataRetentionDays);
+  const upperBound = addDays(new Date().getTime(), config.advanceBookingDays);
+
   const mapper = buildMapper(config);
   const rows: BookingsModel[] = [];
-  for await (const item of mapper.query(BookingsModel, { user: userEmail }, { limit: 50 })) {
+  for await (const item of mapper.query(
+    BookingsModel,
+    { user: userEmail },
+    {
+      filter: {
+        type: 'Between',
+        subject: 'date',
+        lowerBound: format(lowerBound, 'yyyy-MM-dd'),
+        upperBound: format(upperBound, 'yyyy-MM-dd'),
+      },
+    }
+  )) {
     rows.push(item);
   }
   return rows;

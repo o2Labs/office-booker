@@ -52,7 +52,7 @@ const Home: React.FC<RouteComponentProps> = () => {
     } else if ('id' in office) {
       getOffice(office.id)
         .then(setCurrentOffice)
-        .catch((err) => {
+        .catch(() => {
           dispatch({
             type: 'SET_OFFICE',
             payload: undefined,
@@ -135,7 +135,7 @@ const Home: React.FC<RouteComponentProps> = () => {
     setRefreshedAt(new Date());
   };
 
-  const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
+  const handleClose = () => {
     setIEWarningOpen(false);
   };
 
@@ -150,7 +150,7 @@ const Home: React.FC<RouteComponentProps> = () => {
               <a href="https://browsehappy.com/"> modern browser</a> for an optimal experience.
             </p>
             <div className="button-container">
-            <IconButton
+              <IconButton
                 className="ie-banner__close__a"
                 onClick={handleClose}
                 onKeyPress={handleClose}
@@ -158,7 +158,7 @@ const Home: React.FC<RouteComponentProps> = () => {
               >
                 <CloseIcon height={24} width={24} />
               </IconButton>
-          </div>
+            </div>
           </div>
         </div>
         {loading || !allOffices ? (
