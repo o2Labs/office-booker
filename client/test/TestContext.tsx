@@ -7,6 +7,7 @@ import MaterialTheme from '../src/styles/MaterialTheme';
 import { User } from '../src/types/api';
 import { StylesProvider, ThemeProvider as MaterialThemeProvider } from '@material-ui/styles';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
+import Structure from '../src/components/Structure';
 
 export const TestContext: React.FC<{ user?: User; config?: Config }> = ({
   children,
@@ -17,7 +18,9 @@ export const TestContext: React.FC<{ user?: User; config?: Config }> = ({
     <StyledThemeProvider theme={MaterialTheme}>
       <MaterialThemeProvider theme={MaterialTheme}>
         <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <AppProvider initialState={{ user, config }}>{children}</AppProvider>
+          <AppProvider initialState={{ user, config }}>
+            <Structure>{children}</Structure>
+          </AppProvider>
         </MuiPickersUtilsProvider>
       </MaterialThemeProvider>
     </StyledThemeProvider>

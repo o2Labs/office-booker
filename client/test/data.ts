@@ -69,7 +69,7 @@ export const createFakeBooking = (
   prototype: Partial<Booking> & Pick<Booking, 'office'>
 ): Booking => ({
   date: format(new Date(), 'yyyy-MM-dd'),
-  id: 'booking',
+  id: 'booking-123455',
   parking: true,
   user: 'user',
   ...prototype,

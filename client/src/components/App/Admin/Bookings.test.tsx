@@ -79,8 +79,8 @@ test('Can cancel booking', async () => {
     rest.get('/api/bookings', (req, res, ctx) => {
       return res(ctx.json([booking]));
     }),
-    rest.delete('/api/bookings/booking', (req, res, ctx) => {
-      deleteReq(req.url.href);
+    rest.delete(`/api/bookings/:bookingId`, (req, res, ctx) => {
+      deleteReq({ bookingId: req.params.bookingId, user: req.url.searchParams.get('user') });
       return res(ctx.status(200));
     })
   );
@@ -99,12 +99,12 @@ test('Can cancel booking', async () => {
   await waitFor(() => {
     screen.getByText('Are you sure you want to cancel this booking?');
   });
+
   const dialog = screen.getByRole('dialog');
   fireEvent.click(queries.getByText(dialog, 'Yes'));
+
   await waitFor(() => {
     screen.getByText('Booking cancelled');
   });
-  expect(deleteReq).toHaveBeenCalledWith(
-    'http://localhost/api/bookings/booking?user=bookinguser@domain.test'
-  );
+  expect(deleteReq).toHaveBeenCalledWith({ bookingId: booking.id, user: booking.user });
 });
