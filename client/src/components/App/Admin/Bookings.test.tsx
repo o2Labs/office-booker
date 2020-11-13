@@ -1,8 +1,8 @@
 import React from 'react';
+import { rest } from 'msw';
 import { render, fireEvent, waitFor, screen, queries } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import Bookings from './Bookings';
-import { configureAuth } from '../../../lib/auth';
+
 import { server } from '../../../../test/server.mock';
 import {
   createFakeBooking,
@@ -11,25 +11,16 @@ import {
   createFakeSystemAdminUser,
 } from '../../../../test/data';
 import { TestContext } from '../../../../test/TestContext';
-import { rest } from 'msw';
-import { Office } from '../../../types/api';
+import { mockGetBookings, mockGetOffices } from '../../../../test/handlers';
 
-function mockGetOffices(officesResponse: Office[]) {
-  return rest.get('/api/offices', (req, res, ctx) => {
-    return res(ctx.json(officesResponse));
-  });
-}
+import Bookings from './Bookings';
+import { configureAuth } from '../../../lib/auth';
 
 test('No bookings', async () => {
   const config = createFakeConfig();
   const office = createFakeOffice();
   const user = createFakeSystemAdminUser([office]);
-  server.use(
-    mockGetOffices([office]),
-    rest.get('/api/bookings', (req, res, ctx) => {
-      return res(ctx.json([]));
-    })
-  );
+  server.use(mockGetOffices([office]), mockGetBookings([]));
   configureAuth(config);
   render(
     <TestContext user={user} config={config}>
