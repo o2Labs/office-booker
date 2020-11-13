@@ -1,7 +1,10 @@
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
+import { createFakeConfig } from './data';
+import { mockGetConfig } from './handlers';
 
 export const server = setupServer(
+  mockGetConfig(createFakeConfig()),
   rest.get('*', (req, res, ctx) => {
     console.log(req.method, req.url.href);
     return res(ctx.status(404));
