@@ -28,9 +28,7 @@ test('No bookings', async () => {
     </TestContext>
   );
 
-  await waitFor(() => {
-    screen.getAllByText('No bookings found');
-  });
+  await screen.findByText('No bookings found');
 });
 
 test('Has one booking', async () => {
@@ -38,12 +36,7 @@ test('Has one booking', async () => {
   const office = createFakeOffice();
   const user = createFakeSystemAdminUser([office]);
   const booking = createFakeBooking({ office, user: 'bookinguser@domain.test' });
-  server.use(
-    mockGetOffices([office]),
-    rest.get('/api/bookings', (req, res, ctx) => {
-      return res(ctx.json([booking]));
-    })
-  );
+  server.use(mockGetOffices([office]), mockGetBookings([booking]));
   configureAuth(config);
   render(
     <TestContext user={user} config={config}>
@@ -51,10 +44,8 @@ test('Has one booking', async () => {
     </TestContext>
   );
 
-  await waitFor(() => {
-    screen.getAllByText('bookinguser@domain.test');
-  });
-  screen.getByText('Cancel');
+  await screen.findByText('bookinguser@domain.test');
+  screen.getByRole('button', { name: 'Cancel' });
   expect(screen.getByText(/Bookings:/)?.nextSibling).toHaveTextContent('1');
 });
 
@@ -67,9 +58,7 @@ test('Can cancel booking', async () => {
   const deleteReq = jest.fn();
   server.use(
     mockGetOffices([office]),
-    rest.get('/api/bookings', (req, res, ctx) => {
-      return res(ctx.json([booking]));
-    }),
+    mockGetBookings([booking]),
     rest.delete(`/api/bookings/:bookingId`, (req, res, ctx) => {
       deleteReq({ bookingId: req.params.bookingId, user: req.url.searchParams.get('user') });
       return res(ctx.status(200));
@@ -81,21 +70,13 @@ test('Can cancel booking', async () => {
     </TestContext>
   );
 
-  await waitFor(() => {
-    screen.getByText('Cancel');
-  });
+  const cancelButton = await screen.findByRole('button', { name: 'Cancel' });
+  fireEvent.click(cancelButton);
 
-  fireEvent.click(screen.getByText('Cancel'));
+  const dialog = await screen.findByRole('dialog');
+  queries.getByText(dialog, 'Are you sure you want to cancel this booking?');
+  fireEvent.click(queries.getByRole(dialog, 'button', { name: 'Yes' }));
 
-  await waitFor(() => {
-    screen.getByText('Are you sure you want to cancel this booking?');
-  });
-
-  const dialog = screen.getByRole('dialog');
-  fireEvent.click(queries.getByText(dialog, 'Yes'));
-
-  await waitFor(() => {
-    screen.getByText('Booking cancelled');
-  });
+  await screen.findByText('Booking cancelled');
   expect(deleteReq).toHaveBeenCalledWith({ bookingId: booking.id, user: booking.user });
 });
