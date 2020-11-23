@@ -77,6 +77,8 @@ const EnterEmail: React.FC<Props> = (props) => {
           label="Email Address"
           type="email"
           color="primary"
+          name="email"
+          id="email-input"
           fullWidth
           onChange={(e) => setEmail(e.target.value)}
         />

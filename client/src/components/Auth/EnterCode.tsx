@@ -140,6 +140,7 @@ const EnterCode: React.FC<Props> = (props) => {
         <TextField
           label="Code"
           type="number"
+          id="code"
           fullWidth
           placeholder="e.g. 733737"
           required
