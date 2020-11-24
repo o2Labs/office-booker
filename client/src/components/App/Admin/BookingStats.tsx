@@ -18,6 +18,7 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
+import format from 'date-fns/format';
 
 const BookingStats: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -77,8 +78,7 @@ const BookingStats: React.FC<RouteComponentProps> = () => {
           <Loading />
         ) : (
           <>
-            <h3>Office Booking Stats</h3>
-
+            <h3>Daily Office Booking Counts</h3>
             <Paper square className="form-container">
               <TableContainer>
                 <Table>
@@ -86,7 +86,7 @@ const BookingStats: React.FC<RouteComponentProps> = () => {
                     <TableRow>
                       <TableCell>Office</TableCell>
                       {stats.dates.map((date) => (
-                        <TableCell key={date}>{date}</TableCell>
+                        <TableCell key={date}>{format(new Date(date), 'do MMM')}</TableCell>
                       ))}
                     </TableRow>
                   </TableHead>
