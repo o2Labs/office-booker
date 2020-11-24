@@ -8,6 +8,7 @@ import {
   OfficeAdminRole,
   UserQueryResponse,
   Office,
+  Stats,
 } from '../types/api';
 
 // Constants
@@ -256,4 +257,21 @@ export const cancelBooking = async (id: Booking['id'], user: User['email']): Pro
   if (!response.ok) {
     throw await buildHttpError(response);
   }
+};
+
+export const getStats = async (): Promise<Stats> => {
+  const url = new URL(`stats`, BASE_URL);
+
+  const headers = await buildHeaders();
+
+  const response = await fetch(url.href, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw await buildHttpError(response);
+  }
+
+  return await response.json();
 };

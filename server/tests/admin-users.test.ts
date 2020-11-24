@@ -3,7 +3,7 @@ import { configureServer, getNormalUser, adminUserEmail } from './test-utils';
 import { encode } from 'querystring';
 import { officeQuotas } from './test-utils';
 
-const { app, resetDb } = configureServer('admin-users');
+const { app, resetDb, config } = configureServer('admin-users');
 const otherUser = getNormalUser();
 
 beforeEach(resetDb);
@@ -16,6 +16,18 @@ test(`can get others`, async () => {
 test(`can see all bookings`, async () => {
   const response = await app.get('/api/bookings').set('bearer', adminUserEmail);
   expect(response.ok).toBe(true);
+});
+
+test(`can see stats`, async () => {
+  const response = await app.get('/api/stats').set('bearer', adminUserEmail);
+  expect(response.ok).toBe(true);
+  // 2 offices each with 14 available dates and 30 retained dates.
+  expect(response.body.officeDates).toHaveLength(
+    (config.advanceBookingDays + config.dataRetentionDays) * config.officeQuotas.length
+  );
+  expect(response.body.officeDates[0]).toHaveProperty('officeId');
+  expect(response.body.officeDates[0]).toHaveProperty('date');
+  expect(response.body.officeDates[0]).toMatchObject({ bookingCount: 0, parkingCount: 0 });
 });
 
 test('can query admin users', async () => {

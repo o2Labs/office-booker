@@ -11,6 +11,7 @@ import Users from './App/Admin/Users';
 import User from './App/Admin/User';
 import UserBookings from './App/Admin/UserBookings';
 import CreateBooking from './App/Admin/CreateBooking';
+import BookingStats from './App/Admin/BookingStats';
 import UpcomingBookings from './App/UpcomingBookings';
 import Privacy from './App/Privacy';
 
@@ -24,6 +25,7 @@ const Routes: React.FC = () => {
         <UpcomingBookings path="/bookings" />
 
         <Bookings path="/admin" />
+        <BookingStats path="/admin/stats" />
         <CreateBooking path="/admin/booking" />
         <Users path="/admin/users" />
         <User path="/admin/users/:email" />

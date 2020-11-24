@@ -49,3 +49,14 @@ export type Booking = {
   office: Office;
   parking: boolean;
 };
+
+export type OfficeDateStats = {
+  officeId: string;
+  date: string;
+  bookingCount: number;
+  parkingCount: number;
+};
+
+export type Stats = {
+  officeDates: OfficeDateStats[];
+};
