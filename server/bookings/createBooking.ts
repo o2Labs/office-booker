@@ -2,7 +2,7 @@ import { CreateBooking, Booking, mapBooking, RestoreBooking } from './model';
 import { Config } from '../app-config';
 import { createBooking as dbCreate, BookingsModel } from '../db/bookings';
 import { parse } from 'date-fns';
-import { getAvailableDates, dateStartOfWeek } from '../availableDates';
+import { getAvailableDates, dateStartOfWeek } from '../dates';
 import {
   incrementOfficeBookingCount,
   decrementOfficeBookingCount,

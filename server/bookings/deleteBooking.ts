@@ -1,7 +1,7 @@
 import { Config } from '../app-config';
 import { decrementOfficeBookingCount } from '../db/officeBookings';
 import { deleteBooking as deleteBookingDb, getBooking, BookingsModel } from '../db/bookings';
-import { dateStartOfWeek } from '../availableDates';
+import { dateStartOfWeek } from '../dates';
 import { decrementUserBookingCount } from '../db/userBookings';
 import { parseISO, isAfter } from 'date-fns';
 import { getBookingLastCancelTime, getBookingAdminLastCancelTime } from './model';
