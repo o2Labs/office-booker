@@ -1,5 +1,5 @@
 import { Config } from '../src/context/stores';
-import { Booking, Office, User } from '../src/types/api';
+import { Booking, Office, OfficeWithSlots, User } from '../src/types/api';
 import { format } from 'date-fns';
 
 export const createFakeConfig = (prototype?: Partial<Config>): Config => ({
@@ -14,6 +14,14 @@ export const createFakeOffice = (prototype?: Partial<Office>): Office => ({
   name: 'The Office',
   parkingQuota: 100,
   quota: 100,
+  ...prototype,
+});
+
+export const createFakeOfficeWithSlots = (
+  prototype?: Partial<OfficeWithSlots>
+): OfficeWithSlots => ({
+  ...createFakeOffice(prototype),
+  slots: [],
   ...prototype,
 });
 
