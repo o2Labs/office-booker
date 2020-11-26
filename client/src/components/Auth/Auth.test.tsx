@@ -23,20 +23,20 @@ test('Logging in', async () => {
     </TestContext>
   );
 
-  const loginButton = await screen.findByRole('button', { name: /Submit/i });
-  fireEvent.click(loginButton);
+  const verifyButton = await screen.findByRole('button', { name: /send code/i });
+  fireEvent.click(verifyButton);
 
   const alert = await screen.findByRole('alert');
   await queries.findByText(alert, 'Email address not permitted');
 
   const emailField = screen.getByLabelText(/Email Address/i);
   fireEvent.change(emailField, { target: { value: 'test.user@domain.test' } });
-  fireEvent.click(loginButton);
+  fireEvent.click(verifyButton);
 
   await screen.findByRole('heading', { name: /Verify/i });
   const codeField = screen.getByLabelText(/code/i);
   fireEvent.change(codeField, { target: { value: '123456' } });
-  const submitButton = screen.getByRole('button', { name: /submit/i });
+  const submitButton = screen.getByRole('button', { name: /log in/i });
   fireEvent.click(submitButton);
 
   await screen.findByRole('heading', { name: /logged in/i });

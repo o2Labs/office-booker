@@ -1,5 +1,5 @@
 import { CognitoUser } from '@aws-amplify/auth';
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import TextField from '@material-ui/core/TextField';
 
 import { AppContext } from '../AppProvider';
@@ -24,6 +24,8 @@ const EnterCode: React.FC<Props> = (props) => {
   // Local state
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement | undefined>();
 
   // Handlers
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -121,6 +123,10 @@ const EnterCode: React.FC<Props> = (props) => {
     }
   };
 
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   // Effects
   useEffect(() => {
     // Finished loading once we have retrieve the user
@@ -134,17 +140,19 @@ const EnterCode: React.FC<Props> = (props) => {
     <EnterCodeStyles>
       <h2>Verify</h2>
 
-      <form onSubmit={handleSubmit} className="form">
+      <form onSubmit={handleSubmit} className="form" autoComplete="off">
         <p>Please enter your verification code to continue.</p>
 
         <TextField
           label="Code"
-          type="number"
+          type="text"
           id="code"
           fullWidth
           placeholder="e.g. 733737"
           required
           onChange={(e) => setCode(e.target.value)}
+          inputRef={inputRef}
+          inputProps={{ pattern: '[0-9]*', inputMode: 'numeric' }}
         />
 
         <p className="sub">
@@ -154,7 +162,7 @@ const EnterCode: React.FC<Props> = (props) => {
         <p className="sub">This code is valid for 3 minutes.</p>
 
         <LoadingButton type="submit" variant="contained" color="primary" isLoading={loading}>
-          Submit
+          Log in
         </LoadingButton>
       </form>
     </EnterCodeStyles>
