@@ -2,7 +2,7 @@ import { Config } from '../app-config';
 import DynamoDB from 'aws-sdk/clients/dynamodb';
 import { attribute, table, hashKey, rangeKey } from '@aws/dynamodb-data-mapper-annotations';
 import { DataMapper } from '@aws/dynamodb-data-mapper';
-import { format, subDays, addDays } from 'date-fns';
+import { format, subDays, addDays, getUnixTime } from 'date-fns';
 import { AttributePath, FunctionExpression } from '@aws/dynamodb-expressions';
 
 export interface CreateBookingModel {
@@ -100,7 +100,7 @@ export const createBooking = async (
   try {
     const created = await mapper.put(
       Object.assign(new BookingsModel(), booking, {
-        ttl: addDays(new Date(booking.date), config.dataRetentionDays).getTime(),
+        ttl: getUnixTime(addDays(new Date(booking.date), config.dataRetentionDays)),
       }),
       {
         condition: new FunctionExpression('attribute_not_exists', new AttributePath('id')),

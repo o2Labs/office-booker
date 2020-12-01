@@ -1,6 +1,7 @@
 import { options } from 'yargs';
 import { SSM } from 'aws-sdk';
 import { parseConfigFromEnv, Config } from '../app-config';
+import { fixTtl } from './4-fix-ttl';
 
 /** Collection all migrations that should be applied to the system */
 type Migrations = {
@@ -29,6 +30,9 @@ const migrations: Migrations = {
   },
   '3-move-bookings': {
     reasonToFailPreCheck: 'You must deploy version 1.2.0 first.',
+  },
+  '4-fix-ttl': {
+    execute: fixTtl,
   },
 };
 

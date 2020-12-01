@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+
+- Fix TTL bug resulting in the data retention policy not being followed.
+- Add migration to fix TTL on existing database entries.
+- Add a basic stats page showing all booking counts per office, per day.
+- Improved usability and accessibility of login journey.
+- Increase test coverage of critical path to booking.
+
 ## [2.0.2]
 
 - Add check for user before attempting to retrieve office details.

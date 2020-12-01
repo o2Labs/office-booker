@@ -3002,6 +3002,11 @@ array-flatten@^2.1.0:
   resolved "https://registry.yarnpkg.com/array-flatten/-/array-flatten-2.1.2.tgz#24ef80a28c1a893617e2149b0c6d0d788293b099"
   integrity sha512-hNfzcOV8W4NdualtqBFPyVO+54DSJuZGY9qT4pRroB6S9e3iiido2ISIC5h9R2sPJ8H3FHCIiEnsv1lPXO3KtQ==
 
+array-fns@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/array-fns/-/array-fns-1.0.0.tgz#bce7b5cc9b95c28187328a320555fd175cb545de"
+  integrity sha512-mPqxfuDBey5FYj+f3wy4Jlf1u74eNBOhBuJ26od/UovTLTwOhusNoNgByQN3JI7yEr//CD1XuDtWVQYYfpJRLw==
+
 array-includes@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/array-includes/-/array-includes-3.1.1.tgz#cdd67e6852bdf9c1215460786732255ed2459348"

@@ -1,6 +1,6 @@
 {
   "name": "office-booker",
-  "version": "0.1.0",
+  "version": "2.1.0",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -22,6 +22,7 @@
     "@reach/router": "^1.3.3",
     "@types/loadable__component": "^5.13.1",
     "amazon-cognito-identity-js": "^4.2.2",
+    "array-fns": "^1.0.0",
     "core-js": "^3.6.5",
     "date-fns": "^2.12.0",
     "lodash": "^4.17.19",

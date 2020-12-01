@@ -47,7 +47,7 @@ export const configureApp = (config: Config) => {
   app.get('/api/config', (req, res, next) => {
     try {
       const clientConfig = {
-        version: '2.0.0',
+        version: '2.1.0',
         showTestBanner: config.showTestBanner,
         auth:
           config.authConfig.type === 'cognito'
