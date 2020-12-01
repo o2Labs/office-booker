@@ -1,6 +1,7 @@
 import { Config } from '../src/context/stores';
 import { Booking, Office, OfficeWithSlots, User } from '../src/types/api';
-import { format } from 'date-fns';
+import { addDays, format } from 'date-fns';
+import { init } from 'array-fns';
 
 export const createFakeConfig = (prototype?: Partial<Config>): Config => ({
   advancedBookingDays: 14,
@@ -18,12 +19,19 @@ export const createFakeOffice = (prototype?: Partial<Office>): Office => ({
 });
 
 export const createFakeOfficeWithSlots = (
+  config: Config,
   prototype?: Partial<OfficeWithSlots>
-): OfficeWithSlots => ({
-  ...createFakeOffice(prototype),
-  slots: [],
-  ...prototype,
-});
+): OfficeWithSlots => {
+  return {
+    ...createFakeOffice(prototype),
+    slots: init(config.advancedBookingDays, (i) => ({
+      date: format(addDays(new Date(), i), 'yyyy-MM-dd'),
+      booked: 0,
+      bookedParking: 0,
+    })),
+    ...prototype,
+  };
+};
 
 export const createFakeUser = (prototype?: Partial<User>): User => ({
   email: 'mock.user@domain.test',
