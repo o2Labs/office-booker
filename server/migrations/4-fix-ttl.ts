@@ -20,8 +20,14 @@ async function* getCorrectedTtls(mapper: DataMapper, model: { new (): any }) {
 }
 
 const scanAndFix = async (mapper: DataMapper, model: { new (): any }) => {
+  let updated = 0;
   for await (const _item of mapper.batchPut(getCorrectedTtls(mapper, model))) {
+    updated++;
+    if (updated % 100 === 0) {
+      console.log('Updated ', updated);
+    }
   }
+  console.log('Updated ', updated);
 };
 
 export const fixTtl = async (config: Config) => {
