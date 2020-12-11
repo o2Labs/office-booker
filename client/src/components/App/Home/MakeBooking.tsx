@@ -41,7 +41,7 @@ type Props = {
 };
 
 type Week = {
-  id: number;
+  startOfWeek: Date;
   bookings: number;
 };
 
@@ -83,8 +83,7 @@ const MakeBooking: React.FC<Props> = (props) => {
   // Local state
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<Week | undefined>();
-  const [selectedWeekLabel, setSelectedWeekLabel] = useState<string | undefined>();
+  const [selectedWeek, setSelectedWeek] = useState<number | undefined>();
   const [buttonsLoading, setButtonsLoading] = useState(true);
   const [slideConfirm, setSlideConfirm] = useState(false);
   const [todayWithParking, setTodayWithParking] = useState(false);
@@ -143,17 +142,17 @@ const MakeBooking: React.FC<Props> = (props) => {
     office.slots.forEach((s) => {
       // Get week
       const date = parse(s.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS);
-      const week = parseInt(format(date, 'w', DATE_FNS_OPTIONS));
+      const weekStart = startOfWeek(date, DATE_FNS_OPTIONS);
 
       // Is it already in the list?
-      if (!weeks.find((w) => w.id === week)) {
+      if (!weeks.find((w) => w.startOfWeek.getTime() === weekStart.getTime())) {
         // Find total user bookings for this week
         const userBookings = bookings.filter((b) =>
           isSameWeek(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS), date, DATE_FNS_OPTIONS)
         );
 
         weeks.push({
-          id: week,
+          startOfWeek: weekStart,
           bookings: userBookings.length,
         });
       }
@@ -166,42 +165,27 @@ const MakeBooking: React.FC<Props> = (props) => {
     if (weeks.length > 0) {
       setButtonsLoading(false);
 
-      if (selectedWeek) {
-        // Reset selected week (to refresh total bookings)
-        const index = weeks.findIndex((w) => w.id === selectedWeek.id);
-
-        if (index !== -1) {
-          setSelectedWeek(weeks[index]);
-        } else {
-          setSelectedWeek(weeks[0]);
-        }
-      } else {
-        // Default to first week
-        setSelectedWeek(weeks[0]);
+      if (selectedWeek === undefined) {
+        setSelectedWeek(0);
       }
     }
   }, [selectedWeek, weeks]);
 
-  useEffect(() => {
-    if (selectedWeek) {
-      // Calculate start and end of week
-      const weekDate = parse(selectedWeek.id.toString(), 'w', new Date(), DATE_FNS_OPTIONS);
+  const getWeekLabel = (week: Week) => {
+    const startDate = week.startOfWeek;
+    const endDate = endOfWeek(startDate, DATE_FNS_OPTIONS);
 
-      const startDate = startOfWeek(weekDate, DATE_FNS_OPTIONS);
-      const endDate = endOfWeek(startDate, DATE_FNS_OPTIONS);
+    // Are dates in the same month
+    const sameMonth = isSameMonth(startDate, endDate);
 
-      // Are dates in the same month
-      const sameMonth = isSameMonth(startDate, endDate);
+    // Set label
+    const startLabel = format(startDate, 'LLL d', DATE_FNS_OPTIONS);
+    const endLabel = sameMonth
+      ? format(endDate, 'd', DATE_FNS_OPTIONS)
+      : format(endDate, 'LLL d', DATE_FNS_OPTIONS);
 
-      // Set label
-      const startLabel = format(startDate, 'LLL d', DATE_FNS_OPTIONS);
-      const endLabel = sameMonth
-        ? format(endDate, 'd', DATE_FNS_OPTIONS)
-        : format(endDate, 'LLL d', DATE_FNS_OPTIONS);
-
-      setSelectedWeekLabel(`${startLabel} - ${endLabel}`);
-    }
-  }, [selectedWeek, weeks]);
+    return `${startLabel} - ${endLabel}`;
+  };
 
   useEffect(() => {
     if (user && weeks && weeks.length > 0) {
@@ -213,14 +197,8 @@ const MakeBooking: React.FC<Props> = (props) => {
       // For each week
       weeks.forEach((w) => {
         // Find all days in the week
-        const startDate = startOfWeek(
-          parse(w.id.toString(), 'w', new Date(), DATE_FNS_OPTIONS),
-          DATE_FNS_OPTIONS
-        );
-        const endDate = endOfWeek(
-          parse(w.id.toString(), 'w', new Date(), DATE_FNS_OPTIONS),
-          DATE_FNS_OPTIONS
-        );
+        const startDate = w.startOfWeek;
+        const endDate = endOfWeek(w.startOfWeek, DATE_FNS_OPTIONS);
 
         const weekDays = eachDayOfInterval({
           start: startDate,
@@ -305,14 +283,14 @@ const MakeBooking: React.FC<Props> = (props) => {
   // Handlers
   const handleChangeWeek = (direction: 'forward' | 'backward') => {
     // Find index of current selected
-    if (selectedWeek) {
-      const index = weeks.findIndex((w) => w.id === selectedWeek.id);
-
-      if (index !== -1) {
-        setSelectedWeek(
-          weeks[direction === 'forward' ? index + 1 : direction === 'backward' ? index - 1 : index]
-        );
-      }
+    if (selectedWeek !== undefined) {
+      setSelectedWeek(
+        direction === 'forward'
+          ? selectedWeek + 1
+          : direction === 'backward'
+          ? selectedWeek - 1
+          : selectedWeek
+      );
     }
   };
 
@@ -462,37 +440,37 @@ const MakeBooking: React.FC<Props> = (props) => {
         </li>
       </ul>
 
-      {weeks && weeks.length > 0 && selectedWeek && (
+      {weeks && weeks.length > 0 && selectedWeek !== undefined && (
         <Paper square className="bookings">
           <div className="menu">
             <div className="back">
               <IconButton
-                disabled={selectedWeek.id === weeks[0].id}
+                disabled={selectedWeek === 0}
                 onClick={() => handleChangeWeek('backward')}
                 size="small"
               >
                 <ArrowLeftIcon
                   fontSize="inherit"
                   className="icon"
-                  color={selectedWeek.id === weeks[0].id ? 'disabled' : 'secondary'}
+                  color={selectedWeek === 0 ? 'disabled' : 'secondary'}
                 />
               </IconButton>
             </div>
 
             <div className="date">
-              <h3>{selectedWeekLabel}</h3>
+              <h3>{getWeekLabel(weeks[selectedWeek])}</h3>
             </div>
 
             <div className="forward">
               <IconButton
-                disabled={selectedWeek.id === weeks[weeks.length - 1].id}
+                disabled={selectedWeek === weeks.length - 1}
                 onClick={() => handleChangeWeek('forward')}
                 size="small"
               >
                 <ArrowRightIcon
                   fontSize="inherit"
                   className="icon"
-                  color={selectedWeek.id === weeks[weeks.length - 1].id ? 'disabled' : 'secondary'}
+                  color={selectedWeek === weeks.length - 1 ? 'disabled' : 'secondary'}
                 />
               </IconButton>
             </div>
@@ -516,8 +494,8 @@ const MakeBooking: React.FC<Props> = (props) => {
 
           <div className="details">
             <p className="quota">
-              <span>{user.quota - selectedWeek.bookings}</span>{' '}
-              {user.quota - selectedWeek.bookings === 1 ? 'booking' : 'bookings'} remaining
+              <span>{user.quota - weeks[selectedWeek].bookings}</span>{' '}
+              {user.quota - weeks[selectedWeek].bookings === 1 ? 'booking' : 'bookings'} remaining
             </p>
 
             <p className="upcoming-bookings">
@@ -528,9 +506,9 @@ const MakeBooking: React.FC<Props> = (props) => {
           </div>
 
           {rows
-            .filter((row) => selectedWeek.id === row.week.id)
-            .map((row) => (
-              <div key={row.week.id} className="grid">
+            .filter((row, index) => selectedWeek === index)
+            .map((row, weekIndex) => (
+              <div key={weekIndex} className="grid">
                 {row.days.map((day, dayIndex) => (
                   <div
                     key={dayIndex}
