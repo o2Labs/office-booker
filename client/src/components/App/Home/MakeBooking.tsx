@@ -22,7 +22,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
 
 import { AppContext } from '../../AppProvider';
 
@@ -400,6 +399,11 @@ const MakeBooking: React.FC<Props> = (props) => {
           Change office
         </Link>
       </div>
+
+      {/* TODO: Only show based on config */}
+      <p className="notice">
+        You will be asked to record your reason for going to work when you make a booking.
+      </p>
 
       <ul>
         <li>
