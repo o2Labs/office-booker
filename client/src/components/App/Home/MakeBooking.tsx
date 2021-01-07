@@ -286,6 +286,25 @@ const MakeBooking: React.FC<Props> = (props) => {
     }
   };
 
+  const confirmTodayBooking = (
+    handleCreateBooking: (date: Date, withParking: boolean) => void,
+    date: Date,
+    withParking: boolean
+  ) => {
+    if (state.config?.reasonToBookRequired) {
+      setBookingDate(date);
+      setBookingParking(withParking);
+
+      if (isToday(date)) {
+        setShowTodayConfirmation(true);
+      } else {
+        setShowReasonConfirmation(true);
+      }
+    } else {
+      handleCreateBooking(date, withParking);
+    }
+  };
+
   const handleCreateBooking = (date: Date, withParking: boolean, reason?: string) => {
     if (user) {
       setButtonsLoading(true);
@@ -321,26 +340,6 @@ const MakeBooking: React.FC<Props> = (props) => {
             },
           });
         });
-    }
-  };
-
-  const confirmTodayBooking = (
-    handleCreateBooking: (date: Date, withParking: boolean) => void,
-    date: Date,
-    withParking: boolean
-  ) => {
-    setBookingDate(date);
-    setBookingParking(withParking);
-
-    // TODO: Only show/include reason confirmation in the flow
-    // if part of the app settings
-    if (isToday(date)) {
-      setShowTodayConfirmation(true);
-    } else {
-      setShowReasonConfirmation(true);
-
-      // Or go straight-through if not in config to require a reason
-      // handleCreateBooking(date, withParking);
     }
   };
 
@@ -400,10 +399,11 @@ const MakeBooking: React.FC<Props> = (props) => {
         </Link>
       </div>
 
-      {/* TODO: Only show based on config */}
-      <p className="notice">
-        You will be asked to record your reason for going to work when you make a booking.
-      </p>
+      {state.config?.reasonToBookRequired && (
+        <p className="notice">
+          You will be asked to record your reason for going to work when you make a booking.
+        </p>
+      )}
 
       <ul>
         <li>
@@ -594,7 +594,7 @@ const MakeBooking: React.FC<Props> = (props) => {
             disableBackdropClick
           >
             <DialogContent>
-              <DialogContentText>
+              <DialogContentText color="secondary">
                 Today's booking can only be cancelled by administrators
               </DialogContentText>
             </DialogContent>
@@ -608,13 +608,12 @@ const MakeBooking: React.FC<Props> = (props) => {
               </OurButton>
               <OurButton
                 onClick={() => {
-                  // TODO: Only show/include reason confirmation in the flow
-                  // if part of the app settings
-                  setShowTodayConfirmation(false);
-                  setShowReasonConfirmation(true);
-
-                  // Or go straight-through if not in config to require a reason
-                  // bookingDate && handleCreateBooking(bookingDate, bookingParking);
+                  if (state.config?.reasonToBookRequired) {
+                    setShowTodayConfirmation(false);
+                    setShowReasonConfirmation(true);
+                  } else {
+                    bookingDate && handleCreateBooking(bookingDate, bookingParking);
+                  }
                 }}
                 variant="contained"
                 size="small"
