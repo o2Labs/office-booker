@@ -32,10 +32,6 @@ const sendNotificationEmail = async (
     Destination: { ToAddresses: [emailAddress] },
     Message: {
       Body: {
-        Html: {
-          Charset: 'UTF-8',
-          Data: reasonToBook,
-        },
         Text: {
           Charset: 'UTF-8',
           Data: reasonToBook,
@@ -232,7 +228,7 @@ export const createBooking = async (
   }
 
   audit('4:Completed');
-  if (config.reasonToBookRequired && request.reasonToBook) {
+  if (config.reasonToBookRequired && request.reasonToBook && config.env !== 'test') {
     const { notificationToAddress, fromAddress } = checkReasonEnv(config);
     await sendNotificationEmail(notificationToAddress, fromAddress, request.reasonToBook);
   }

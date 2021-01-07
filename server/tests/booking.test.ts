@@ -215,4 +215,90 @@ describe('Testing DB logic', async () => {
     expect(response.status).toEqual(409);
     expect(response.body.message).toEqual('Office parking quota exceeded');
   });
+
+  test('can create booking with reason provided and successfully increase booking count and email sent', async () => {
+    config.reasonToBookRequired = true;
+    config.notificationToAddress = 'notifications@domain.test';
+    config.fromAddress = 'office@domain.test';
+    const normalUserEmail = getNormalUser();
+    const office = config.officeQuotas[0];
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
+    const createBookingBody = {
+      user: normalUserEmail,
+      office: { id: office.id },
+      date,
+      reasonToBook: 'strong reason to attend',
+    };
+    const createResponse = await app
+      .post('/api/bookings')
+      .send(createBookingBody)
+      .set('bearer', normalUserEmail);
+
+    expect(createResponse.ok).toBe(true);
+
+    const getCreatedBookingResponse = await app
+      .get(`/api/bookings?user=${normalUserEmail}`)
+      .set('bearer', normalUserEmail);
+    expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
+
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
+    const slot = officeData.slots.find((item: any) => item.date === date);
+    expect(slot.booked).toEqual(1);
+  });
+
+  test('unable to create booking with missing env parameters', async () => {
+    config.reasonToBookRequired = true;
+    config.fromAddress = 'office@domain.test';
+    const normalUserEmail = getNormalUser();
+    const office = config.officeQuotas[0];
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
+    const createBookingBody = {
+      user: normalUserEmail,
+      office: { id: office.id },
+      date,
+    };
+    const createResponse = await app
+      .post('/api/bookings')
+      .send(createBookingBody)
+      .set('bearer', normalUserEmail);
+
+    expect(createResponse.ok).toBe(false);
+
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
+    const slot = officeData.slots.find((item: any) => item.date === date);
+    expect(slot.booked).toEqual(0);
+  });
+
+  test('unable to create booking with no reason provided', async () => {
+    config.reasonToBookRequired = true;
+    config.notificationToAddress = 'notifications@domain.test';
+    config.fromAddress = 'office@domain.test';
+    const normalUserEmail = getNormalUser();
+    const office = config.officeQuotas[0];
+    const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
+    const createBookingBody = {
+      user: normalUserEmail,
+      office: { id: office.id },
+      date,
+    };
+    const createResponse = await app
+      .post('/api/bookings')
+      .send(createBookingBody)
+      .set('bearer', normalUserEmail);
+
+    expect(createResponse.ok).toBe(false);
+
+    const getOfficeBookingsResponse = await app
+      .get(`/api/offices/${office.id}`)
+      .set('bearer', normalUserEmail);
+    const officeData = getOfficeBookingsResponse.body;
+    const slot = officeData.slots.find((item: any) => item.date === date);
+    expect(slot.booked).toEqual(0);
+  });
 });
