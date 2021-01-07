@@ -98,13 +98,19 @@ config:
   office-booker:system-admin-emails:
     - kaleb.hess@my-company.example
     - catrin.vaughan@my-company.example
+  office-booker:reason-to-book-req: true
+  office-booker:notification-to-address: kaleb.hess@my-company.example
 ```
 
-_Note: The secure `selftest-key` can be generated and set by running:_
+_*Note:*_
+
+_The secure `selftest-key` can be generated and set by running:_
 
 ```bash
 pulumi config set --secret selftest-key `openssl rand -base64 30`
 ```
+
+_If setting `reason-to-book-req` as true, you must also supply a `notification-to-address`._
 
 ## User Roles
 
