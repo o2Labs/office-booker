@@ -82,7 +82,7 @@ const MakeBooking: React.FC<Props> = (props) => {
 
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user } = state;
+  const { config, user } = state;
 
   // Local state
   const [weeks, setWeeks] = useState<Week[]>([]);
@@ -291,7 +291,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     date: Date,
     withParking: boolean
   ) => {
-    if (state.config?.reasonToBookRequired) {
+    if (config?.reasonToBookRequired) {
       setBookingDate(date);
       setBookingParking(withParking);
 
@@ -379,6 +379,8 @@ const MakeBooking: React.FC<Props> = (props) => {
     });
   };
 
+  console.log(config);
+
   // Render
   if (!user) {
     return null;
@@ -399,7 +401,7 @@ const MakeBooking: React.FC<Props> = (props) => {
         </Link>
       </div>
 
-      {state.config?.reasonToBookRequired && (
+      {config?.reasonToBookRequired && (
         <p className="notice">
           You will be asked to record your reason for going to work when you make a booking.
         </p>
@@ -608,7 +610,7 @@ const MakeBooking: React.FC<Props> = (props) => {
               </OurButton>
               <OurButton
                 onClick={() => {
-                  if (state.config?.reasonToBookRequired) {
+                  if (config?.reasonToBookRequired) {
                     setShowTodayConfirmation(false);
                     setShowReasonConfirmation(true);
                   } else {

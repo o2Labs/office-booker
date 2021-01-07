@@ -52,7 +52,7 @@ export type Config = {
   dataRetentionDays: number;
   showTestBanner: boolean;
   readonly?: boolean;
-  reasonToBookRequired?: boolean;
+  reasonToBookRequired: boolean;
   fromAddress?: string;
   notificationToAddress?: string;
 };
