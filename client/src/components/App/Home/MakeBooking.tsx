@@ -102,7 +102,7 @@ const MakeBooking: React.FC<Props> = (props) => {
   }, [refreshBookings]);
 
   const resetReloadTimer = () => {
-    clearInterval(reloadTimerRef.current);
+    reloadTimerRef.current && clearInterval(reloadTimerRef.current);
 
     setReloadTimer();
   };
@@ -116,7 +116,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // Clear timer
-        clearInterval(reloadTimerRef.current);
+        reloadTimerRef.current && clearInterval(reloadTimerRef.current);
       } else {
         // Reload data & restart timer
         setButtonsLoading(true);
@@ -129,7 +129,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      clearInterval(reloadTimerRef.current);
+      reloadTimerRef.current && clearInterval(reloadTimerRef.current);
 
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
