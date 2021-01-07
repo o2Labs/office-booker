@@ -215,7 +215,6 @@ export const getBookings = async ({
   return await response.json();
 };
 
-// TODO: Hook up reason!
 export const createBooking = async (
   user: User['email'],
   date: string,

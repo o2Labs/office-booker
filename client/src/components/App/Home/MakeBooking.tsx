@@ -379,8 +379,6 @@ const MakeBooking: React.FC<Props> = (props) => {
     });
   };
 
-  console.log(config);
-
   // Render
   if (!user) {
     return null;
