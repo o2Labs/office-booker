@@ -17,6 +17,7 @@ import BusinessIcon from '@material-ui/icons/Business';
 import Tooltip from '@material-ui/core/Tooltip';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 import CachedIcon from '@material-ui/icons/Cached';
+import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -90,7 +91,10 @@ const MakeBooking: React.FC<Props> = (props) => {
   const [selectedWeek, setSelectedWeek] = useState<number | undefined>();
   const [buttonsLoading, setButtonsLoading] = useState(true);
   const [showTodayConfirmation, setShowTodayConfirmation] = useState(false);
-  const [todayWithParking, setTodayWithParking] = useState(false);
+  const [showReasonConfirmation, setShowReasonConfirmation] = useState(false);
+  const [bookingDate, setBookingDate] = useState<Date | undefined>();
+  const [bookingParking, setBookingParking] = useState(false);
+  const [bookingReason, setBookingReason] = useState<string | undefined>();
 
   // Refs
   const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
@@ -283,7 +287,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     }
   };
 
-  const handleCreateBooking = (date: Date, withParking: boolean) => {
+  const handleCreateBooking = (date: Date, withParking: boolean, reason?: string) => {
     if (user) {
       setButtonsLoading(true);
 
@@ -293,8 +297,16 @@ const MakeBooking: React.FC<Props> = (props) => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, office, withParking)
-        .then(() => refreshBookings())
+      createBooking(user.email, formattedDate, office, withParking, reason)
+        .then(() => {
+          // Clear form
+          setBookingDate(undefined);
+          setBookingParking(false);
+          setBookingReason(undefined);
+
+          // Refresh DB
+          refreshBookings();
+        })
         .catch((err) => {
           // Refresh DB
           refreshBookings();
@@ -318,11 +330,18 @@ const MakeBooking: React.FC<Props> = (props) => {
     date: Date,
     withParking: boolean
   ) => {
+    setBookingDate(date);
+    setBookingParking(withParking);
+
+    // TODO: Only show/include reason confirmation in the flow
+    // if part of the app settings
     if (isToday(date)) {
       setShowTodayConfirmation(true);
-      setTodayWithParking(withParking);
     } else {
-      handleCreateBooking(date, withParking);
+      setShowReasonConfirmation(true);
+
+      // Or go straight-through if not in config to require a reason
+      // handleCreateBooking(date, withParking);
     }
   };
 
@@ -570,10 +589,9 @@ const MakeBooking: React.FC<Props> = (props) => {
             onClose={() => setShowTodayConfirmation(false)}
             disableBackdropClick
           >
-            <DialogTitle>Warning</DialogTitle>
             <DialogContent>
               <DialogContentText>
-                You will not be able to cancel bookings for today.
+                Today's booking can only be cancelled by administrators
               </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -586,14 +604,65 @@ const MakeBooking: React.FC<Props> = (props) => {
               </OurButton>
               <OurButton
                 onClick={() => {
+                  // TODO: Only show/include reason confirmation in the flow
+                  // if part of the app settings
                   setShowTodayConfirmation(false);
-                  handleCreateBooking(new Date(), todayWithParking);
+                  setShowReasonConfirmation(true);
+
+                  // Or go straight-through if not in config to require a reason
+                  // bookingDate && handleCreateBooking(bookingDate, bookingParking);
                 }}
                 variant="contained"
                 size="small"
                 color="secondary"
               >
-                Confirm{todayWithParking ? ` + Parking` : null}
+                Confirm{bookingParking ? ` + Parking` : null}
+              </OurButton>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={showReasonConfirmation}
+            onClose={() => setShowReasonConfirmation(false)}
+            disableBackdropClick
+          >
+            <DialogContent>
+              <DialogContentText color="secondary">
+                You can only leave home for work purposes where it is unreasonable for you to do
+                your job from home. Please briefly explain why you cannot work from home.
+              </DialogContentText>
+              <TextField
+                autoFocus
+                label="Details"
+                type="text"
+                margin="normal"
+                fullWidth
+                multiline
+                required
+                value={bookingReason}
+                onChange={(e) => setBookingReason(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <OurButton
+                onClick={() => setShowReasonConfirmation(false)}
+                size="small"
+                color="primary"
+              >
+                Cancel
+              </OurButton>
+              <OurButton
+                onClick={() => {
+                  if (bookingDate && bookingReason && bookingReason.trim().length > 0) {
+                    setShowReasonConfirmation(false);
+                    handleCreateBooking(bookingDate, bookingParking, bookingReason);
+                  }
+                }}
+                variant="contained"
+                size="small"
+                color="secondary"
+              >
+                Confirm{bookingParking ? ` + Parking` : null}
               </OurButton>
             </DialogActions>
           </Dialog>

@@ -215,11 +215,13 @@ export const getBookings = async ({
   return await response.json();
 };
 
+// TODO: Hook up reason!
 export const createBooking = async (
   user: User['email'],
   date: string,
   office: Pick<Office, 'id'>,
-  parking?: boolean
+  parking?: boolean,
+  reason?: string
 ): Promise<Booking> => {
   const url = new URL('bookings', BASE_URL);
 
@@ -229,6 +231,7 @@ export const createBooking = async (
     date,
     office,
     parking,
+    reason,
   };
 
   const response = await fetch(url.href, {
