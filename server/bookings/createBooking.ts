@@ -11,6 +11,7 @@ import {
 import { incrementUserBookingCount, decrementUserBookingCount } from '../db/userBookings';
 import { Forbidden, HttpError } from '../errors';
 import { User, getUser } from '../users/model';
+import { SES } from 'aws-sdk';
 
 const audit = (step: string, details?: any) =>
   console.info(
@@ -21,6 +22,48 @@ const audit = (step: string, details?: any) =>
       details,
     })
   );
+
+const sendNotificationEmail = async (
+  emailAddress: string,
+  fromAddress: string,
+  reasonToBook: string
+) => {
+  const params: SES.SendEmailRequest = {
+    Destination: { ToAddresses: [emailAddress] },
+    Message: {
+      Body: {
+        Text: {
+          Charset: 'UTF-8',
+          Data: reasonToBook,
+        },
+      },
+      Subject: {
+        Charset: 'UTF-8',
+        Data: 'Office Booker - Justification To Book',
+      },
+    },
+    Source: fromAddress,
+  };
+  const ses = new SES();
+  return await ses.sendEmail(params).promise();
+};
+
+const checkReasonEnv = (config: Config) => {
+  const { fromAddress, notificationToAddress } = config;
+  if (fromAddress === undefined || notificationToAddress === undefined) {
+    const missingVars = Object.entries({
+      fromAddress,
+      notificationToAddress,
+    })
+      .filter(([, val]) => val === undefined)
+      .map(([envVar]) => envVar);
+    throw Error(`Missing required env parameters for reason notifications: ${missingVars}`);
+  }
+  return {
+    fromAddress,
+    notificationToAddress,
+  };
+};
 
 export const createBooking = async (
   config: Config,
@@ -36,6 +79,17 @@ export const createBooking = async (
 
   if (!isAuthorised) {
     throw new Forbidden();
+  }
+
+  if (config.reasonToBookRequired) {
+    checkReasonEnv(config);
+    if (!request.reasonToBook) {
+      throw new HttpError({
+        httpMessage: `Invalid reason to book given`,
+        status: 400,
+        internalMessage: `No reason to book provided`,
+      });
+    }
   }
 
   const parsed = parse(request.date, 'yyyy-MM-dd', new Date());
@@ -174,5 +228,9 @@ export const createBooking = async (
   }
 
   audit('4:Completed');
+  if (config.reasonToBookRequired && request.reasonToBook && config.env !== 'test') {
+    const { notificationToAddress, fromAddress } = checkReasonEnv(config);
+    await sendNotificationEmail(notificationToAddress, fromAddress, request.reasonToBook);
+  }
   return mapBooking(config, createdBooking);
 };

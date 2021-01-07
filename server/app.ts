@@ -60,6 +60,7 @@ export const configureApp = (config: Config) => {
             : { type: 'test' },
         emailRegex: config.validEmailMatch?.source,
         advancedBookingDays: config.advanceBookingDays,
+        reasonToBookRequired: config.reasonToBookRequired,
       };
       return res.set('Cache-Control', 'public, max-age=3600').json(clientConfig);
     } catch (err) {
@@ -276,6 +277,7 @@ export const configureApp = (config: Config) => {
         office: newBooking.office,
         user: newBooking.user,
         parking: newBooking.parking,
+        reasonToBook: newBooking.reasonToBook,
       });
       return res.json(result);
     } catch (err) {
