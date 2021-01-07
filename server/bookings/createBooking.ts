@@ -1,7 +1,7 @@
 import { CreateBooking, Booking, mapBooking, RestoreBooking } from './model';
 import { Config } from '../app-config';
 import { createBooking as dbCreate, BookingsModel } from '../db/bookings';
-import { parse } from 'date-fns';
+import { parse, format, parseISO } from 'date-fns';
 import { getAvailableDates, dateStartOfWeek } from '../dates';
 import {
   incrementOfficeBookingCount,
@@ -26,9 +26,12 @@ const audit = (step: string, details?: any) =>
 const sendNotificationEmail = async (
   emailAddress: string,
   fromAddress: string,
-  request: CreateBooking | RestoreBooking
+  date: string,
+  user: string,
+  office: string,
+  reasonToBook: string
 ) => {
-  const { date, user, office, reasonToBook } = request;
+  const formattedDate = format(parseISO(date), 'dd/MM/yyyy');
 
   const params: SES.SendEmailRequest = {
     Destination: { ToAddresses: [emailAddress] },
@@ -36,12 +39,12 @@ const sendNotificationEmail = async (
       Body: {
         Text: {
           Charset: 'UTF-8',
-          Data: `Date: ${date}\nUser: ${user}\nOffice: ${office}\n\nReason for booking:\n${reasonToBook}`,
+          Data: `Date: ${formattedDate}\nUser: ${user}\nOffice: ${office}\n\nReason for booking:\n${reasonToBook}`,
         },
       },
       Subject: {
         Charset: 'UTF-8',
-        Data: `Office Booker - ${date} | ${user} | ${office}`,
+        Data: `Office Booker - ${formattedDate} | ${user} | ${office}`,
       },
     },
     Source: fromAddress,
@@ -234,7 +237,14 @@ export const createBooking = async (
   audit('4:Completed');
   if (config.reasonToBookRequired && request.reasonToBook && config.env !== 'test') {
     const { notificationToAddress, fromAddress } = checkReasonEnv(config);
-    await sendNotificationEmail(notificationToAddress, fromAddress, request);
+    await sendNotificationEmail(
+      notificationToAddress,
+      fromAddress,
+      request.date,
+      request.user,
+      requestedOffice.name,
+      request.reasonToBook
+    );
   }
   return mapBooking(config, createdBooking);
 };
