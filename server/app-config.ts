@@ -52,6 +52,9 @@ export type Config = {
   dataRetentionDays: number;
   showTestBanner: boolean;
   readonly?: boolean;
+  reasonToBookRequired?: boolean;
+  fromAddress?: string;
+  notificationToAddress?: string;
 };
 
 const parseOfficeQuotas = (OFFICE_QUOTAS: string): OfficeQuota[] => {
@@ -133,6 +136,7 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
   assert(advanceBookingDays >= 0, `ADVANCE_BOOKING_DAYS must be >= 0`);
   const dataRetentionDays = Number.parseInt(DATA_RETENTION_DAYS);
   assert(dataRetentionDays >= 0, `DATA_RETENTION_DAYS must be >= 0`);
+
   return {
     dynamoDBTablePrefix: env.DYNAMODB_PREFIX,
     authConfig: {
@@ -153,5 +157,8 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     dataRetentionDays,
     showTestBanner: env.SHOW_TEST_BANNER === 'true',
     readonly: env.READONLY === 'true',
+    reasonToBookRequired: env.REASON_TO_BOOK_REQ === 'true',
+    fromAddress: env.FROM_ADDRESS,
+    notificationToAddress: env.NOTIFICATION_TO_ADDRESS,
   };
 };
