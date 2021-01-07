@@ -38,6 +38,8 @@ const getLocalConfig = (): Config => {
         users: [],
       },
       reasonToBookRequired: true,
+      fromAddress: 'admin@o2labs.co.uk',
+      notificationToAddress: 'richard.chapman2@telefonica.com',
     };
   }
 };

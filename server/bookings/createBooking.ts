@@ -26,25 +26,29 @@ const audit = (step: string, details?: any) =>
 const sendNotificationEmail = async (
   emailAddress: string,
   fromAddress: string,
-  reasonToBook: string
+  request: CreateBooking | RestoreBooking
 ) => {
+  const { date, user, office, reasonToBook } = request;
+
   const params: SES.SendEmailRequest = {
     Destination: { ToAddresses: [emailAddress] },
     Message: {
       Body: {
         Text: {
           Charset: 'UTF-8',
-          Data: reasonToBook,
+          Data: `Date: ${date}\nUser: ${user}\nOffice: ${office}\n\nReason for booking:\n${reasonToBook}`,
         },
       },
       Subject: {
         Charset: 'UTF-8',
-        Data: 'Office Booker - Justification To Book',
+        Data: `Office Booker - ${date} | ${user} | ${office}`,
       },
     },
     Source: fromAddress,
   };
+
   const ses = new SES();
+
   return await ses.sendEmail(params).promise();
 };
 
@@ -230,7 +234,7 @@ export const createBooking = async (
   audit('4:Completed');
   if (config.reasonToBookRequired && request.reasonToBook && config.env !== 'test') {
     const { notificationToAddress, fromAddress } = checkReasonEnv(config);
-    await sendNotificationEmail(notificationToAddress, fromAddress, request.reasonToBook);
+    await sendNotificationEmail(notificationToAddress, fromAddress, request);
   }
   return mapBooking(config, createdBooking);
 };
