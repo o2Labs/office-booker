@@ -16,8 +16,8 @@ const tags = {
 
 // All stack configuration options
 const logRetention = config.getNumber('log-retention', { min: 0 }) ?? 30;
-const reasonToBookRequired = config.require('reason-to-book-req');
-const notificationToAddress = config.require('notification-to-address');
+const reasonToBookRequired = config.getBoolean('reason-to-book-req') ?? false;
+const notificationToAddress = config.get('notification-to-address');
 const registrationFromAddress = config.require('registration-from-address');
 const domainName = config.require('domain-name');
 const advanceBookingDays = config.requireNumber('advance-booking-days', { min: 0 });
@@ -418,10 +418,12 @@ const getHttpEnv = (): aws.types.input.lambda.FunctionEnvironment['variables'] =
     SHOW_TEST_BANNER: showTestBanner.toString(),
     FROM_ADDRESS: registrationFromAddress,
     REASON_TO_BOOK_REQ: reasonToBookRequired.toString(),
-    NOTIFICATION_TO_ADDRESS: notificationToAddress,
   };
   if (caseSensitiveEmail) {
     env.CASE_SENSITIVE_EMAIL = 'true';
+  }
+  if (notificationToAddress) {
+    env.NOTIFICATION_TO_ADDRESS = notificationToAddress;
   }
   return env;
 };
