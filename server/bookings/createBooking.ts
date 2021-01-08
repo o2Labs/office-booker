@@ -55,23 +55,6 @@ const sendNotificationEmail = async (
   return await ses.sendEmail(params).promise();
 };
 
-const checkReasonEnv = (config: Config) => {
-  const { fromAddress, notificationToAddress } = config;
-  if (fromAddress === undefined || notificationToAddress === undefined) {
-    const missingVars = Object.entries({
-      fromAddress,
-      notificationToAddress,
-    })
-      .filter(([, val]) => val === undefined)
-      .map(([envVar]) => envVar);
-    throw Error(`Missing required env parameters for reason notifications: ${missingVars}`);
-  }
-  return {
-    fromAddress,
-    notificationToAddress,
-  };
-};
-
 export const createBooking = async (
   config: Config,
   currentUser: User,
@@ -86,17 +69,6 @@ export const createBooking = async (
 
   if (!isAuthorised) {
     throw new Forbidden();
-  }
-
-  if (config.reasonToBookRequired) {
-    checkReasonEnv(config);
-    if (!request.reasonToBook) {
-      throw new HttpError({
-        httpMessage: `Invalid reason to book given`,
-        status: 400,
-        internalMessage: `No reason to book provided`,
-      });
-    }
   }
 
   const parsed = parse(request.date, 'yyyy-MM-dd', new Date());
@@ -124,6 +96,42 @@ export const createBooking = async (
       httpMessage: 'Office not found',
     });
   }
+
+  const sendNotificationIfRequired = (() => {
+    if (config.reasonToBookRequired) {
+      const { fromAddress, notificationToAddress } = config;
+      if (fromAddress === undefined || notificationToAddress === undefined) {
+        const missingVars = Object.entries({
+          fromAddress,
+          notificationToAddress,
+        })
+          .filter(([, val]) => val === undefined)
+          .map(([envVar]) => envVar);
+        throw Error(`Missing required env parameters for reason notifications: ${missingVars}`);
+      }
+      if (!request.reasonToBook) {
+        throw new HttpError({
+          httpMessage: `Invalid reason to book given`,
+          status: 400,
+          internalMessage: `No reason to book provided`,
+        });
+      }
+      const reasonToBook = request.reasonToBook;
+      return async () => {
+        if (config.env !== 'test') {
+          await sendNotificationEmail(
+            notificationToAddress,
+            fromAddress,
+            request.date,
+            request.user,
+            requestedOffice.name,
+            reasonToBook
+          );
+        }
+      };
+    }
+    return async () => {};
+  })();
 
   // Id date as a direct string
   const id = requestedOffice.id + '_' + request.date.replace(/-/gi, '');
@@ -235,16 +243,6 @@ export const createBooking = async (
   }
 
   audit('4:Completed');
-  if (config.reasonToBookRequired && request.reasonToBook && config.env !== 'test') {
-    const { notificationToAddress, fromAddress } = checkReasonEnv(config);
-    await sendNotificationEmail(
-      notificationToAddress,
-      fromAddress,
-      request.date,
-      request.user,
-      requestedOffice.name,
-      request.reasonToBook
-    );
-  }
+  await sendNotificationIfRequired();
   return mapBooking(config, createdBooking);
 };
