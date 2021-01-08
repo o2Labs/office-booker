@@ -98,39 +98,33 @@ export const createBooking = async (
   }
 
   const configureSendNotification = () => {
-    if (config.reasonToBookRequired) {
-      const { fromAddress, notificationToAddress } = config;
-      if (fromAddress === undefined || notificationToAddress === undefined) {
-        const missingVars = Object.entries({
-          fromAddress,
-          notificationToAddress,
-        })
-          .filter(([, val]) => val === undefined)
-          .map(([envVar]) => envVar);
-        throw Error(`Missing required env parameters for reason notifications: ${missingVars}`);
-      }
-      if (!request.reasonToBook) {
-        throw new HttpError({
-          httpMessage: `Invalid reason to book given`,
-          status: 400,
-          internalMessage: `No reason to book provided`,
-        });
-      }
-      const reasonToBook = request.reasonToBook;
-      return async () => {
-        if (config.env !== 'test') {
-          await sendNotificationEmail(
-            notificationToAddress,
-            fromAddress,
-            request.date,
-            request.user,
-            requestedOffice.name,
-            reasonToBook
-          );
-        }
-      };
+    const { fromAddress, notificationToAddress, reasonToBookRequired } = config;
+    if (!notificationToAddress) {
+      return async () => {};
     }
-    return async () => {};
+    if (fromAddress === undefined) {
+      throw Error(`Missing required env parameters for reason notifications: FROM_ADDRESS`);
+    }
+    if (reasonToBookRequired && !request.reasonToBook) {
+      throw new HttpError({
+        httpMessage: `Invalid reason to book given`,
+        status: 400,
+        internalMessage: `No reason to book provided`,
+      });
+    }
+    const reasonToBook = request.reasonToBook ? request.reasonToBook : 'No reason provided';
+    return async () => {
+      if (config.env !== 'test') {
+        await sendNotificationEmail(
+          notificationToAddress,
+          fromAddress,
+          request.date,
+          request.user,
+          requestedOffice.name,
+          reasonToBook
+        );
+      }
+    };
   };
 
   const sendNotificationIfRequired = configureSendNotification();
