@@ -356,6 +356,7 @@ new aws.iam.RolePolicy('lambda-iam-policy', {
           'ec2:CreateNetworkInterface',
           'ec2:DescribeNetworkInterfaces',
           'ec2:DeleteNetworkInterface',
+          'ses:SendEmail',
         ],
         Resource: '*',
         Effect: 'Allow',
