@@ -97,7 +97,7 @@ export const createBooking = async (
     });
   }
 
-  const sendNotificationIfRequired = (() => {
+  const configureSendNotification = () => {
     if (config.reasonToBookRequired) {
       const { fromAddress, notificationToAddress } = config;
       if (fromAddress === undefined || notificationToAddress === undefined) {
@@ -131,7 +131,9 @@ export const createBooking = async (
       };
     }
     return async () => {};
-  })();
+  };
+
+  const sendNotificationIfRequired = configureSendNotification();
 
   // Id date as a direct string
   const id = requestedOffice.id + '_' + request.date.replace(/-/gi, '');
