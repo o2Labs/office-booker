@@ -53,6 +53,7 @@ export const getConfig = (dynamoDBTablePrefix: string, testConfig?: TestConfig):
     advanceBookingDays: 14,
     dataRetentionDays: 30,
     showTestBanner: true,
+    reasonToBookRequired: false,
   };
 };
 

@@ -7,6 +7,7 @@ export const createFakeConfig = (prototype?: Partial<Config>): Config => ({
   advancedBookingDays: 14,
   auth: { type: 'test' },
   showTestBanner: false,
+  reasonToBookRequired: false,
   ...prototype,
 });
 

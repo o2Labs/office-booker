@@ -16,6 +16,8 @@ const tags = {
 
 // All stack configuration options
 const logRetention = config.getNumber('log-retention', { min: 0 }) ?? 30;
+const reasonToBookRequired = config.getBoolean('reason-to-book-req') ?? false;
+const notificationToAddress = config.get('notification-to-address');
 const registrationFromAddress = config.require('registration-from-address');
 const domainName = config.require('domain-name');
 const advanceBookingDays = config.requireNumber('advance-booking-days', { min: 0 });
@@ -354,6 +356,7 @@ new aws.iam.RolePolicy('lambda-iam-policy', {
           'ec2:CreateNetworkInterface',
           'ec2:DescribeNetworkInterfaces',
           'ec2:DeleteNetworkInterface',
+          'ses:SendEmail',
         ],
         Resource: '*',
         Effect: 'Allow',
@@ -413,9 +416,14 @@ const getHttpEnv = (): aws.types.input.lambda.FunctionEnvironment['variables'] =
     DEFAULT_WEEKLY_QUOTA: defaultWeeklyQuota.toString(),
     DATA_RETENTION_DAYS: logRetention.toString(),
     SHOW_TEST_BANNER: showTestBanner.toString(),
+    FROM_ADDRESS: registrationFromAddress,
+    REASON_TO_BOOK_REQ: reasonToBookRequired.toString(),
   };
   if (caseSensitiveEmail) {
     env.CASE_SENSITIVE_EMAIL = 'true';
+  }
+  if (notificationToAddress) {
+    env.NOTIFICATION_TO_ADDRESS = notificationToAddress;
   }
   return env;
 };

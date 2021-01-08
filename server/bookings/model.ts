@@ -8,6 +8,7 @@ export type CreateBooking = {
   date: string;
   office: { id: string };
   parking?: boolean;
+  reasonToBook?: string;
 };
 
 export type RestoreBooking = CreateBooking & { id: string; created: string };
