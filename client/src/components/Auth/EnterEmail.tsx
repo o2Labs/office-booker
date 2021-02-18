@@ -68,7 +68,7 @@ const EnterEmail: React.FC<Props> = (props) => {
   // Render
   return (
     <EnterEmailStyles>
-      <h2>Login</h2>
+      <h2>Sign in</h2>
 
       <form onSubmit={handleSubmit} className="form">
         <p>You must verify your email address before accessing the app.</p>
@@ -77,6 +77,8 @@ const EnterEmail: React.FC<Props> = (props) => {
           label="Email Address"
           type="email"
           color="primary"
+          name="email"
+          id="email-input"
           fullWidth
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -88,7 +90,7 @@ const EnterEmail: React.FC<Props> = (props) => {
         </ul>
 
         <LoadingButton type="submit" variant="contained" color="primary" isLoading={loading}>
-          Submit
+          Send code
         </LoadingButton>
       </form>
     </EnterEmailStyles>

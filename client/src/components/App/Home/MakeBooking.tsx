@@ -14,10 +14,14 @@ import Paper from '@material-ui/core/Paper';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
 import BusinessIcon from '@material-ui/icons/Business';
-import Warning from '@material-ui/icons/Warning';
 import Tooltip from '@material-ui/core/Tooltip';
 import EmojiTransportationIcon from '@material-ui/icons/EmojiTransportation';
 import CachedIcon from '@material-ui/icons/Cached';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 
 import { AppContext } from '../../AppProvider';
 
@@ -41,7 +45,7 @@ type Props = {
 };
 
 type Week = {
-  id: number;
+  startOfWeek: Date;
   bookings: number;
 };
 
@@ -78,20 +82,21 @@ const MakeBooking: React.FC<Props> = (props) => {
 
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user } = state;
+  const { config, user } = state;
 
   // Local state
   const [weeks, setWeeks] = useState<Week[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<Week | undefined>();
-  const [selectedWeekLabel, setSelectedWeekLabel] = useState<string | undefined>();
+  const [selectedWeek, setSelectedWeek] = useState<number | undefined>();
   const [buttonsLoading, setButtonsLoading] = useState(true);
-  const [slideConfirm, setSlideConfirm] = useState(false);
-  const [todayWithParking, setTodayWithParking] = useState(false);
+  const [showTodayConfirmation, setShowTodayConfirmation] = useState(false);
+  const [showReasonConfirmation, setShowReasonConfirmation] = useState(false);
+  const [bookingDate, setBookingDate] = useState<Date | undefined>();
+  const [bookingParking, setBookingParking] = useState(false);
+  const [bookingReason, setBookingReason] = useState<string | undefined>();
 
   // Refs
   const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
-  const sliderRef = useRef<HTMLDivElement>(null);
 
   // Helper
   const setReloadTimer = useCallback(() => {
@@ -103,7 +108,7 @@ const MakeBooking: React.FC<Props> = (props) => {
   }, [refreshBookings]);
 
   const resetReloadTimer = () => {
-    clearInterval(reloadTimerRef.current);
+    reloadTimerRef.current && clearInterval(reloadTimerRef.current);
 
     setReloadTimer();
   };
@@ -117,7 +122,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         // Clear timer
-        clearInterval(reloadTimerRef.current);
+        reloadTimerRef.current && clearInterval(reloadTimerRef.current);
       } else {
         // Reload data & restart timer
         setButtonsLoading(true);
@@ -130,7 +135,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      clearInterval(reloadTimerRef.current);
+      reloadTimerRef.current && clearInterval(reloadTimerRef.current);
 
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
@@ -143,17 +148,17 @@ const MakeBooking: React.FC<Props> = (props) => {
     office.slots.forEach((s) => {
       // Get week
       const date = parse(s.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS);
-      const week = parseInt(format(date, 'w', DATE_FNS_OPTIONS));
+      const weekStart = startOfWeek(date, DATE_FNS_OPTIONS);
 
       // Is it already in the list?
-      if (!weeks.find((w) => w.id === week)) {
+      if (!weeks.find((w) => w.startOfWeek.getTime() === weekStart.getTime())) {
         // Find total user bookings for this week
         const userBookings = bookings.filter((b) =>
           isSameWeek(parse(b.date, 'y-MM-dd', new Date(), DATE_FNS_OPTIONS), date, DATE_FNS_OPTIONS)
         );
 
         weeks.push({
-          id: week,
+          startOfWeek: weekStart,
           bookings: userBookings.length,
         });
       }
@@ -166,42 +171,27 @@ const MakeBooking: React.FC<Props> = (props) => {
     if (weeks.length > 0) {
       setButtonsLoading(false);
 
-      if (selectedWeek) {
-        // Reset selected week (to refresh total bookings)
-        const index = weeks.findIndex((w) => w.id === selectedWeek.id);
-
-        if (index !== -1) {
-          setSelectedWeek(weeks[index]);
-        } else {
-          setSelectedWeek(weeks[0]);
-        }
-      } else {
-        // Default to first week
-        setSelectedWeek(weeks[0]);
+      if (selectedWeek === undefined) {
+        setSelectedWeek(0);
       }
     }
   }, [selectedWeek, weeks]);
 
-  useEffect(() => {
-    if (selectedWeek) {
-      // Calculate start and end of week
-      const weekDate = parse(selectedWeek.id.toString(), 'w', new Date(), DATE_FNS_OPTIONS);
+  const getWeekLabel = (week: Week) => {
+    const startDate = week.startOfWeek;
+    const endDate = endOfWeek(startDate, DATE_FNS_OPTIONS);
 
-      const startDate = startOfWeek(weekDate, DATE_FNS_OPTIONS);
-      const endDate = endOfWeek(startDate, DATE_FNS_OPTIONS);
+    // Are dates in the same month
+    const sameMonth = isSameMonth(startDate, endDate);
 
-      // Are dates in the same month
-      const sameMonth = isSameMonth(startDate, endDate);
+    // Set label
+    const startLabel = format(startDate, 'LLL d', DATE_FNS_OPTIONS);
+    const endLabel = sameMonth
+      ? format(endDate, 'd', DATE_FNS_OPTIONS)
+      : format(endDate, 'LLL d', DATE_FNS_OPTIONS);
 
-      // Set label
-      const startLabel = format(startDate, 'LLL d', DATE_FNS_OPTIONS);
-      const endLabel = sameMonth
-        ? format(endDate, 'd', DATE_FNS_OPTIONS)
-        : format(endDate, 'LLL d', DATE_FNS_OPTIONS);
-
-      setSelectedWeekLabel(`${startLabel} - ${endLabel}`);
-    }
-  }, [selectedWeek, weeks]);
+    return `${startLabel} - ${endLabel}`;
+  };
 
   useEffect(() => {
     if (user && weeks && weeks.length > 0) {
@@ -213,14 +203,8 @@ const MakeBooking: React.FC<Props> = (props) => {
       // For each week
       weeks.forEach((w) => {
         // Find all days in the week
-        const startDate = startOfWeek(
-          parse(w.id.toString(), 'w', new Date(), DATE_FNS_OPTIONS),
-          DATE_FNS_OPTIONS
-        );
-        const endDate = endOfWeek(
-          parse(w.id.toString(), 'w', new Date(), DATE_FNS_OPTIONS),
-          DATE_FNS_OPTIONS
-        );
+        const startDate = w.startOfWeek;
+        const endDate = endOfWeek(w.startOfWeek, DATE_FNS_OPTIONS);
 
         const weekDays = eachDayOfInterval({
           start: startDate,
@@ -288,35 +272,40 @@ const MakeBooking: React.FC<Props> = (props) => {
     }
   }, [bookings, office, user, weeks]);
 
-  useEffect(() => {
-    // Close today booking confirmation slide
-    const handleClickOutside = (event: Event) => {
-      if (sliderRef.current && !sliderRef.current.contains(event.target as Node)) {
-        setSlideConfirm(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [sliderRef]);
-
   // Handlers
   const handleChangeWeek = (direction: 'forward' | 'backward') => {
     // Find index of current selected
-    if (selectedWeek) {
-      const index = weeks.findIndex((w) => w.id === selectedWeek.id);
-
-      if (index !== -1) {
-        setSelectedWeek(
-          weeks[direction === 'forward' ? index + 1 : direction === 'backward' ? index - 1 : index]
-        );
-      }
+    if (selectedWeek !== undefined) {
+      setSelectedWeek(
+        direction === 'forward'
+          ? selectedWeek + 1
+          : direction === 'backward'
+          ? selectedWeek - 1
+          : selectedWeek
+      );
     }
   };
 
-  const handleCreateBooking = (date: Date, withParking: boolean) => {
+  const confirmTodayBooking = (
+    handleCreateBooking: (date: Date, withParking: boolean) => void,
+    date: Date,
+    withParking: boolean
+  ) => {
+    if (config?.reasonToBookRequired) {
+      setBookingDate(date);
+      setBookingParking(withParking);
+
+      if (isToday(date)) {
+        setShowTodayConfirmation(true);
+      } else {
+        setShowReasonConfirmation(true);
+      }
+    } else {
+      handleCreateBooking(date, withParking);
+    }
+  };
+
+  const handleCreateBooking = (date: Date, withParking: boolean, reason?: string) => {
     if (user) {
       setButtonsLoading(true);
 
@@ -326,8 +315,16 @@ const MakeBooking: React.FC<Props> = (props) => {
       // Create new booking
       const formattedDate = format(date, 'yyyy-MM-dd', DATE_FNS_OPTIONS);
 
-      createBooking(user.email, formattedDate, office, withParking)
-        .then(() => refreshBookings())
+      createBooking(user.email, formattedDate, office, withParking, reason)
+        .then(() => {
+          // Clear form
+          setBookingDate(undefined);
+          setBookingParking(false);
+          setBookingReason(undefined);
+
+          // Refresh DB
+          refreshBookings();
+        })
         .catch((err) => {
           // Refresh DB
           refreshBookings();
@@ -343,50 +340,6 @@ const MakeBooking: React.FC<Props> = (props) => {
             },
           });
         });
-    }
-  };
-
-  const renderBookingConfirmSlide = () => {
-    return (
-      <div className="slide" ref={sliderRef}>
-        <p>
-          <Warning />
-          You will not be able to cancel today's booking.
-        </p>
-        <div className="slide-btns">
-          <button
-            className="cancel-btn"
-            onClick={() => {
-              setSlideConfirm(false);
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            className="confirm-btn"
-            onClick={() => {
-              setSlideConfirm(false);
-              handleCreateBooking(new Date(), todayWithParking);
-            }}
-          >
-            Confirm
-            {todayWithParking ? ' + Parking' : null}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const confirmTodayBooking = (
-    handleCreateBooking: (date: Date, withParking: boolean) => void,
-    date: Date,
-    withParking: boolean
-  ) => {
-    if (isToday(date)) {
-      setSlideConfirm(true);
-      setTodayWithParking(withParking);
-    } else {
-      handleCreateBooking(date, withParking);
     }
   };
 
@@ -446,6 +399,12 @@ const MakeBooking: React.FC<Props> = (props) => {
         </Link>
       </div>
 
+      {config?.reasonToBookRequired && (
+        <p className="notice">
+          You will be asked to record your reason for going to work when you make a booking.
+        </p>
+      )}
+
       <ul>
         <li>
           You can make <span>{user.quota}</span> booking per week.
@@ -462,169 +421,255 @@ const MakeBooking: React.FC<Props> = (props) => {
         </li>
       </ul>
 
-      {weeks && weeks.length > 0 && selectedWeek && (
-        <Paper square className="bookings">
-          <div className="menu">
-            <div className="back">
-              <IconButton
-                disabled={selectedWeek.id === weeks[0].id}
-                onClick={() => handleChangeWeek('backward')}
-                size="small"
-              >
-                <ArrowLeftIcon
-                  fontSize="inherit"
-                  className="icon"
-                  color={selectedWeek.id === weeks[0].id ? 'disabled' : 'secondary'}
-                />
-              </IconButton>
-            </div>
-
-            <div className="date">
-              <h3>{selectedWeekLabel}</h3>
-            </div>
-
-            <div className="forward">
-              <IconButton
-                disabled={selectedWeek.id === weeks[weeks.length - 1].id}
-                onClick={() => handleChangeWeek('forward')}
-                size="small"
-              >
-                <ArrowRightIcon
-                  fontSize="inherit"
-                  className="icon"
-                  color={selectedWeek.id === weeks[weeks.length - 1].id ? 'disabled' : 'secondary'}
-                />
-              </IconButton>
-            </div>
-
-            <div className="refresh">
-              <Tooltip title="Refresh availability">
+      {weeks && weeks.length > 0 && selectedWeek !== undefined && (
+        <>
+          <Paper square className="bookings">
+            <div className="menu">
+              <div className="back">
                 <IconButton
-                  onClick={() => {
-                    setButtonsLoading(true);
-
-                    resetReloadTimer();
-                    refreshBookings();
-                  }}
-                  disabled={buttonsLoading}
+                  disabled={selectedWeek === 0}
+                  onClick={() => handleChangeWeek('backward')}
+                  size="small"
                 >
-                  <CachedIcon color="primary" />
+                  <ArrowLeftIcon
+                    fontSize="inherit"
+                    className="icon"
+                    color={selectedWeek === 0 ? 'disabled' : 'secondary'}
+                  />
                 </IconButton>
-              </Tooltip>
-            </div>
-          </div>
+              </div>
 
-          <div className="details">
-            <p className="quota">
-              <span>{user.quota - selectedWeek.bookings}</span>{' '}
-              {user.quota - selectedWeek.bookings === 1 ? 'booking' : 'bookings'} remaining
-            </p>
+              <div className="date">
+                <h3>{getWeekLabel(weeks[selectedWeek])}</h3>
+              </div>
 
-            <p className="upcoming-bookings">
-              <Link component="button" color="inherit" onClick={() => navigate('/bookings')}>
-                View bookings
-              </Link>
-            </p>
-          </div>
+              <div className="forward">
+                <IconButton
+                  disabled={selectedWeek === weeks.length - 1}
+                  onClick={() => handleChangeWeek('forward')}
+                  size="small"
+                >
+                  <ArrowRightIcon
+                    fontSize="inherit"
+                    className="icon"
+                    color={selectedWeek === weeks.length - 1 ? 'disabled' : 'secondary'}
+                  />
+                </IconButton>
+              </div>
 
-          {rows
-            .filter((row) => selectedWeek.id === row.week.id)
-            .map((row) => (
-              <div key={row.week.id} className="grid">
-                {row.days.map((day, dayIndex) => (
-                  <div
-                    key={dayIndex}
-                    className="row"
-                    data-today={isToday(day.date)}
-                    data-bookable={
-                      day.isBookable && (day.userCanBook || day.booking) ? true : false
-                    }
+              <div className="refresh">
+                <Tooltip title="Refresh availability">
+                  <IconButton
+                    onClick={() => {
+                      setButtonsLoading(true);
+
+                      resetReloadTimer();
+                      refreshBookings();
+                    }}
+                    disabled={buttonsLoading}
                   >
-                    <div className="left">
-                      <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
-                    </div>
+                    <CachedIcon color="primary" />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </div>
 
-                    {day.isBookable && (
-                      <div className="right">
-                        {isToday(day.date) && slideConfirm ? renderBookingConfirmSlide() : null}
+            <div className="details">
+              <p className="quota">
+                <span>{user.quota - weeks[selectedWeek].bookings}</span>{' '}
+                {user.quota - weeks[selectedWeek].bookings === 1 ? 'booking' : 'bookings'} remaining
+              </p>
 
-                        {day.booking ? (
-                          <>
-                            <Tooltip
-                              title={
-                                isToday(day.date)
-                                  ? "Today's booking can only be cancelled by administrators"
-                                  : ''
-                              }
-                              placement="top-end"
-                            >
-                              <Link
-                                component="button"
-                                underline="always"
-                                className={`${buttonsLoading ? 'loading ' : ''}${
-                                  isToday(day.date) ? 'disabled ' : ''
-                                }cancelBtn`}
-                                onClick={() =>
-                                  !buttonsLoading &&
-                                  day.booking &&
-                                  !isToday(day.date) &&
-                                  handleCancelBooking(day.booking)
+              <p className="upcoming-bookings">
+                <Link component="button" color="inherit" onClick={() => navigate('/bookings')}>
+                  View bookings
+                </Link>
+              </p>
+            </div>
+
+            {rows
+              .filter((row, index) => selectedWeek === index)
+              .map((row, weekIndex) => (
+                <div key={weekIndex} className="grid">
+                  {row.days.map((day, dayIndex) => (
+                    <div
+                      key={dayIndex}
+                      className="row"
+                      data-today={isToday(day.date)}
+                      data-bookable={
+                        day.isBookable && (day.userCanBook || day.booking) ? true : false
+                      }
+                    >
+                      <div className="left">
+                        <p className="date">{format(day.date, 'E do', DATE_FNS_OPTIONS)}</p>
+                      </div>
+
+                      {day.isBookable && (
+                        <div className="right">
+                          {day.booking ? (
+                            <>
+                              <Tooltip
+                                title={
+                                  isToday(day.date)
+                                    ? "Today's booking can only be cancelled by administrators"
+                                    : ''
+                                }
+                                placement="top-end"
+                              >
+                                <Link
+                                  component="button"
+                                  underline="always"
+                                  className={`${buttonsLoading ? 'loading ' : ''}${
+                                    isToday(day.date) ? 'disabled ' : ''
+                                  }cancelBtn`}
+                                  onClick={() =>
+                                    !buttonsLoading &&
+                                    day.booking &&
+                                    !isToday(day.date) &&
+                                    handleCancelBooking(day.booking)
+                                  }
+                                >
+                                  Cancel
+                                </Link>
+                              </Tooltip>
+
+                              <OurButton
+                                size="small"
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                  navigate(`./booking/${day.booking?.id}`);
+                                }}
+                                endIcon={
+                                  day.booking?.parking ? (
+                                    <EmojiTransportationIcon />
+                                  ) : (
+                                    <BusinessIcon />
+                                  )
                                 }
                               >
-                                Cancel
-                              </Link>
-                            </Tooltip>
-
-                            <OurButton
-                              size="small"
-                              variant="contained"
-                              color="primary"
-                              onClick={() => {
-                                navigate(`./booking/${day.booking?.id}`);
-                              }}
-                              endIcon={
-                                day.booking?.parking ? (
-                                  <EmojiTransportationIcon />
-                                ) : (
-                                  <BusinessIcon />
-                                )
-                              }
-                            >
-                              View Pass
-                            </OurButton>
-                          </>
-                        ) : (
-                          <div className="no-booking">
-                            <div className="availability">
-                              <BookingStatus
-                                officeQuota={office.quota}
-                                officeAvailable={day.available}
-                                parkingQuota={office.parkingQuota}
-                                parkingAvailable={day.availableCarPark}
-                              />
-                            </div>
-
-                            {day.userCanBook && (
-                              <div className="book">
-                                <BookButton
-                                  onClick={(withParking) =>
-                                    confirmTodayBooking(handleCreateBooking, day.date, withParking)
-                                  }
+                                View Pass
+                              </OurButton>
+                            </>
+                          ) : (
+                            <div className="no-booking">
+                              <div className="availability">
+                                <BookingStatus
+                                  officeQuota={office.quota}
+                                  officeAvailable={day.available}
                                   parkingQuota={office.parkingQuota}
                                   parkingAvailable={day.availableCarPark}
-                                  buttonsLoading={buttonsLoading}
                                 />
                               </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ))}
-        </Paper>
+
+                              {day.userCanBook && (
+                                <div className="book">
+                                  <BookButton
+                                    onClick={(withParking) =>
+                                      confirmTodayBooking(
+                                        handleCreateBooking,
+                                        day.date,
+                                        withParking
+                                      )
+                                    }
+                                    parkingQuota={office.parkingQuota}
+                                    parkingAvailable={day.availableCarPark}
+                                    buttonsLoading={buttonsLoading}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+          </Paper>
+
+          <Dialog
+            open={showTodayConfirmation}
+            onClose={() => setShowTodayConfirmation(false)}
+            disableBackdropClick
+          >
+            <DialogContent>
+              <DialogContentText color="secondary">
+                Today's booking can only be cancelled by administrators
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <OurButton
+                onClick={() => setShowTodayConfirmation(false)}
+                size="small"
+                color="primary"
+              >
+                Cancel
+              </OurButton>
+              <OurButton
+                onClick={() => {
+                  if (config?.reasonToBookRequired) {
+                    setShowTodayConfirmation(false);
+                    setShowReasonConfirmation(true);
+                  } else {
+                    bookingDate && handleCreateBooking(bookingDate, bookingParking);
+                  }
+                }}
+                variant="contained"
+                size="small"
+                color="secondary"
+              >
+                Confirm{bookingParking ? ` + Parking` : null}
+              </OurButton>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={showReasonConfirmation}
+            onClose={() => setShowReasonConfirmation(false)}
+            disableBackdropClick
+          >
+            <DialogContent>
+              <DialogContentText color="secondary">
+                You can only leave home for work purposes where it is unreasonable for you to do
+                your job from home. Please briefly explain why you cannot work from home.
+              </DialogContentText>
+              <TextField
+                autoFocus
+                label="Details"
+                type="text"
+                margin="normal"
+                fullWidth
+                multiline
+                required
+                value={bookingReason}
+                onChange={(e) => setBookingReason(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <OurButton
+                onClick={() => setShowReasonConfirmation(false)}
+                size="small"
+                color="primary"
+              >
+                Cancel
+              </OurButton>
+              <OurButton
+                onClick={() => {
+                  if (bookingDate && bookingReason && bookingReason.trim().length > 0) {
+                    setShowReasonConfirmation(false);
+                    handleCreateBooking(bookingDate, bookingParking, bookingReason);
+                  }
+                }}
+                variant="contained"
+                size="small"
+                color="secondary"
+              >
+                Confirm{bookingParking ? ` + Parking` : null}
+              </OurButton>
+            </DialogActions>
+          </Dialog>
+        </>
       )}
     </MakeBookingStyles>
   );

@@ -12,7 +12,7 @@ import {
   UpdateExpression,
   FunctionExpression,
 } from '@aws/dynamodb-expressions';
-import { addDays } from 'date-fns';
+import { addDays, getUnixTime } from 'date-fns';
 
 export interface OfficeBooking {
   officeId: string;
@@ -57,7 +57,7 @@ export const incrementOfficeBookingCount = async (
         date,
         bookingCount: 0,
         parkingCount: 0,
-        ttl: addDays(new Date(date), config.dataRetentionDays).getTime(),
+        ttl: getUnixTime(addDays(new Date(date), config.dataRetentionDays)),
       }),
       {
         condition: {

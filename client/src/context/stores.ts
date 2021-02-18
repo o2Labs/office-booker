@@ -28,6 +28,7 @@ export type Config = {
     | { type: 'test' };
   emailRegex?: string;
   advancedBookingDays: number;
+  reasonToBookRequired: boolean;
 };
 
 export type AppState = {

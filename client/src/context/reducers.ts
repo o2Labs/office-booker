@@ -17,17 +17,15 @@ export const appReducer = (state: AppState, action: AppAction): AppState => {
     case 'SET_USER':
       return { ...state, user: action.payload };
     case 'SET_OFFICE':
-      const office = action.payload;
-
       // Update local storage
-      if (office) {
-        localStorage.setItem('officeId', office.id);
+      if (action.payload) {
+        localStorage.setItem('officeId', action.payload.id);
       } else {
         localStorage.removeItem('officeId');
       }
       localStorage.removeItem('office');
 
-      return { ...state, office: office ? { id: office.id } : undefined };
+      return { ...state, office: action.payload ? { id: action.payload.id } : undefined };
     case 'SET_ALERT':
       return { ...state, alert: action.payload };
     default:

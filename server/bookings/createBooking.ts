@@ -1,8 +1,8 @@
 import { CreateBooking, Booking, mapBooking, RestoreBooking } from './model';
 import { Config } from '../app-config';
 import { createBooking as dbCreate, BookingsModel } from '../db/bookings';
-import { parse } from 'date-fns';
-import { getAvailableDates, dateStartOfWeek } from '../availableDates';
+import { parse, format, parseISO } from 'date-fns';
+import { getAvailableDates, dateStartOfWeek } from '../dates';
 import {
   incrementOfficeBookingCount,
   decrementOfficeBookingCount,
@@ -11,6 +11,7 @@ import {
 import { incrementUserBookingCount, decrementUserBookingCount } from '../db/userBookings';
 import { Forbidden, HttpError } from '../errors';
 import { User, getUser } from '../users/model';
+import { SES } from 'aws-sdk';
 
 const audit = (step: string, details?: any) =>
   console.info(
@@ -21,6 +22,38 @@ const audit = (step: string, details?: any) =>
       details,
     })
   );
+
+const sendNotificationEmail = async (
+  emailAddress: string,
+  fromAddress: string,
+  date: string,
+  user: string,
+  office: string,
+  reasonToBook: string
+) => {
+  const formattedDate = format(parseISO(date), 'dd/MM/yyyy');
+
+  const params: SES.SendEmailRequest = {
+    Destination: { ToAddresses: [emailAddress] },
+    Message: {
+      Body: {
+        Text: {
+          Charset: 'UTF-8',
+          Data: `Date: ${formattedDate}\nUser: ${user}\nOffice: ${office}\n\nReason for booking:\n${reasonToBook}`,
+        },
+      },
+      Subject: {
+        Charset: 'UTF-8',
+        Data: `Office Booker - ${formattedDate} | ${user} | ${office}`,
+      },
+    },
+    Source: fromAddress,
+  };
+
+  const ses = new SES();
+
+  return await ses.sendEmail(params).promise();
+};
 
 export const createBooking = async (
   config: Config,
@@ -63,6 +96,38 @@ export const createBooking = async (
       httpMessage: 'Office not found',
     });
   }
+
+  const configureSendNotification = () => {
+    const { fromAddress, notificationToAddress, reasonToBookRequired } = config;
+    if (!notificationToAddress) {
+      return async () => {};
+    }
+    if (fromAddress === undefined) {
+      throw Error(`Missing required env parameters for reason notifications: FROM_ADDRESS`);
+    }
+    if (reasonToBookRequired && !request.reasonToBook) {
+      throw new HttpError({
+        httpMessage: `Invalid reason to book given`,
+        status: 400,
+        internalMessage: `No reason to book provided`,
+      });
+    }
+    const reasonToBook = request.reasonToBook ? request.reasonToBook : 'No reason provided';
+    return async () => {
+      if (config.env !== 'test') {
+        await sendNotificationEmail(
+          notificationToAddress,
+          fromAddress,
+          request.date,
+          request.user,
+          requestedOffice.name,
+          reasonToBook
+        );
+      }
+    };
+  };
+
+  const sendNotificationIfRequired = configureSendNotification();
 
   // Id date as a direct string
   const id = requestedOffice.id + '_' + request.date.replace(/-/gi, '');
@@ -174,5 +239,6 @@ export const createBooking = async (
   }
 
   audit('4:Completed');
+  await sendNotificationIfRequired();
   return mapBooking(config, createdBooking);
 };

@@ -1,5 +1,5 @@
 import { getOfficeBookings } from './db/officeBookings';
-import { getAvailableDates } from './availableDates';
+import { getAvailableDates } from './dates';
 import { Config } from './app-config';
 import { NotFound } from './errors';
 

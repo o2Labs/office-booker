@@ -10,7 +10,7 @@ import {
   FunctionExpression,
 } from '@aws/dynamodb-expressions';
 import { Arrays } from 'collection-fns';
-import { addDays } from 'date-fns';
+import { addDays, getUnixTime } from 'date-fns';
 
 export interface UserBookings {
   email: string;
@@ -69,7 +69,7 @@ export const incrementUserBookingCount = async (
         email: userEmail,
         weekCommencing,
         bookingCount: 0,
-        ttl: addDays(new Date(weekCommencing), config.dataRetentionDays + 7).getTime(),
+        ttl: getUnixTime(addDays(new Date(weekCommencing), config.dataRetentionDays + 7)),
       }),
       {
         condition: {

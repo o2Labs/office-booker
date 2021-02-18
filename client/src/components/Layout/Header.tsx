@@ -11,17 +11,19 @@ const Header: React.FC = () => (
   <HeaderStyles>
     <div className="app-icon">
       <Link component="button" onClick={() => navigate('/')}>
-        <img src={OfficesIcon} alt="" />
+        <img src={OfficesIcon} alt="Office Logo" width={30} height={30} />
       </Link>
     </div>
 
     <div className="title">
-      <h1>Office Booker</h1>
+      <h1>
+        <Link href="/">Office Booker</Link>
+      </h1>
     </div>
 
     <div className="lab-logo">
       <Link href="https://github.com/o2Labs/" rel="noopener noreferrer" target="_blank">
-        <img src={LabIcon} alt="" />
+        <img src={LabIcon} alt="The Lab Logo" width={32} height={32} />
       </Link>
     </div>
   </HeaderStyles>

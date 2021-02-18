@@ -283,8 +283,8 @@ const Users: React.FC<RouteComponentProps> = () => {
 
               {selectedFilter.user === 'active' && (
                 <p className="note">
-                  Please note, a user is only considered "active" after logging into the app the
-                  first time.
+                  Please note, a user is only considered &quot;active&quot; after logging into the
+                  app the first time.
                 </p>
               )}
 
@@ -388,8 +388,8 @@ const Users: React.FC<RouteComponentProps> = () => {
                     </div>
 
                     <p>
-                      Please note the user will not be considered "active" until they login for the
-                      first time.
+                      Please note the user will not be considered &quot;active&quot; until they
+                      login for the first time.
                     </p>
                   </section>
                 )}
@@ -399,8 +399,8 @@ const Users: React.FC<RouteComponentProps> = () => {
               <DialogTitle>Enter the email address for the user you wish to create.</DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  Please note the user will not be considered "active" until they login for the
-                  first time.
+                  Please note the user will not be considered &quot;active&quot; until they login
+                  for the first time.
                 </DialogContentText>
 
                 <TextField

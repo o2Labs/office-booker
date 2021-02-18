@@ -1,6 +1,7 @@
-import { format, addDays } from 'date-fns';
+import { format, addDays, subDays } from 'date-fns';
 import { configureServer, getNormalUser, adminUserEmail, officeQuotas } from './test-utils';
 import { setUser } from '../db/users';
+import { createBooking } from '../db/bookings';
 
 const { app, resetDb, config } = configureServer('all-users');
 const normalUserEmail = getNormalUser();
@@ -57,6 +58,33 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
     test('can get own bookings', async () => {
       const response = await app.get(`/api/bookings?user=${email}`).set('bearer', email);
       expect(response.ok).toBe(true);
+    });
+
+    test('can only return bookings within user db range', async () => {
+      const retentionFrom = subDays(new Date(), config.dataRetentionDays);
+      const advanceBookingto = addDays(new Date(), config.advanceBookingDays);
+      const daysToCreate = config.dataRetentionDays + config.advanceBookingDays + 4;
+      const startDate = subDays(new Date(), config.dataRetentionDays + 2);
+      for (let i = 0; i < daysToCreate; i++) {
+        const date = format(addDays(startDate, i), 'yyyy-MM-dd');
+        const bookingId = `${officeQuotas[0].id}_${date.replace(/-/g, '')}`;
+        await createBooking(config, {
+          id: bookingId,
+          parking: true,
+          officeId: officeQuotas[0].id,
+          date,
+          user: email,
+        });
+      }
+      const lastDateCreated = format(addDays(startDate, daysToCreate - 1), 'yyyy-MM-dd');
+      const response = await app.get(`/api/bookings?user=${email}`).set('bearer', email);
+      expect(format(startDate, 'yyyy-MM-dd')).not.toEqual(format(retentionFrom, 'yyyy-MM-dd'));
+      expect(format(advanceBookingto, 'yyyy-MM-dd')).not.toEqual(lastDateCreated);
+      expect(response.ok).toBe(true);
+      expect(response.body[0].date).toEqual(format(retentionFrom, 'yyyy-MM-dd'));
+      expect(response.body[response.body.length - 1].date).toEqual(
+        format(advanceBookingto, 'yyyy-MM-dd')
+      );
     });
 
     test('can create and delete own booking', async () => {

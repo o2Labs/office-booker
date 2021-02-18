@@ -4,7 +4,7 @@ import { Link } from '@reach/router';
 import AdminHeaderStyles from './Header.styles';
 
 // Types
-export type Routes = 'bookings' | 'users';
+export type Routes = 'bookings' | 'users' | 'stats';
 
 type Props = {
   currentRoute: Routes;
@@ -18,6 +18,9 @@ const AdminHeader: React.FC<Props> = ({ currentRoute }) => (
     <div className="btns">
       <Link to="/admin" className={currentRoute === 'bookings' ? 'current' : ''}>
         Bookings
+      </Link>
+      <Link to="/admin/stats" className={currentRoute === 'stats' ? 'current' : ''}>
+        Stats
       </Link>
       <Link to="/admin/users" className={currentRoute === 'users' ? 'current' : ''}>
         Users

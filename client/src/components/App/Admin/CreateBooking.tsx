@@ -179,7 +179,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
           (slot) =>
             slot && {
               ...slot,
-              booked: slot.booked += 1,
+              booked: (slot.booked += 1),
               bookedParking: parking ? (slot.bookedParking += 1) : slot.bookedParking,
             }
         );

@@ -11,10 +11,11 @@ import { createBooking } from './bookings/createBooking';
 import { getUserBookings } from './db/bookings';
 import { getOffice } from './getOffices';
 import { deleteBooking } from './bookings/deleteBooking';
-import { errorResponse, HttpError, Forbidden, NotFound } from './errors';
+import { errorResponse, HttpError, Forbidden, NotFound, Unauthorized } from './errors';
 import { queryBookings } from './bookings/queryBookings';
 import { parse } from 'date-fns';
 import { registerUser, isRegisterBody } from './users/register';
+import { getStats } from './stats';
 
 export const configureApp = (config: Config) => {
   const getAuthUser = (res: Response) => getUser(config, getAuthUserEmail(res));
@@ -46,7 +47,7 @@ export const configureApp = (config: Config) => {
   app.get('/api/config', (req, res, next) => {
     try {
       const clientConfig = {
-        version: '2.0.0',
+        version: '2.1.0',
         showTestBanner: config.showTestBanner,
         auth:
           config.authConfig.type === 'cognito'
@@ -59,6 +60,7 @@ export const configureApp = (config: Config) => {
             : { type: 'test' },
         emailRegex: config.validEmailMatch?.source,
         advancedBookingDays: config.advanceBookingDays,
+        reasonToBookRequired: config.reasonToBookRequired,
       };
       return res.set('Cache-Control', 'public, max-age=3600').json(clientConfig);
     } catch (err) {
@@ -275,6 +277,7 @@ export const configureApp = (config: Config) => {
         office: newBooking.office,
         user: newBooking.user,
         parking: newBooking.parking,
+        reasonToBook: newBooking.reasonToBook,
       });
       return res.json(result);
     } catch (err) {
@@ -310,6 +313,16 @@ export const configureApp = (config: Config) => {
     } catch (err) {
       return next(err);
     }
+  });
+
+  app.get('/api/stats', async (req, res) => {
+    const authUser = await getAuthUser(res);
+    if (!authUser.permissions.canViewAdminPanel) {
+      throw new Unauthorized();
+    }
+
+    const stats = await getStats(config, authUser);
+    return res.json(stats);
   });
 
   app.all('/api/*', (req, res) => {

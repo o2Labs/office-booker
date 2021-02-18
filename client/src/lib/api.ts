@@ -8,6 +8,7 @@ import {
   OfficeAdminRole,
   UserQueryResponse,
   Office,
+  Stats,
 } from '../types/api';
 
 // Constants
@@ -218,7 +219,8 @@ export const createBooking = async (
   user: User['email'],
   date: string,
   office: Pick<Office, 'id'>,
-  parking?: boolean
+  parking?: boolean,
+  reasonToBook?: string
 ): Promise<Booking> => {
   const url = new URL('bookings', BASE_URL);
 
@@ -228,6 +230,7 @@ export const createBooking = async (
     date,
     office,
     parking,
+    reasonToBook,
   };
 
   const response = await fetch(url.href, {
@@ -256,4 +259,21 @@ export const cancelBooking = async (id: Booking['id'], user: User['email']): Pro
   if (!response.ok) {
     throw await buildHttpError(response);
   }
+};
+
+export const getStats = async (): Promise<Stats> => {
+  const url = new URL(`stats`, BASE_URL);
+
+  const headers = await buildHeaders();
+
+  const response = await fetch(url.href, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw await buildHttpError(response);
+  }
+
+  return await response.json();
 };

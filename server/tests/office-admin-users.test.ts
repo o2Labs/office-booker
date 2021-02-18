@@ -3,6 +3,7 @@ import { configureServer, getNormalUser, expectForbidden } from './test-utils';
 import { encode } from 'querystring';
 import { setUser } from '../db/users';
 import { officeQuotas } from './test-utils';
+import { createBooking } from '../db/bookings';
 
 const { app, resetDb, config } = configureServer('office-admin-users');
 const otherUser = getNormalUser();
@@ -83,6 +84,7 @@ test('can create and delete bookings for other people for their office', async (
     date: format(new Date(), 'yyyy-MM-dd'),
     parking: false,
   };
+
   const createResponse = await app
     .post('/api/bookings')
     .send(createBookingBody)
@@ -114,6 +116,26 @@ test('can create and delete bookings for other people for their office', async (
     .get(`/api/bookings?user=${otherUser}`)
     .set('bearer', officeAdminEmail);
   expect(getDeletedBookingResponse.body).not.toContainEqual(createResponse.body);
+});
+
+test(`can't delete past bookings for other people`, async () => {
+  const id = officeQuotas[1].id + '_' + format(new Date(), 'yyyy-MM-dd').replace(/-/gi, '');
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const createBookingBody = {
+    id: id,
+    user: otherUser,
+    officeId: officeQuotas[1].id,
+    date: format(yesterday, 'yyyy-MM-dd'),
+    parking: false,
+  };
+
+  const createdBooking = await createBooking(config, createBookingBody);
+
+  const deleteResponse = await app
+    .delete(`/api/bookings/${createdBooking?.id}?${encode({ user: otherUser })}`)
+    .set('bearer', officeAdminEmail);
+  expect(deleteResponse.status).toBe(403);
 });
 
 test(`can't create and delete bookings for other people for other offices`, async () => {

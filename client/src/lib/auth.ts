@@ -8,7 +8,7 @@ import { registerUser } from './api';
 const mockSetupLocalStorageKey = 'mock-auth';
 let mockSetup: undefined | { auth?: { username: string; code: string } } = undefined;
 
-export const configureAuth = (config: Config) => {
+export const configureAuth = (config: Config): void => {
   if (config.auth.type === 'cognito') {
     Auth.configure({
       region: config.auth.region,
@@ -51,18 +51,24 @@ export const getAuthState = async (): Promise<User['email'] | undefined> => {
 };
 
 const getJwtToken = async () => {
-  const session = await Auth.currentSession();
+  const session = await tryGetCurrentSession();
+  if (session === undefined) {
+    return undefined;
+  }
   const accessToken = session.getIdToken();
   return accessToken.getJwtToken();
 };
 
-export const getAuthorization = async () => {
+export const getAuthorization = async (): Promise<string | undefined> => {
   if (mockSetup !== undefined) {
     if (mockSetup.auth === undefined) return undefined;
     const credentials = `${mockSetup.auth.username}:${mockSetup.auth.code}`;
     return `Basic ${btoa(credentials)}`;
   }
   const token = await getJwtToken();
+  if (token === undefined) {
+    return undefined;
+  }
 
   return `Bearer ${token}`;
 };
@@ -96,7 +102,7 @@ export const signIn = async (email: string): Promise<CognitoUser> => {
   return cognitoUser;
 };
 
-export const signOut = async () => {
+export const signOut = async (): Promise<void> => {
   if (mockSetup !== undefined) {
     mockSetup = {};
     localStorage.removeItem(mockSetupLocalStorageKey);

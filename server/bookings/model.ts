@@ -1,4 +1,4 @@
-import { parseISO } from 'date-fns';
+import { parseISO, endOfDay } from 'date-fns';
 import { BookingsModel as DbBooking } from '../db/bookings';
 import { OfficeQuota, Config } from '../app-config';
 import { Arrays } from 'collection-fns';
@@ -8,6 +8,7 @@ export type CreateBooking = {
   date: string;
   office: { id: string };
   parking?: boolean;
+  reasonToBook?: string;
 };
 
 export type RestoreBooking = CreateBooking & { id: string; created: string };
@@ -34,6 +35,9 @@ const lastCancelTime = '00:00:00';
 
 export const getBookingLastCancelTime = (date: string) =>
   parseISO(`${date}T${lastCancelTime}`).toISOString();
+
+export const getBookingAdminLastCancelTime = (date: string) =>
+  endOfDay(parseISO(date)).toISOString();
 
 export const mapBooking = (config: Config, booking: DbBooking): Booking => ({
   id: booking.id,
