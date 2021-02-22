@@ -24,6 +24,7 @@ import { OfficeSlot, OfficeWithSlots, Office } from '../../../types/api';
 import { validateEmail } from '../../../lib/emailValidation';
 
 import CreateBookingStyles from './CreateBooking.styles';
+import { Dialog, DialogActions, DialogContent, DialogContentText } from '@material-ui/core';
 
 const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   // Global state
@@ -39,6 +40,8 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   const [bookingDate, setBookingDate] = useState(addDays(new Date(), +1));
   const [email, setEmail] = useState('');
   const [parking, setParking] = useState(false);
+  const [showReasonConfirmation, setShowReasonConfirmation] = useState(false);
+  const [bookingReason, setBookingReason] = useState<string | undefined>();
 
   // Helpers
   const findOffice = useCallback(
@@ -110,8 +113,10 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   }, [officeSlot]);
 
   // Handlers
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
+    // if (e) {
+    //   e.preventDefault();
+    // }
 
     // Validation
     if (email === '') {
@@ -171,7 +176,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
     // Submit
     const formattedDate = format(bookingDate, 'yyyy-MM-dd');
 
-    createBooking(email, formattedDate, selectedOffice, parking)
+    createBooking(email, formattedDate, selectedOffice, parking, bookingReason)
       .then(() => {
         // Increase office quota
         // This assumes the date and selected office haven't changed
@@ -187,6 +192,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
         // Clear form
         setEmail('');
         setParking(false);
+        setBookingReason(undefined);
 
         // Show success alert
         dispatch({
@@ -226,7 +232,12 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
             <Paper square className="form-container">
               <h4>New Booking</h4>
 
-              <form onSubmit={handleSubmit}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  config?.reasonToBookRequired ? setShowReasonConfirmation(true) : handleSubmit(e);
+                }}
+              >
                 <div className="field">
                   <TextField
                     id="outlined-helperText"
@@ -336,6 +347,51 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                 </OurButton>
               </form>
             </Paper>
+            <Dialog
+              open={showReasonConfirmation}
+              onClose={() => setShowReasonConfirmation(false)}
+              disableBackdropClick
+            >
+              <DialogContent>
+                <DialogContentText color="secondary">
+                  You can only leave home for work purposes where it is unreasonable for you to do
+                  your job from home. Please briefly explain why you cannot work from home.
+                </DialogContentText>
+                <TextField
+                  autoFocus
+                  label="Details"
+                  type="text"
+                  margin="normal"
+                  fullWidth
+                  multiline
+                  required
+                  value={bookingReason}
+                  onChange={(e) => setBookingReason(e.target.value)}
+                />
+              </DialogContent>
+              <DialogActions>
+                <OurButton
+                  onClick={() => setShowReasonConfirmation(false)}
+                  size="small"
+                  color="primary"
+                >
+                  Cancel
+                </OurButton>
+                <OurButton
+                  onClick={() => {
+                    if (bookingDate && bookingReason && bookingReason.trim().length > 0) {
+                      setShowReasonConfirmation(false);
+                      handleSubmit();
+                    }
+                  }}
+                  variant="contained"
+                  size="small"
+                  color="secondary"
+                >
+                  Confirm{parking ? ` + Parking` : null}
+                </OurButton>
+              </DialogActions>
+            </Dialog>
           </>
         )}
       </CreateBookingStyles>
