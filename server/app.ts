@@ -60,6 +60,7 @@ export const configureApp = (config: Config) => {
             : { type: 'test' },
         emailRegex: config.validEmailMatch?.source,
         advancedBookingDays: config.advanceBookingDays,
+        autoApprovedEmails: config.autoApprovedEmails,
         reasonToBookRequired: config.reasonToBookRequired,
       };
       return res.set('Cache-Control', 'public, max-age=3600').json(clientConfig);

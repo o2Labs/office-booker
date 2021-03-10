@@ -9,6 +9,8 @@ const getLocalConfig = (): Config => {
     return parseConfigFromEnv(process.env);
   } catch (error) {
     const adminUser = 'mock.user@domain.test';
+    const autoApprovedUsers = ['vip.user1@domain.test','vip.user2@domain.test','vip.user3@domain.test'];
+
     console.log(
       `Env not configured correctly, falling back to stub setup.\nAdmin user is ${adminUser}\n` +
         error.message
@@ -20,6 +22,7 @@ const getLocalConfig = (): Config => {
       officeQuotas: [{ id: 'the-office', name: 'The Office', quota: 10, parkingQuota: 10 }],
       showTestBanner: true,
       systemAdminEmails: [adminUser],
+      autoApprovedEmails: autoApprovedUsers,
       authConfig: {
         type: 'test',
         validate: (req) => {
