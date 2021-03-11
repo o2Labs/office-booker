@@ -7,6 +7,7 @@ export const createFakeConfig = (prototype?: Partial<Config>): Config => ({
   advancedBookingDays: 14,
   auth: { type: 'test' },
   showTestBanner: false,
+  autoApprovedEmails: ['vip.user1@domain.test', 'vip.user2@domain.test', 'vip.user3@domain.test'],
   reasonToBookRequired: false,
   ...prototype,
 });
