@@ -114,6 +114,8 @@ const MakeBooking: React.FC<Props> = (props) => {
     setReloadTimer();
   };
 
+  const isReasonRequired = () => config?.reasonToBookRequired && !isAutoApprovedUser;
+
   // Effects
   useEffect(() => {
     // Periodically refresh bookings
@@ -300,7 +302,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     date: Date,
     withParking: boolean
   ) => {
-    if (config?.reasonToBookRequired && !isAutoApprovedUser) {
+    if (isReasonRequired()) {
       setBookingDate(date);
       setBookingParking(withParking);
 
@@ -408,7 +410,7 @@ const MakeBooking: React.FC<Props> = (props) => {
         </Link>
       </div>
 
-      {config?.reasonToBookRequired && !isAutoApprovedUser && (
+      {isReasonRequired() && (
         <p className="notice">
           You will be asked to record your reason for going to work when you make a booking.
         </p>
@@ -617,7 +619,7 @@ const MakeBooking: React.FC<Props> = (props) => {
               </OurButton>
               <OurButton
                 onClick={() => {
-                  if (config?.reasonToBookRequired && !isAutoApprovedUser) {
+                  if (isReasonRequired()) {
                     setShowTodayConfirmation(false);
                     setShowReasonConfirmation(true);
                   } else {

@@ -58,8 +58,5 @@
     "typescript": "4.1.3",
     "web-vitals": "^1.0.1"
   },
-  "resolutions": {
-    "immer": "8.0.1"
-  },
   "proxy": "http://localhost:3030/"
 }
