@@ -94,6 +94,7 @@ const MakeBooking: React.FC<Props> = (props) => {
   const [bookingDate, setBookingDate] = useState<Date | undefined>();
   const [bookingParking, setBookingParking] = useState(false);
   const [bookingReason, setBookingReason] = useState<string | undefined>();
+  const [isAutoApprovedUser, setIsAutoApprovedUser] = useState<boolean>(false);
 
   // Refs
   const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
@@ -112,6 +113,8 @@ const MakeBooking: React.FC<Props> = (props) => {
 
     setReloadTimer();
   };
+
+  const isReasonRequired = () => config?.reasonToBookRequired && !isAutoApprovedUser;
 
   // Effects
   useEffect(() => {
@@ -272,6 +275,14 @@ const MakeBooking: React.FC<Props> = (props) => {
     }
   }, [bookings, office, user, weeks]);
 
+  useEffect(() => {
+    if (user) {
+      if (config?.autoApprovedEmails.includes(user?.email)) {
+        setIsAutoApprovedUser(true);
+      }
+    }
+  }, [user, config]);
+
   // Handlers
   const handleChangeWeek = (direction: 'forward' | 'backward') => {
     // Find index of current selected
@@ -291,7 +302,7 @@ const MakeBooking: React.FC<Props> = (props) => {
     date: Date,
     withParking: boolean
   ) => {
-    if (config?.reasonToBookRequired) {
+    if (isReasonRequired()) {
       setBookingDate(date);
       setBookingParking(withParking);
 
@@ -399,7 +410,7 @@ const MakeBooking: React.FC<Props> = (props) => {
         </Link>
       </div>
 
-      {config?.reasonToBookRequired && (
+      {isReasonRequired() && (
         <p className="notice">
           You will be asked to record your reason for going to work when you make a booking.
         </p>
@@ -608,7 +619,7 @@ const MakeBooking: React.FC<Props> = (props) => {
               </OurButton>
               <OurButton
                 onClick={() => {
-                  if (config?.reasonToBookRequired) {
+                  if (isReasonRequired()) {
                     setShowTodayConfirmation(false);
                     setShowReasonConfirmation(true);
                   } else {

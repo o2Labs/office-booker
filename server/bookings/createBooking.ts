@@ -98,10 +98,15 @@ export const createBooking = async (
   }
 
   const configureSendNotification = () => {
-    const { fromAddress, notificationToAddress, reasonToBookRequired } = config;
+    const { fromAddress, notificationToAddress, reasonToBookRequired, autoApprovedEmails } = config;
     if (!notificationToAddress) {
       return async () => {};
     }
+
+    if (autoApprovedEmails.includes(request.user)) {
+      return async () => {};
+    }
+
     if (fromAddress === undefined) {
       throw Error(`Missing required env parameters for reason notifications: FROM_ADDRESS`);
     }

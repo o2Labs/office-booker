@@ -42,6 +42,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   const [parking, setParking] = useState(false);
   const [showReasonConfirmation, setShowReasonConfirmation] = useState(false);
   const [bookingReason, setBookingReason] = useState<string | undefined>();
+  const [isAutoApprovedUser, setIsAutoApprovedUser] = useState<boolean>(false);
 
   // Helpers
   const findOffice = useCallback(
@@ -111,6 +112,16 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
       setLoading(false);
     }
   }, [officeSlot]);
+
+  useEffect(() => {
+    setIsAutoApprovedUser(false);
+
+    if (email.length > 0) {
+      if (config?.autoApprovedEmails.includes(email)) {
+        setIsAutoApprovedUser(true);
+      }
+    }
+  }, [email, config]);
 
   // Handlers
   const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
@@ -193,6 +204,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
         setEmail('');
         setParking(false);
         setBookingReason(undefined);
+        setIsAutoApprovedUser(false);
 
         // Show success alert
         dispatch({
@@ -235,7 +247,9 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  config?.reasonToBookRequired ? setShowReasonConfirmation(true) : handleSubmit(e);
+                  config?.reasonToBookRequired && !isAutoApprovedUser
+                    ? setShowReasonConfirmation(true)
+                    : handleSubmit(e);
                 }}
               >
                 <div className="field">
