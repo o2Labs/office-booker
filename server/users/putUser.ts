@@ -13,6 +13,8 @@ export const putUser = async (
 
   const quota = putBody.quota === null ? config.defaultWeeklyQuota : putBody.quota || user.quota;
 
+  const validAutoApproved = config.reasonToBookRequired ? user.autoApproved : false
+
   const parseOffices = () => {
     if (putBody.role === undefined) {
       return user.adminOffices;
@@ -32,6 +34,7 @@ export const putUser = async (
     email: user.email,
     quota,
     adminOffices: validOffices,
+    autoApproved: validAutoApproved,
     created: user.created,
   };
 

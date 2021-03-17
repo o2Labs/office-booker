@@ -9,11 +9,17 @@ export type UserProfile = {
 export type DefaultRole = { name: 'Default' };
 export type SystemAdminRole = { name: 'System Admin' };
 export type OfficeAdminRole = { name: 'Office Admin'; offices: OfficeQuota[] };
-export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole;
+export type AutoApprovedRole = { name: 'Auto Approved' };
+export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole | AutoApprovedRole;
 
 export type UserRoleName = UserRole['name'];
 
-export const userRoleNames: UserRoleName[] = ['Default', 'System Admin', 'Office Admin'];
+export const userRoleNames: UserRoleName[] = [
+  'Default',
+  'System Admin',
+  'Office Admin',
+  'Auto Approved',
+];
 
 export type User = UserProfile & {
   quota: number;
@@ -32,7 +38,7 @@ type PutOfficeAdminRole = Pick<OfficeAdminRole, 'name'> & {
   offices: { id: string }[];
 };
 
-export type PutUserBody = { quota?: number | null; role?: DefaultRole | PutOfficeAdminRole };
+export type PutUserBody = { quota?: number | null; role?: DefaultRole | PutOfficeAdminRole | AutoApprovedRole};
 
 export const isOfficeAdminRole = (arg: any): arg is PutOfficeAdminRole => {
   if (typeof arg !== 'object') return false;
@@ -46,7 +52,7 @@ export const isOfficeAdminRole = (arg: any): arg is PutOfficeAdminRole => {
 
 export const isUserRole = (arg: any): arg is UserRole =>
   typeof arg === 'object' &&
-  (arg.name === 'Default' || arg.name === 'System Admin' || isOfficeAdminRole(arg));
+  (arg.name === 'Default' || arg.name === 'Auto Approved' || arg.name === 'System Admin' || isOfficeAdminRole(arg));
 
 export const isPutUserBody = (arg: any): arg is PutUserBody =>
   typeof arg === 'object' &&
@@ -82,6 +88,7 @@ const makeOfficeAdmin = (config: Config, dbUser: DbUser): OfficeAdminRole => {
 export const makeUser = (config: Config, dbUser: DbUser): User => {
   const admin = isAdmin(config, dbUser.email);
   const isOfficeAdmin = (dbUser.adminOffices?.length ?? 0) > 0;
+  const isAutoApprovedUser = dbUser.autoApproved;
   return {
     email: dbUser.email,
     admin,
@@ -90,6 +97,8 @@ export const makeUser = (config: Config, dbUser: DbUser): User => {
       ? { name: 'System Admin' }
       : isOfficeAdmin
       ? makeOfficeAdmin(config, dbUser)
+      : isAutoApprovedUser
+      ? { name: 'Auto Approved' }
       : { name: 'Default' },
     permissions: {
       canViewAdminPanel: admin || isOfficeAdmin,

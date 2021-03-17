@@ -9,6 +9,7 @@ export interface DbUser {
   email: string;
   quota?: number;
   adminOffices?: string[];
+  autoApproved?: boolean;
   created: string;
 }
 
@@ -20,6 +21,8 @@ export class UserModel implements DbUser {
   quota?: number;
   @attribute()
   adminOffices?: string[];
+  @attribute()
+  autoApproved?: boolean;
   @attribute({
     defaultProvider: () => new Date().toISOString(),
   })
@@ -125,6 +128,7 @@ export const ensureUserExists = async (
         email: user.email,
         quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
         adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
+        autoApproved: !config.reasonToBookRequired ? false : user.autoApproved,
         created: user.created,
       }),
       {
@@ -151,6 +155,7 @@ export const setUser = async (config: Config, user: DbUser): Promise<void> => {
         email: user.email,
         quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
         adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
+        autoApproved: !config.reasonToBookRequired ? false : user.autoApproved,
         created: user.created,
       })
     );

@@ -18,6 +18,7 @@ export const registerUser = async (config: Config, email: string) => {
     email,
     adminOffices: [],
     quota: config.defaultWeeklyQuota,
+    autoApproved: false,
     created: new Date().toISOString(),
   });
 
