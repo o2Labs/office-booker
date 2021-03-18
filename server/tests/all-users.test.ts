@@ -6,6 +6,7 @@ import { createBooking } from '../db/bookings';
 const { app, resetDb, config } = configureServer('all-users');
 const normalUserEmail = getNormalUser();
 const officeAdminEmail = 'office-a.admin@office-booker.test';
+const autoApprovedUserEmail = 'office-booker-auto-approved-test@office-booker.test';
 
 const office = officeQuotas[0];
 beforeEach(async () => {
@@ -22,6 +23,7 @@ const userTypes: { [key: string]: string } = {
   normal: normalUserEmail,
   admin: adminUserEmail,
   officeAdmin: officeAdminEmail,
+  autoApproved: autoApprovedUserEmail,
 };
 
 describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) => {
@@ -35,6 +37,7 @@ describe.each(Object.keys(userTypes))('All-user permitted actions', (userType) =
         'admin',
         'quota',
         'role',
+        'autoApproved',
         'permissions',
       ]);
       expect(typeof response.body?.admin).toBe('boolean');

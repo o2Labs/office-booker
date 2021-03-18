@@ -5,6 +5,7 @@ import { officeQuotas } from './test-utils';
 
 const { app, resetDb, config } = configureServer('admin-users');
 const otherUser = getNormalUser();
+const autoApprovedUserEmail = 'office-booker-auto-approved-test@office-booker.test';
 
 beforeEach(resetDb);
 
@@ -41,6 +42,7 @@ test('can query admin users', async () => {
         quota: 1,
         admin: true,
         role: { name: 'System Admin' },
+        autoApproved: false,
         permissions: {
           canEditUsers: true,
           canManageAllBookings: true,
@@ -157,4 +159,42 @@ test('can set user role', async () => {
     .get(`/api/users/${otherUser}`)
     .set('bearer', adminUserEmail);
   expect(getUpdatedUserResponse.body).toEqual(putResponse.body);
+});
+
+test('can set user auto approved', async () => {
+  config.reasonToBookRequired = true;
+
+  const getInitialUserResponse = await app
+    .get(`/api/users/${autoApprovedUserEmail}`)
+    .set('bearer', adminUserEmail);
+  expect(getInitialUserResponse.body).toMatchObject({ autoApproved: false });
+
+  const putUserBody = {
+    autoApproved: true,
+  };
+  const putResponse = await app
+    .put(`/api/users/${autoApprovedUserEmail}`)
+    .send(putUserBody)
+    .set('bearer', adminUserEmail);
+  expect(putResponse.status).toBe(200);
+
+  const queryResponse = await app.get(`/api/users?autoApproved=true`).set('bearer', adminUserEmail);
+  expect(queryResponse.body.users).toContainEqual(putResponse.body);
+
+  const getUpdatedUserResponse = await app
+    .get(`/api/users/${autoApprovedUserEmail}`)
+    .set('bearer', adminUserEmail);
+  expect(getUpdatedUserResponse.body).toEqual(putResponse.body);
+
+  const putAutoApprovedResponse = await app
+    .put(`/api/users/${autoApprovedUserEmail}`)
+    .send({ autoApproved: false })
+    .set('bearer', adminUserEmail);
+  expect(putAutoApprovedResponse.status).toBe(200);
+  expect(putAutoApprovedResponse.body).toMatchObject(getInitialUserResponse.body);
+
+  const getResetUserResponse = await app
+    .get(`/api/users/${autoApprovedUserEmail}`)
+    .set('bearer', adminUserEmail);
+  expect(getResetUserResponse.body).toEqual(putAutoApprovedResponse.body);
 });

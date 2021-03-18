@@ -28,7 +28,6 @@ const caseSensitiveEmail = config.getBoolean('case-sensitive-email') ?? false;
 const dnsZone = config.require('dns-zone');
 const showTestBanner = config.getBoolean('show-test-banner') ?? false;
 export const systemAdminEmails = config.requireObject<string[]>('system-admin-emails').join(';');
-export const autoApprovedEmails = config.requireObject<string[]>('auto-approved-emails').join(';');
 export const officeQuotas = JSON.stringify(
   config.requireObject<{ name: string; quota: number }[]>('office-quotas')
 );
@@ -413,7 +412,6 @@ const getHttpEnv = (): aws.types.input.lambda.FunctionEnvironment['variables'] =
     SELFTESTKEY: selfTestKey,
     SELFTESTUSER: selfTestUser,
     SYSTEM_ADMIN_EMAILS: systemAdminEmails,
-    AUTO_APPROVED_EMAILS: autoApprovedEmails,
     EMAIL_REGEX: emailRegex,
     DEFAULT_WEEKLY_QUOTA: defaultWeeklyQuota.toString(),
     DATA_RETENTION_DAYS: logRetention.toString(),

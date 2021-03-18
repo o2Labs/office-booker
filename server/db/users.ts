@@ -111,6 +111,7 @@ export const getUserDb = async (config: Config, userEmail: string): Promise<DbUs
     email,
     quota: dbUser?.quota,
     adminOffices: dbUser?.adminOffices,
+    autoApproved: dbUser?.autoApproved,
     created: pickCreated(cognitoUser?.created, dbUser?.created),
   };
 };
@@ -128,7 +129,7 @@ export const ensureUserExists = async (
         email: user.email,
         quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
         adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
-        autoApproved: !config.reasonToBookRequired ? false : user.autoApproved,
+        autoApproved: config.reasonToBookRequired ? user?.autoApproved === true : false,
         created: user.created,
       }),
       {
@@ -155,7 +156,7 @@ export const setUser = async (config: Config, user: DbUser): Promise<void> => {
         email: user.email,
         quota: user.quota === config.defaultWeeklyQuota ? undefined : user.quota,
         adminOffices: (user.adminOffices?.length ?? 0) === 0 ? undefined : user.adminOffices,
-        autoApproved: !config.reasonToBookRequired ? false : user.autoApproved,
+        autoApproved: config.reasonToBookRequired ? user?.autoApproved === true : false,
         created: user.created,
       })
     );

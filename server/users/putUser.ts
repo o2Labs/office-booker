@@ -13,7 +13,7 @@ export const putUser = async (
 
   const quota = putBody.quota === null ? config.defaultWeeklyQuota : putBody.quota || user.quota;
 
-  const validAutoApproved = config.reasonToBookRequired ? user.autoApproved : false
+  const validAutoApproved = config.reasonToBookRequired ? putBody.autoApproved === true : false;
 
   const parseOffices = () => {
     if (putBody.role === undefined) {

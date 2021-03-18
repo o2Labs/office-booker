@@ -6,7 +6,6 @@ import { randomBytes } from 'crypto';
 import { UserType } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 
 export const adminUserEmail = 'office-booker-admin-test@office-booker.test';
-export const autoApprovedUserEmail = 'office-booker-auto-approved-test@office-booker.test'
 
 export const getNormalUser = () => `${randomBytes(10).toString('hex')}@office-booker.test`;
 
@@ -50,7 +49,6 @@ export const getConfig = (dynamoDBTablePrefix: string, testConfig?: TestConfig):
     env: 'test',
     officeQuotas: testConfig?.officeQuotas ?? officeQuotas,
     systemAdminEmails: testConfig?.systemAdminEmails ?? [adminUserEmail],
-    autoApprovedEmails: [autoApprovedUserEmail],
     defaultWeeklyQuota: testConfig?.defaultWeeklyQuota ?? 1,
     advanceBookingDays: 14,
     dataRetentionDays: 30,
