@@ -7,7 +7,6 @@ export const createFakeConfig = (prototype?: Partial<Config>): Config => ({
   advancedBookingDays: 14,
   auth: { type: 'test' },
   showTestBanner: false,
-  autoApprovedEmails: ['vip.user1@domain.test', 'vip.user2@domain.test', 'vip.user3@domain.test'],
   reasonToBookRequired: false,
   ...prototype,
 });
@@ -46,6 +45,21 @@ export const createFakeUser = (prototype?: Partial<User>): User => ({
   },
   quota: 5,
   role: { name: 'Default' },
+  ...prototype,
+});
+
+export const createFakeAutoApprovedUser = (prototype?: Partial<User>): User => ({
+  email: 'mock.user@domain.test',
+  permissions: {
+    canEditUsers: false,
+    canManageAllBookings: false,
+    canViewAdminPanel: false,
+    canViewUsers: false,
+    officesCanManageBookingsFor: [],
+  },
+  quota: 5,
+  role: { name: 'Default' },
+  autoApproved: true,
   ...prototype,
 });
 

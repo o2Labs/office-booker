@@ -28,8 +28,8 @@ import { AppContext } from '../../AppProvider';
 import BookButton from '../../Assets/BookButton';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { Booking, OfficeWithSlots } from '../../../types/api';
-import { createBooking, cancelBooking } from '../../../lib/api';
+import { Booking, OfficeWithSlots, User } from '../../../types/api';
+import { createBooking, cancelBooking, getUser } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
 import { DATE_FNS_OPTIONS } from '../../../constants/dates';
 
@@ -95,6 +95,7 @@ const MakeBooking: React.FC<Props> = (props) => {
   const [bookingParking, setBookingParking] = useState(false);
   const [bookingReason, setBookingReason] = useState<string | undefined>();
   const [isAutoApprovedUser, setIsAutoApprovedUser] = useState<boolean>(false);
+  const [searchedUser, setSearchedUser] = useState<User | undefined>();
 
   // Refs
   const reloadTimerRef = useRef<ReturnType<typeof setInterval> | undefined>();
@@ -276,12 +277,31 @@ const MakeBooking: React.FC<Props> = (props) => {
   }, [bookings, office, user, weeks]);
 
   useEffect(() => {
+    if (user && config?.reasonToBookRequired) {
+      // Get selected user
+      getUser(user?.email)
+        .then((searchedUser) => setSearchedUser(searchedUser))
+        .catch((err) => {
+          // Handle errors
+
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          });
+        });
+    }
+  }, [user, dispatch, config?.reasonToBookRequired]);
+
+  useEffect(() => {
     if (user) {
-      if (config?.autoApprovedEmails.includes(user?.email)) {
+      if (searchedUser?.autoApproved) {
         setIsAutoApprovedUser(true);
       }
     }
-  }, [user, config]);
+  }, [searchedUser?.autoApproved, user]);
 
   // Handlers
   const handleChangeWeek = (direction: 'forward' | 'backward') => {

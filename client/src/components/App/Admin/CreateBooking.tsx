@@ -18,9 +18,9 @@ import AdminLayout from './Layout/Layout';
 import Loading from '../../Assets/LoadingSpinner';
 import { OurButton } from '../../../styles/MaterialComponents';
 
-import { getOffices, createBooking, getOffice } from '../../../lib/api';
+import { getOffices, createBooking, getOffice, getUser } from '../../../lib/api';
 import { formatError } from '../../../lib/app';
-import { OfficeSlot, OfficeWithSlots, Office } from '../../../types/api';
+import { OfficeSlot, OfficeWithSlots, Office, User } from '../../../types/api';
 import { validateEmail } from '../../../lib/emailValidation';
 
 import CreateBookingStyles from './CreateBooking.styles';
@@ -43,12 +43,35 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   const [showReasonConfirmation, setShowReasonConfirmation] = useState(false);
   const [bookingReason, setBookingReason] = useState<string | undefined>();
   const [isAutoApprovedUser, setIsAutoApprovedUser] = useState<boolean>(false);
+  const [searchedUser, setSearchedUser] = useState<User | undefined>();
 
   // Helpers
   const findOffice = useCallback(
     (name: OfficeWithSlots['name']) => offices && offices.find((o) => o.name === name),
     [offices]
   );
+
+  const handleFetchUser = () => {
+    setIsAutoApprovedUser(false);
+
+    if (user && config?.reasonToBookRequired) {
+      // Get selected user
+      getUser(email)
+        .then((searchedUser) => setSearchedUser(searchedUser))
+        .catch((err) => {
+          // Handle errors
+          setLoading(false);
+
+          dispatch({
+            type: 'SET_ALERT',
+            payload: {
+              message: formatError(err),
+              color: 'error',
+            },
+          });
+        });
+    }
+  };
 
   // Effects
   useEffect(() => {
@@ -114,21 +137,13 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
   }, [officeSlot]);
 
   useEffect(() => {
-    setIsAutoApprovedUser(false);
-
-    if (email.length > 0) {
-      if (config?.autoApprovedEmails.includes(email)) {
-        setIsAutoApprovedUser(true);
-      }
+    if (searchedUser?.autoApproved === true) {
+      setIsAutoApprovedUser(true);
     }
-  }, [email, config]);
+  }, [searchedUser?.autoApproved]);
 
   // Handlers
   const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
-    // if (e) {
-    //   e.preventDefault();
-    // }
-
     // Validation
     if (email === '') {
       return dispatch({
@@ -205,6 +220,7 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
         setParking(false);
         setBookingReason(undefined);
         setIsAutoApprovedUser(false);
+        setSearchedUser(undefined);
 
         // Show success alert
         dispatch({
@@ -261,6 +277,9 @@ const AdminCreateBooking: React.FC<RouteComponentProps> = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onBlur={() => {
+                      handleFetchUser();
+                    }}
                     className="input"
                   />
                 </div>

@@ -15,7 +15,12 @@ export type SystemAdminRole = { name: 'System Admin' };
 export type OfficeAdminRole = { name: 'Office Admin'; offices: Office[] };
 export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole;
 
-export type UserQuery = { quota?: 'custom'; role?: UserRole['name']; emailPrefix?: string };
+export type UserQuery = {
+  quota?: 'custom';
+  role?: UserRole['name'];
+  autoApproved?: 'true';
+  emailPrefix?: string;
+};
 
 export type UserQueryResponse = { users: User[]; paginationToken?: string };
 
@@ -23,6 +28,7 @@ export type User = {
   email: string;
   quota: number;
   role: UserRole;
+  autoApproved?: boolean;
   permissions: {
     canViewAdminPanel: boolean;
     canViewUsers: boolean;

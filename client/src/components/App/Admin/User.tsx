@@ -20,18 +20,20 @@ import { formatError } from '../../../lib/app';
 import { User, Office } from '../../../types/api';
 
 import UserStyles from './User.styles';
+import { Checkbox, FormControlLabel } from '@material-ui/core';
 
 // Component
 const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user } = state;
+  const { config, user } = state;
   const canEdit = user?.permissions.canEditUsers === true;
 
   // Local state
   const [loading, setLoading] = useState(true);
   const [offices, setOffices] = useState<Office[] | undefined>();
   const [selectedUser, setSelectedUser] = useState<User | undefined>();
+  const [autoApprovedSelected, setAutoApprovedSelected] = useState(false);
 
   // Effects
   useEffect(() => {
@@ -65,8 +67,12 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
     if (user && selectedUser) {
       // Get all offices admin can manage
       setOffices(user.permissions.officesCanManageBookingsFor);
+
+      if (config?.reasonToBookRequired && selectedUser.autoApproved !== undefined) {
+        setAutoApprovedSelected(selectedUser.autoApproved);
+      }
     }
-  }, [user, selectedUser, dispatch]);
+  }, [user, selectedUser, dispatch, config?.reasonToBookRequired]);
 
   useEffect(() => {
     if (offices) {
@@ -97,11 +103,20 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
     // Create/update user
     const role = selectedUser.role.name === 'System Admin' ? undefined : selectedUser.role;
 
-    putUser({
-      email: selectedUser.email,
-      quota: selectedUser.quota,
-      role,
-    })
+    const putBody = config?.reasonToBookRequired
+      ? {
+          email: selectedUser.email,
+          quota: selectedUser.quota,
+          role,
+          autoApproved: selectedUser.autoApproved,
+        }
+      : {
+          email: selectedUser.email,
+          quota: selectedUser.quota,
+          role,
+        };
+
+    putUser(putBody)
       .then((updatedUser) => {
         // Update local state
         setSelectedUser(updatedUser);
@@ -260,6 +275,30 @@ const UserAdmin: React.FC<RouteComponentProps<{ email: string }>> = (props) => {
                     className="input"
                   />
                 </div>
+
+                {config?.reasonToBookRequired && (
+                  <div className="field">
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={autoApprovedSelected}
+                          onChange={(event) =>
+                            setSelectedUser(
+                              (selectedUser) =>
+                                selectedUser && {
+                                  ...selectedUser,
+                                  autoApproved: event.target.checked,
+                                }
+                            )
+                          }
+                          name="checkedB"
+                          color="primary"
+                        />
+                      }
+                      label="Auto Approved"
+                    />
+                  </div>
+                )}
 
                 {canEdit && (
                   <div className="buttons">
