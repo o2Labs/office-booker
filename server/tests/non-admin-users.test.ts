@@ -22,6 +22,7 @@ describe.each(Object.keys(userTypes))('Non-admin user actions', (userType) => {
         email,
         quota: 1,
         admin: false,
+        autoApproved: false,
         role: { name: 'Default' },
         permissions: {
           canEditUsers: false,

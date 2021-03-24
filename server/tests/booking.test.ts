@@ -302,35 +302,3 @@ describe('Testing DB logic', async () => {
     expect(slot.booked).toEqual(0);
   });
 });
-
-test('can create booking for auto approved user without reason provided and successfully increase booking count and no email sent', async () => {
-  config.reasonToBookRequired = true;
-  config.notificationToAddress = 'notifications@domain.test';
-  config.fromAddress = 'office@domain.test';
-  const autoApprovedUserEmail = 'office-booker-auto-approved-test@office-booker.test';
-
-  const office = config.officeQuotas[0];
-  const date = format(addDays(nextMonday, 1), 'yyyy-MM-dd');
-  const createBookingBody = {
-    user: autoApprovedUserEmail,
-    office: { id: office.id },
-    date,
-  };
-  const createResponse = await app
-    .post('/api/bookings')
-    .send(createBookingBody)
-    .set('bearer', autoApprovedUserEmail);
-  expect(createResponse.ok).toBe(true);
-
-  const getCreatedBookingResponse = await app
-    .get(`/api/bookings?user=${autoApprovedUserEmail}`)
-    .set('bearer', autoApprovedUserEmail);
-  expect(getCreatedBookingResponse.body).toContainEqual(createResponse.body);
-
-  const getOfficeBookingsResponse = await app
-    .get(`/api/offices/${office.id}`)
-    .set('bearer', autoApprovedUserEmail);
-  const officeData = getOfficeBookingsResponse.body;
-  const slot = officeData.slots.find((item: any) => item.date === date);
-  expect(slot.booked).toEqual(1);
-});

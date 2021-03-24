@@ -9,10 +9,12 @@ const { app, resetDb, config } = configureServer('office-admin-users');
 const otherUser = getNormalUser();
 
 const officeAdminEmail = 'office-a.admin@office-booker.test';
+const autoApprovedUserEmail = 'office-booker-auto-approved-test@office-booker.test';
 
 const office = officeQuotas[0];
 beforeEach(async () => {
   await resetDb();
+  config.reasonToBookRequired = true;
   await setUser(config, {
     email: officeAdminEmail,
     adminOffices: [office.name],
@@ -28,6 +30,7 @@ test(`can get self`, async () => {
     email: officeAdminEmail,
     quota: 1,
     admin: false,
+    autoApproved: false,
     role: { name: 'Office Admin', offices: [office] },
     permissions: {
       canEditUsers: false,
@@ -49,6 +52,11 @@ test('can query admin users', async () => {
   expect(response.ok).toBe(true);
 });
 
+test('can query auto approved users', async () => {
+  const response = await app.get(`/api/users?autoApproved=true`).set('bearer', officeAdminEmail);
+  expect(response.ok).toBe(true);
+});
+
 test('can query custom quota users', async () => {
   const response = await app.get(`/api/users?quota=custom`).set('bearer', officeAdminEmail);
   expect(response.ok).toBe(true);
@@ -60,6 +68,17 @@ test(`can't set user quotas`, async () => {
   };
   const response = await app
     .put(`/api/users/${otherUser}`)
+    .send(putUserBody)
+    .set('bearer', officeAdminEmail);
+  expectForbidden(response);
+});
+
+test(`can't set auto approved on user`, async () => {
+  const putUserBody = {
+    autoApproved: true,
+  };
+  const response = await app
+    .put(`/api/users/${autoApprovedUserEmail}`)
     .send(putUserBody)
     .set('bearer', officeAdminEmail);
   expectForbidden(response);

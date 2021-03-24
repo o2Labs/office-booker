@@ -28,7 +28,6 @@ export type Config = {
     | { type: 'test' };
   emailRegex?: string;
   advancedBookingDays: number;
-  autoApprovedEmails: string[];
   reasonToBookRequired: boolean;
 };
 

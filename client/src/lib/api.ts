@@ -51,6 +51,11 @@ export const queryUsers = async (
   if (query.quota !== undefined) {
     url.searchParams.set('quota', query.quota);
   }
+
+  if (query.autoApproved !== undefined) {
+    url.searchParams.set('autoApproved', query.autoApproved);
+  }
+
   if (query.emailPrefix !== undefined) {
     url.searchParams.set('emailPrefix', query.emailPrefix);
   }
@@ -109,6 +114,7 @@ export const putUser = async (user: {
   email: string;
   quota?: number | null;
   role?: DefaultRole | OfficeAdminRole;
+  autoApproved?: boolean;
 }): Promise<User> => {
   const url = new URL(`users/${user.email}`, BASE_URL);
 
@@ -117,7 +123,7 @@ export const putUser = async (user: {
   const response = await fetch(url.href, {
     method: 'PUT',
     headers,
-    body: JSON.stringify({ quota: user.quota, role: user.role }),
+    body: JSON.stringify({ quota: user.quota, role: user.role, autoApproved: user.autoApproved }),
   });
 
   if (!response.ok) {

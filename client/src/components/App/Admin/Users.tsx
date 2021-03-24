@@ -24,6 +24,8 @@ import SearchIcon from '@material-ui/icons/Search';
 import TodayIcon from '@material-ui/icons/Today';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
 import IconButton from '@material-ui/core/IconButton';
+import CheckIcon from '@material-ui/icons/Check';
+import ClearIcon from '@material-ui/icons/Clear';
 
 import { AppContext } from '../../AppProvider';
 import Loading from '../../Assets/LoadingSpinner';
@@ -41,7 +43,7 @@ import { DialogTitle, Tooltip } from '@material-ui/core';
 
 // Types
 type UserFilter = {
-  user: 'active' | 'custom' | 'System Admin' | 'Office Admin';
+  user: 'active' | 'custom' | 'System Admin' | 'Office Admin' | 'Auto Approved';
   email?: string;
 };
 
@@ -57,8 +59,11 @@ const userFilterToQuery = (filter: UserFilter): UserQuery => {
     query.role = 'System Admin';
   } else if (filter.user === 'custom') {
     query.quota = 'custom';
+  } else if (filter.user === 'Auto Approved') {
+    query.autoApproved = 'true';
   }
 
+  console.log('query', query);
   return query;
 };
 
@@ -81,6 +86,12 @@ const sortData = (data: User[], key: keyof User, order: SortOrder): User[] | und
       : data.sort((a, b) => a.role.name.localeCompare(b.role.name));
   }
 
+  if (key === 'autoApproved') {
+    return order === 'desc'
+      ? data.sort((a, b) => Number(b.autoApproved as boolean) - Number(a.autoApproved as boolean))
+      : data.sort((a, b) => Number(a.autoApproved as boolean) - Number(b.autoApproved as boolean));
+  }
+
   return data;
 };
 
@@ -88,7 +99,7 @@ const sortData = (data: User[], key: keyof User, order: SortOrder): User[] | und
 const Users: React.FC<RouteComponentProps> = () => {
   // Global state
   const { state, dispatch } = useContext(AppContext);
-  const { user } = state;
+  const { config, user } = state;
 
   // Local state
   const [loading, setLoading] = useState(true);
@@ -177,7 +188,8 @@ const Users: React.FC<RouteComponentProps> = () => {
       user === 'active' ||
       user === 'System Admin' ||
       user === 'Office Admin' ||
-      user === 'custom'
+      user === 'custom' ||
+      user === 'Auto Approved'
     ) {
       setSelectedFilter((filter) => ({ ...filter, user }));
     }
@@ -261,6 +273,9 @@ const Users: React.FC<RouteComponentProps> = () => {
                       <MenuItem value="System Admin">System Admins</MenuItem>
                       <MenuItem value="Office Admin">Office Admins</MenuItem>
                       <MenuItem value="custom">With custom quota</MenuItem>
+                      {config?.reasonToBookRequired && (
+                        <MenuItem value="Auto Approved">With auto approved</MenuItem>
+                      )}
                     </Select>
                   </FormControl>
                 </div>
@@ -319,6 +334,17 @@ const Users: React.FC<RouteComponentProps> = () => {
                           Role
                         </TableSortLabel>
                       </TableCell>
+                      {config?.reasonToBookRequired && (
+                        <TableCell className="table-header">
+                          <TableSortLabel
+                            active={sortBy === 'autoApproved'}
+                            direction={sortOrder}
+                            onClick={() => handleSort('autoApproved')}
+                          >
+                            Auto Approved
+                          </TableSortLabel>
+                        </TableCell>
+                      )}
                       <TableCell className="table-header" />
                     </TableRow>
                   </TableHead>
@@ -329,6 +355,11 @@ const Users: React.FC<RouteComponentProps> = () => {
                           <TableCell>{user.email}</TableCell>
                           <TableCell>{user.quota}</TableCell>
                           <TableCell>{user.role.name}</TableCell>
+                          {config?.reasonToBookRequired && (
+                            <TableCell>
+                              {user.autoApproved ? <CheckIcon /> : <ClearIcon color="disabled" />}
+                            </TableCell>
+                          )}
                           <TableCell align="right">
                             <Tooltip title={`Edit`} arrow>
                               <IconButton onClick={() => navigate(`/admin/users/${user.email}`)}>
@@ -351,6 +382,7 @@ const Users: React.FC<RouteComponentProps> = () => {
                         <TableCell />
                         <TableCell />
                         <TableCell />
+                        {config?.reasonToBookRequired && <TableCell />}
                       </TableRow>
                     )}
                   </TableBody>

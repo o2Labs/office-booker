@@ -45,7 +45,6 @@ export type Config = {
   selfTestUser?: string;
   officeQuotas: OfficeQuota[];
   systemAdminEmails: string[];
-  autoApprovedEmails: string[];
   validEmailMatch?: RegExp;
   caseSensitiveEmail?: boolean;
   defaultWeeklyQuota: number;
@@ -87,7 +86,6 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     REGION,
     COGNITO_USER_POOL_ID,
     SYSTEM_ADMIN_EMAILS,
-    AUTO_APPROVED_EMAILS,
     EMAIL_REGEX,
     OFFICE_QUOTAS,
     DEFAULT_WEEKLY_QUOTA,
@@ -112,7 +110,6 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     REGION === undefined ||
     COGNITO_USER_POOL_ID === undefined ||
     SYSTEM_ADMIN_EMAILS === undefined ||
-    AUTO_APPROVED_EMAILS === undefined ||
     EMAIL_REGEX === undefined ||
     OFFICE_QUOTAS === undefined ||
     EMAIL_REGEX === undefined ||
@@ -132,10 +129,7 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
   if (!systemAdminEmails.every(isValidEmail)) {
     throw new Error('Invalid email addresses in SYSTEM_ADMIN_EMAILS');
   }
-  const autoApprovedEmails = AUTO_APPROVED_EMAILS.split(';');
-  if (!autoApprovedEmails.every(isValidEmail)) {
-    throw new Error('Invalid email addresses in AUTO_APPROVED_EMAILS');
-  }
+
   const officeQuotaConfigs = parseOfficeQuotas(OFFICE_QUOTAS);
   const defaultWeeklyQuota = Number.parseInt(DEFAULT_WEEKLY_QUOTA);
   assert(defaultWeeklyQuota >= 0, `DEFAULT_WEEKLY_QUOTA must be >= 0`);
@@ -157,7 +151,6 @@ export const parseConfigFromEnv = (env: typeof process.env): Config => {
     selfTestUser: env.SELFTESTUSER,
     officeQuotas: officeQuotaConfigs,
     systemAdminEmails: systemAdminEmails,
-    autoApprovedEmails: autoApprovedEmails,
     validEmailMatch: EMAIL_REGEX ? new RegExp(EMAIL_REGEX) : undefined,
     caseSensitiveEmail: env.CASE_SENSITIVE_EMAIL?.toLowerCase() === 'true',
     defaultWeeklyQuota,

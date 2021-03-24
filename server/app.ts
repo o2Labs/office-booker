@@ -60,7 +60,6 @@ export const configureApp = (config: Config) => {
             : { type: 'test' },
         emailRegex: config.validEmailMatch?.source,
         advancedBookingDays: config.advanceBookingDays,
-        autoApprovedEmails: config.autoApprovedEmails,
         reasonToBookRequired: config.reasonToBookRequired,
       };
       return res.set('Cache-Control', 'public, max-age=3600').json(clientConfig);
@@ -145,6 +144,7 @@ export const configureApp = (config: Config) => {
       const quota = req.query.quota?.toString();
       const role: string | undefined = req.query?.role?.toString();
       const filterQuota = quota?.toLocaleLowerCase() === 'custom';
+      const autoApproved = req.query?.autoApproved?.toString() === 'true';
       const emailPrefix = req.query.emailPrefix?.toString().toLowerCase();
       const paginationToken = req.query.paginationToken?.toString();
       const authUser = await getAuthUser(res);
@@ -155,6 +155,7 @@ export const configureApp = (config: Config) => {
         customQuota: filterQuota,
         roleName: role,
         emailPrefix,
+        autoApproved,
         paginationToken,
       });
       return res.json(users);

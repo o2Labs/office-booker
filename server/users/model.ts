@@ -13,12 +13,17 @@ export type UserRole = DefaultRole | SystemAdminRole | OfficeAdminRole;
 
 export type UserRoleName = UserRole['name'];
 
-export const userRoleNames: UserRoleName[] = ['Default', 'System Admin', 'Office Admin'];
+export const userRoleNames: UserRoleName[] = [
+  'Default',
+  'System Admin',
+  'Office Admin',
+];
 
 export type User = UserProfile & {
   quota: number;
   admin: boolean;
   role: UserRole;
+  autoApproved: boolean;
   permissions: {
     canViewAdminPanel: boolean;
     canViewUsers: boolean;
@@ -32,7 +37,7 @@ type PutOfficeAdminRole = Pick<OfficeAdminRole, 'name'> & {
   offices: { id: string }[];
 };
 
-export type PutUserBody = { quota?: number | null; role?: DefaultRole | PutOfficeAdminRole };
+export type PutUserBody = { quota?: number | null; role?: DefaultRole | PutOfficeAdminRole; autoApproved?: boolean};
 
 export const isOfficeAdminRole = (arg: any): arg is PutOfficeAdminRole => {
   if (typeof arg !== 'object') return false;
@@ -51,7 +56,9 @@ export const isUserRole = (arg: any): arg is UserRole =>
 export const isPutUserBody = (arg: any): arg is PutUserBody =>
   typeof arg === 'object' &&
   (typeof arg.quota === 'number' || typeof arg.quota === 'undefined' || arg.quota === null) &&
-  (typeof arg.role === 'undefined' || (isUserRole(arg.role) && arg.role.name !== 'System Admin'));
+  (typeof arg.role === 'undefined' || (isUserRole(arg.role) && arg.role.name !== 'System Admin')) &&
+  (typeof arg.autoApproved === 'boolean' || typeof arg.autoApproved === 'undefined');
+
 
 const isAdmin = (config: Config, email: string): boolean =>
   config.systemAdminEmails.includes(email);
@@ -90,7 +97,8 @@ export const makeUser = (config: Config, dbUser: DbUser): User => {
       ? { name: 'System Admin' }
       : isOfficeAdmin
       ? makeOfficeAdmin(config, dbUser)
-      : { name: 'Default' },
+        : { name: 'Default' },
+    autoApproved: dbUser.autoApproved === true,
     permissions: {
       canViewAdminPanel: admin || isOfficeAdmin,
       canViewUsers: admin || isOfficeAdmin,

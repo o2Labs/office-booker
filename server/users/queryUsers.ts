@@ -45,6 +45,7 @@ export type UsersQuery = {
   customQuota: boolean;
   roleName?: string;
   emailPrefix?: string;
+  autoApproved?: boolean;
   paginationToken?: string;
 };
 
@@ -54,7 +55,7 @@ export const queryUsers = async (
   config: Config,
   query: UsersQuery
 ): Promise<QueryUsersResponse> => {
-  if (!query.customQuota && query.roleName === undefined) {
+  if (!query.customQuota && query.roleName === undefined && !query.autoApproved) {
     return getCognitoUsers(config, query.paginationToken, query.emailPrefix);
   }
   const potentialUsers =
@@ -68,6 +69,11 @@ export const queryUsers = async (
       if (query.customQuota) {
         if (user.quota === config.defaultWeeklyQuota) return false;
       }
+
+      if (query.autoApproved) {
+        if (user.autoApproved !== query.autoApproved) return false;
+      }
+
       if (query.emailPrefix !== undefined) {
         if (!user.email.startsWith(query.emailPrefix)) return false;
       }

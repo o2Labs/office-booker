@@ -7,7 +7,6 @@ AWS_REGION=`pulumi config get aws:region`
 COGNITO_USER_POOL_ID=`pulumi stack output cognitoPoolId`
 COGNITO_CLIENT_ID=`pulumi stack output cognitoAuthClientId`
 SYSTEM_ADMIN_EMAILS=`pulumi stack output systemAdminEmails`
-AUTO_APPROVED_EMAILS=`pulumi stack output autoApprovedEmails`
 EMAIL_REGEX=`pulumi config get email-regex`
 OFFICE_QUOTAS=`pulumi stack output officeQuotas`
 DEFAULT_WEEKLY_QUOTA=`pulumi config get default-weekly-quota`

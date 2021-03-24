@@ -97,13 +97,15 @@ export const createBooking = async (
     });
   }
 
-  const configureSendNotification = () => {
-    const { fromAddress, notificationToAddress, reasonToBookRequired, autoApprovedEmails } = config;
+  const configureSendNotification = async () => {
+    const { fromAddress, notificationToAddress, reasonToBookRequired } = config;
     if (!notificationToAddress) {
       return async () => {};
     }
 
-    if (autoApprovedEmails.includes(request.user)) {
+    //get the user from db
+    const dbUser = await getUser(config, request.user.toLocaleLowerCase());
+    if (dbUser.autoApproved) {
       return async () => {};
     }
 
@@ -132,7 +134,7 @@ export const createBooking = async (
     };
   };
 
-  const sendNotificationIfRequired = configureSendNotification();
+  const sendNotificationIfRequired = await configureSendNotification();
 
   // Id date as a direct string
   const id = requestedOffice.id + '_' + request.date.replace(/-/gi, '');
