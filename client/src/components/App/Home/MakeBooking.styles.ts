@@ -48,6 +48,19 @@ export default styled.div`
     color: #e21c33;
   }
 
+  > p.noShowNotice {
+    ${(props) => props.theme.breakpoints.up('xs')} {
+      margin: 1.6rem 0 0;
+    }
+
+    ${(props) => props.theme.breakpoints.up('sm')} {
+      margin: 2rem 0 0;
+    }
+
+    color: #0019a5;
+    font-weight: bold;
+  }
+
   > ul {
     ${(props) => props.theme.breakpoints.up('xs')} {
       margin: 1.6rem 0 0;

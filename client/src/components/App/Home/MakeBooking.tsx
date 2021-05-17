@@ -436,6 +436,11 @@ const MakeBooking: React.FC<Props> = (props) => {
         </p>
       )}
 
+      <p className="noShowNotice">
+        Please make sure you only book what you need and do cancel bookings at least the day before,
+        if your plans change. Unused bookings are being monitored.
+      </p>
+
       <ul>
         <li>
           You can make <span>{user.quota}</span> booking per week.

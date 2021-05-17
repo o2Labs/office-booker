@@ -15,7 +15,7 @@ const getLocalConfig = (): Config => {
         error.message
     );
     return {
-      advanceBookingDays: 14,
+      advanceBookingDays: 7,
       dataRetentionDays: 30,
       defaultWeeklyQuota: 1,
       officeQuotas: [{ id: 'the-office', name: 'The Office', quota: 10, parkingQuota: 10 }],
