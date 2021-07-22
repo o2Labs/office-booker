@@ -3,7 +3,7 @@ set -e # stop on error
 yarn audit --cwd server --groups dependencies
 yarn audit --cwd infrastructure --groups dependencies
 yarn audit --cwd alerts --groups dependencies
-yarn audit --cwd client
+yarn audit --cwd client --groups dependencies
 
 ./test.sh
 
