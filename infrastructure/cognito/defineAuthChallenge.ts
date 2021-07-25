@@ -1,6 +1,6 @@
-import { CognitoUserPoolTriggerEvent } from 'aws-lambda';
+import { DefineAuthChallengeTriggerEvent } from 'aws-lambda';
 
-export const defineAuthChallengeHandler = async (event: CognitoUserPoolTriggerEvent) => {
+export const defineAuthChallengeHandler = async (event: DefineAuthChallengeTriggerEvent) => {
   if (
     event.request.session &&
     event.request.session.length >= 3 &&
