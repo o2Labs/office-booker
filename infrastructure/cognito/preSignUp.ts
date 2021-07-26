@@ -1,6 +1,6 @@
-import { CognitoUserPoolTriggerEvent } from 'aws-lambda';
+import { PreSignUpTriggerEvent } from 'aws-lambda';
 
-export const preSignUpHandler = async (event: CognitoUserPoolTriggerEvent) => {
+export const preSignUpHandler = async (event: PreSignUpTriggerEvent) => {
   event.response.autoConfirmUser = true;
   event.response.autoVerifyEmail = true;
 

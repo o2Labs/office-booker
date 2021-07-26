@@ -1,8 +1,8 @@
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createTheme } from '@material-ui/core/styles';
 
 import { BASE_FONT_SIZE } from '../constants/theme';
 
-const MaterialTheme = createMuiTheme({
+const MaterialTheme = createTheme({
   typography: {
     // Adjust Material UI REM calculations to match
     // the font adjustments we use globally

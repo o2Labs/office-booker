@@ -174,3 +174,5 @@ dist
 build
 client/.env.local
 !/client/public
+infrastructure/.pulumi
+infrastructure/Pulumi.*.yaml

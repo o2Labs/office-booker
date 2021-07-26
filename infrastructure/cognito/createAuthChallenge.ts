@@ -1,9 +1,9 @@
-import { CognitoUserPoolEvent } from 'aws-lambda';
+import { CreateAuthChallengeTriggerEvent } from 'aws-lambda';
 import { randomDigits } from 'crypto-secure-random-digit';
 import { SES } from 'aws-sdk';
 import { verifyText, verifyHTML } from './email';
 
-export const createAuthChallengeHandler = async (event: CognitoUserPoolEvent) => {
+export const createAuthChallengeHandler = async (event: CreateAuthChallengeTriggerEvent) => {
   try {
     const domain = process.env.DOMAIN;
     const fromAddress = process.env.FROM_ADDRESS;

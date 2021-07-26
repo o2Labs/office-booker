@@ -47,6 +47,12 @@ _Note:_ Run `./make-env.sh [STACK]` to use config from the deployed stack for lo
 
 ## First Deploy
 
+### Before deploy 
+1. Register domain
+1. Add Zone to Route53
+1. Change NS records to created Zone
+
+### Deploy
 1. `./install.sh` - restore all package dependencies
 2. `./build.sh` - audit, test and build infrastructure assets
 3. `cd infrastructure` - this is where deployment is coordinated
@@ -56,9 +62,15 @@ _Note:_ Run `./make-env.sh [STACK]` to use config from the deployed stack for lo
 7. `cd ..` - Move back to the root of the project
 8. `./deploy.sh [STACK]` - deploy the stack created in step 5
 
+### After deploy
+1. Add [verified address](https://console.aws.amazon.com/ses/home?region=us-east-1#verified-senders-email:)
+1. Open [Cognito Pools](https://console.aws.amazon.com/cognito/users) -> **office-booker-booking-users-xxxxx** -> FROM email address -> edit
+    - Do you want to send emails through your Amazon SES Configuration? - **Yes - Use Amazon SES**
+    - Fill required files
+
 Note: the first smoke test might fail as DNS entries can take a while to propagate.
 
-### Subsequent Deploys
+## Subsequent Deploys
 
 This is the same as for the first deploy, excluding creating and configuring the stack:
 
@@ -88,9 +100,13 @@ config:
   office-booker:email-regex: ^(.*)@(my-company\.example)$
   office-booker:office-quotas:
     - name: Office Alpha
+      id: alpha
       quota: 100
+      parkingQuota: 60
     - name: Office Beta
+      id: beta
       quota: 200
+      parkingQuota: 150
   office-booker:registration-from-address: my-office-booker@my-company.example
   office-booker:selftest-key:
     secure: v1:xxxxxxxxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx==

@@ -43,7 +43,7 @@ const createAuthChallenge = new aws.lambda.CallbackFunction(
   {
     callback: createAuthChallengeHandler,
     policies: [
-      'arn:aws:iam::aws:policy/AWSLambdaFullAccess',
+      'arn:aws:iam::aws:policy/AWSLambda_FullAccess',
       'arn:aws:iam::aws:policy/AmazonSESFullAccess',
     ],
     memorySize: 512,
